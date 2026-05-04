@@ -74,7 +74,6 @@ function App() {
             {/* Dashboard */}
             <Route path="/dashboard" element={<EmployeeDashboard />} />
             <Route path="/owner" element={<OwnerDashboard />} />
-            <Route path="/owner/companies" element={<OwnerDashboard />} />
 
             {/* Attendance */}
             <Route path="/check-in" element={<CheckInPage />} />

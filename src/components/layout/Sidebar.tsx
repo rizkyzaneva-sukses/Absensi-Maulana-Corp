@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import {
   LayoutDashboard, Clock, History, FileText, Users, DollarSign,
-  BarChart3, Settings, Building2, ChevronLeft, LogOut, Briefcase,
+  BarChart3, Settings, Building2, ChevronLeft, LogOut,
   CheckCircle, ClipboardList, FileEdit, ScrollText, QrCode, ListTodo,
   LogIn, LogOut as LogOutIcon, BookOpen
 } from 'lucide-react';
@@ -38,7 +38,6 @@ const navItems: NavItem[] = [
 
 const ownerItems: NavItem[] = [
   { label: 'Owner Dashboard', path: '/owner', icon: <Building2 size={20} />, roles: ['SUPER_ADMIN'] },
-  { label: 'Kelola Perusahaan', path: '/owner/companies', icon: <Briefcase size={20} />, roles: ['SUPER_ADMIN'] },
 ];
 
 export function Sidebar() {
