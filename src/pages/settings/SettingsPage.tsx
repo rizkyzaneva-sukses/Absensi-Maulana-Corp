@@ -1,0 +1,164 @@
+import { useAuthStore } from '@/stores/authStore';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Building2, Clock, DollarSign, Bell } from 'lucide-react';
+
+export default function SettingsPage() {
+  const { activeCompany } = useAuthStore();
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Pengaturan</h1>
+        <p className="text-muted-foreground">Konfigurasi {activeCompany?.name}</p>
+      </div>
+
+      <Tabs defaultValue="company">
+        <TabsList>
+          <TabsTrigger value="company">Perusahaan</TabsTrigger>
+          <TabsTrigger value="schedule">Jam Kerja</TabsTrigger>
+          <TabsTrigger value="payroll">Gaji & Lembur</TabsTrigger>
+          <TabsTrigger value="notifications">Notifikasi</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="company">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Building2 size={18} /> Informasi Perusahaan
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Nama Perusahaan</label>
+                  <Input defaultValue={activeCompany?.name} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Industri</label>
+                  <Input defaultValue={activeCompany?.industry} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Alamat</label>
+                  <Input defaultValue={activeCompany?.address} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">NPWP</label>
+                  <Input defaultValue={activeCompany?.npwp} />
+                </div>
+              </div>
+              <Button>Simpan Perubahan</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="schedule">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock size={18} /> Jam Kerja
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Jam Masuk</label>
+                  <Input type="time" defaultValue="08:00" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Jam Pulang</label>
+                  <Input type="time" defaultValue="17:00" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Toleransi Terlambat (menit)</label>
+                  <Input type="number" defaultValue="15" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Radius Check-in (meter)</label>
+                  <Input type="number" defaultValue="200" />
+                </div>
+              </div>
+              <Button>Simpan Perubahan</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payroll">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <DollarSign size={18} /> Pengaturan Gaji & Lembur
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Hari Kerja per Bulan</label>
+                  <Input type="number" defaultValue="22" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Rate Lembur (x gaji/jam)</label>
+                  <Input type="number" step="0.5" defaultValue="1.5" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Potongan Terlambat per Menit</label>
+                  <Input type="number" defaultValue="5000" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Potongan Tidak Hadir</label>
+                  <Input type="number" defaultValue="100000" />
+                </div>
+              </div>
+              <Button>Simpan Perubahan</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Bell size={18} /> Pengaturan Notifikasi
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium text-sm">Reminder Check-in</p>
+                    <p className="text-xs text-muted-foreground">Kirim notifikasi jika belum check-in jam 09:30</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="w-4 h-4" />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium text-sm">Reminder Check-out</p>
+                    <p className="text-xs text-muted-foreground">Kirim notifikasi jika belum check-out jam 17:30</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="w-4 h-4" />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium text-sm">Notifikasi Payroll</p>
+                    <p className="text-xs text-muted-foreground">Kirim slip gaji otomatis setelah finalize</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="w-4 h-4" />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium text-sm">Alert Absensi</p>
+                    <p className="text-xs text-muted-foreground">Alert jika karyawan &gt;3x tidak hadir dalam sebulan</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="w-4 h-4" />
+                </div>
+              </div>
+              <Button>Simpan Perubahan</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

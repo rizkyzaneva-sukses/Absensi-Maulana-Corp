@@ -1,0 +1,154 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
+import { Bell, Moon, Sun, Building2, ChevronDown, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { notifications } from '@/lib/mock-data';
+import { useState } from 'react';
+
+export function Header() {
+  const { currentUser, activeCompany, userCompanies, switchCompany, logout } = useAuthStore();
+  const { theme, toggleTheme } = useUIStore();
+  const navigate = useNavigate();
+  const [showCompanyMenu, setShowCompanyMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  if (!currentUser) return null;
+
+  const userNotifications = notifications.filter(
+    n => n.user_id === currentUser.id && n.company_id === activeCompany?.id
+  );
+  const unreadCount = userNotifications.filter(n => !n.is_read).length;
+
+  return (
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
+      {/* Left: Page info */}
+      <div className="flex items-center gap-4">
+        <h2 className="text-lg font-semibold text-foreground">
+          {activeCompany?.name || 'Dashboard'}
+        </h2>
+      </div>
+
+      {/* Right: Actions */}
+      <div className="flex items-center gap-2">
+        {/* Company Switcher (if multi-company) */}
+        {userCompanies.length > 1 && (
+          <div className="relative">
+            <button
+              onClick={() => setShowCompanyMenu(!showCompanyMenu)}
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
+            >
+              <Building2 size={16} />
+              <span className="hidden sm:inline">{activeCompany?.name}</span>
+              <ChevronDown size={14} />
+            </button>
+            {showCompanyMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 rounded-md border bg-popover p-1 shadow-md">
+                {userCompanies.map(company => (
+                  <button
+                    key={company.id}
+                    onClick={() => {
+                      switchCompany(company.id);
+                      setShowCompanyMenu(false);
+                    }}
+                    className={cn(
+                      'w-full text-left px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors',
+                      company.id === activeCompany?.id && 'bg-accent font-medium'
+                    )}
+                  >
+                    {company.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-md hover:bg-accent transition-colors"
+          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+        >
+          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+
+        {/* Notifications */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-2 rounded-md hover:bg-accent transition-colors relative"
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+          {showNotifications && (
+            <div className="absolute right-0 top-full mt-1 w-80 rounded-md border bg-popover shadow-md max-h-96 overflow-y-auto">
+              <div className="p-3 border-b">
+                <h3 className="font-semibold text-sm">Notifikasi</h3>
+              </div>
+              {userNotifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  Tidak ada notifikasi
+                </div>
+              ) : (
+                userNotifications.slice(0, 5).map(notif => (
+                  <div
+                    key={notif.id}
+                    className={cn(
+                      'p-3 border-b last:border-0 hover:bg-accent/50 cursor-pointer',
+                      !notif.is_read && 'bg-primary/5'
+                    )}
+                  >
+                    <p className="text-sm font-medium">{notif.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{notif.message}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* User Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <User size={16} className="text-primary" />
+            </div>
+            <span className="hidden sm:inline text-sm font-medium">{currentUser.full_name.split(' ')[0]}</span>
+          </button>
+          {showUserMenu && (
+            <div className="absolute right-0 top-full mt-1 w-48 rounded-md border bg-popover p-1 shadow-md">
+              <div className="px-3 py-2 border-b">
+                <p className="text-sm font-medium">{currentUser.full_name}</p>
+                <p className="text-xs text-muted-foreground">{currentUser.position}</p>
+              </div>
+              {userCompanies.length > 1 && (
+                <button
+                  onClick={() => { navigate('/pick-company'); setShowUserMenu(false); }}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm"
+                >
+                  Ganti Perusahaan
+                </button>
+              )}
+              <button
+                onClick={() => { logout(); navigate('/login'); setShowUserMenu(false); }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm text-red-600"
+              >
+                Keluar
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
