@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { companies, employees, attendanceRecords, payrollRecords } from '@/lib/mock-data';
+import { companies, employees, attendanceRecords, holidays } from '@/lib/mock-data';
+import { generateCompanyPayroll } from '@/lib/payroll';
 import { formatCurrency } from '@/lib/utils';
 import { Building2, Users, DollarSign, Clock, ArrowRight } from 'lucide-react';
 
@@ -10,14 +11,27 @@ export default function OwnerDashboard() {
   const { switchCompany } = useAuthStore();
   const navigate = useNavigate();
 
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
   const companyStats = companies.map(company => {
     const companyEmployees = employees.filter(e => e.company_id === company.id && e.is_active);
     const todayStr = new Date().toISOString().split('T')[0];
     const todayAttendance = attendanceRecords.filter(a => a.company_id === company.id && a.date === todayStr);
     const presentCount = todayAttendance.filter(a => ['HADIR', 'TERLAMBAT'].includes(a.status)).length;
-    const totalPayroll = payrollRecords
-      .filter(p => p.company_id === company.id)
-      .reduce((sum, p) => sum + p.total_pay, 0);
+
+    // Calculate payroll estimation from real attendance data
+    const payrollEstimation = generateCompanyPayroll(
+      employees,
+      attendanceRecords,
+      holidays,
+      currentYear,
+      currentMonth,
+      company.id,
+      []
+    );
+    const totalPayroll = payrollEstimation.reduce((sum, p) => sum + p.total_pay, 0);
 
     return {
       ...company,
@@ -78,7 +92,7 @@ export default function OwnerDashboard() {
                 <DollarSign className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Payroll (Bulan Ini)</p>
+                <p className="text-sm text-muted-foreground">Estimasi Payroll (Bulan Ini)</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalPayroll)}</p>
               </div>
             </div>
@@ -118,7 +132,7 @@ export default function OwnerDashboard() {
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-semibold">{formatCurrency(company.totalPayroll)}</p>
-                  <p className="text-xs text-muted-foreground">Payroll</p>
+                  <p className="text-xs text-muted-foreground">Est. Payroll</p>
                 </div>
               </div>
               <Button
