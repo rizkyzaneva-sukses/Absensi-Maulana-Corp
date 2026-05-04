@@ -144,7 +144,7 @@ export default function WorkScheduleSettings() {
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-sm">{ws.name}</p>
                       {!ws.is_active && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 px-2 py-0.5 rounded-full">
                           Nonaktif
                         </span>
                       )}
@@ -208,7 +208,7 @@ export default function WorkScheduleSettings() {
                       type="checkbox"
                       checked={workHours[day.key]?.is_workday ?? false}
                       onChange={(e) => updateDayHours(day.key, 'is_workday', e.target.checked)}
-                      className="rounded border-gray-300"
+                      className="rounded border-border"
                     />
                     <span className="text-sm font-medium">{day.label}</span>
                   </div>

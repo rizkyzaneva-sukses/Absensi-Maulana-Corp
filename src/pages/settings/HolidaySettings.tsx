@@ -170,7 +170,7 @@ export default function HolidaySettings() {
                 id="is_national"
                 checked={isNational}
                 onChange={(e) => setIsNational(e.target.checked)}
-                className="rounded border-gray-300"
+                className="rounded border-border"
               />
               <label htmlFor="is_national" className="text-sm">
                 Hari libur nasional

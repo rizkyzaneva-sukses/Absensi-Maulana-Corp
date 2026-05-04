@@ -44,7 +44,7 @@ export default function AuditLogPage() {
       case 'MANUAL_CORRECTION':
         return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300';
     }
   };
 

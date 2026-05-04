@@ -101,7 +101,7 @@ export default function OwnerDashboard() {
                     <p className="text-xs text-muted-foreground">{company.industry}</p>
                   </div>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${company.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${company.is_active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
                   {company.is_active ? 'Aktif' : 'Nonaktif'}
                 </span>
               </div>

@@ -1,41 +1,73 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+type Theme = 'light' | 'dark' | 'system';
+
 interface UIState {
   sidebarOpen: boolean;
-  theme: 'light' | 'dark';
+  theme: Theme;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   toggleTheme: () => void;
-  setTheme: (theme: 'light' | 'dark') => void;
+  setTheme: (theme: Theme) => void;
+}
+
+function applyTheme(theme: Theme) {
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+function getEffectiveTheme(theme: Theme): 'light' | 'dark' {
+  if (theme === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return theme;
 }
 
 export const useUIStore = create<UIState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       sidebarOpen: true,
-      theme: 'light',
+      theme: 'dark' as Theme,
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleTheme: () =>
         set((s) => {
-          const newTheme = s.theme === 'light' ? 'dark' : 'light';
-          if (newTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
+          const currentEffective = getEffectiveTheme(s.theme);
+          const newTheme: Theme = currentEffective === 'light' ? 'dark' : 'light';
+          applyTheme(newTheme);
           return { theme: newTheme };
         }),
       setTheme: (theme) => {
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+        applyTheme(theme);
         set({ theme });
       },
     }),
-    { name: 'ui-storage' }
+    {
+      name: 'ui-storage',
+      onRehydrateStorage: () => (state) => {
+        // Apply theme after store rehydration from localStorage
+        if (state) {
+          applyTheme(state.theme);
+        }
+      },
+    }
   )
 );
+
+// Listen for system theme changes when theme is 'system'
+if (typeof window !== 'undefined') {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const { theme } = useUIStore.getState();
+    if (theme === 'system') {
+      applyTheme('system');
+    }
+  });
+}

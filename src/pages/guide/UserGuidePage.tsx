@@ -83,11 +83,11 @@ function getRoleLabel(role: string): string {
 
 function getRoleBadgeColor(role: string): string {
   switch (role) {
-    case 'SUPER_ADMIN': return 'bg-red-100 text-red-700';
-    case 'COMPANY_ADMIN': return 'bg-amber-100 text-amber-700';
-    case 'MANAGER': return 'bg-purple-100 text-purple-700';
-    case 'KARYAWAN': return 'bg-blue-100 text-blue-700';
-    default: return 'bg-gray-100 text-gray-700';
+    case 'SUPER_ADMIN': return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+    case 'COMPANY_ADMIN': return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+    case 'MANAGER': return 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300';
+    case 'KARYAWAN': return 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300';
+    default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
   }
 }
 
@@ -324,7 +324,7 @@ export default function UserGuidePage() {
 
           <Accordion
             title="Riwayat Absensi"
-            icon={<ScrollText className="h-5 w-5 text-gray-500" />}
+            icon={<ScrollText className="h-5 w-5 text-muted-foreground" />}
           >
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>Lihat riwayat absensi Anda di menu <strong>"Riwayat Saya"</strong>:</p>
@@ -587,7 +587,7 @@ export default function UserGuidePage() {
 
           <Accordion
             title="Cetak Kartu QR"
-            icon={<Printer className="h-5 w-5 text-gray-600" />}
+            icon={<Printer className="h-5 w-5 text-muted-foreground" />}
           >
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">Menu <strong>"Cetak QR"</strong>:</p>
@@ -606,7 +606,7 @@ export default function UserGuidePage() {
 
           <Accordion
             title="Audit Log"
-            icon={<ScrollText className="h-5 w-5 text-gray-600" />}
+            icon={<ScrollText className="h-5 w-5 text-muted-foreground" />}
           >
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>Menu <strong>"Audit Log"</strong> mencatat semua perubahan data sistem:</p>
@@ -715,15 +715,15 @@ export default function UserGuidePage() {
         <div className="space-y-2">
           <div className="flex flex-col items-center gap-1">
             {[
-              { label: 'Karyawan tiba di kantor', color: 'bg-blue-100 text-blue-700' },
-              { label: 'Buka app → Check-in', color: 'bg-blue-100 text-blue-700' },
-              { label: 'Validasi GPS (dalam radius?)', color: 'bg-yellow-100 text-yellow-700' },
-              { label: 'Pilih metode: QR / Selfie', color: 'bg-purple-100 text-purple-700' },
-              { label: 'Konfirmasi → Status: HADIR / TERLAMBAT', color: 'bg-green-100 text-green-700' },
-              { label: '... Bekerja ...', color: 'bg-gray-100 text-gray-500' },
-              { label: 'Selesai kerja → Check-out', color: 'bg-red-100 text-red-700' },
-              { label: 'Hitung: Lembur / Pulang Cepat', color: 'bg-amber-100 text-amber-700' },
-              { label: 'Data tersimpan di riwayat', color: 'bg-green-100 text-green-700' },
+              { label: 'Karyawan tiba di kantor', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' },
+              { label: 'Buka app → Check-in', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' },
+              { label: 'Validasi GPS (dalam radius?)', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300' },
+              { label: 'Pilih metode: QR / Selfie', color: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300' },
+              { label: 'Konfirmasi → Status: HADIR / TERLAMBAT', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300' },
+              { label: '... Bekerja ...', color: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400' },
+              { label: 'Selesai kerja → Check-out', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' },
+              { label: 'Hitung: Lembur / Pulang Cepat', color: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
+              { label: 'Data tersimpan di riwayat', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300' },
             ].map((step, i) => (
               <div key={i}>
                 <div className={`px-4 py-2 rounded-lg text-xs font-medium text-center ${step.color}`}>

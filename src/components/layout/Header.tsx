@@ -4,11 +4,17 @@ import { useUIStore } from '@/stores/uiStore';
 import { Bell, Moon, Sun, Building2, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { notifications } from '@/lib/mock-data';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export function Header() {
   const { currentUser, activeCompany, userCompanies, switchCompany, logout } = useAuthStore();
   const { theme, toggleTheme } = useUIStore();
+  const isDark = useMemo(() => {
+    if (theme === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return theme === 'dark';
+  }, [theme]);
   const navigate = useNavigate();
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -69,9 +75,9 @@ export function Header() {
         <button
           onClick={toggleTheme}
           className="p-2 rounded-md hover:bg-accent transition-colors"
-          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          title={isDark ? 'Light Mode' : 'Dark Mode'}
         >
-          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          {isDark ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} />}
         </button>
 
         {/* Notifications */}

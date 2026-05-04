@@ -4,18 +4,9 @@ import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
 
 export function AppLayout() {
-  const { sidebarOpen, theme } = useUIStore();
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
+  const { sidebarOpen } = useUIStore();
 
   return (
     <div className="min-h-screen bg-background">

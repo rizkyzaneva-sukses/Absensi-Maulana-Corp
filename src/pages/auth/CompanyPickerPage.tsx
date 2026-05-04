@@ -18,7 +18,7 @@ export default function CompanyPickerPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-950 dark:to-gray-900 p-4">
       <div className="w-full max-w-lg space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Pilih Perusahaan</h1>

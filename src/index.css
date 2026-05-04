@@ -26,6 +26,11 @@
     --radius: 0.625rem;
     --sidebar: 215 28% 17%;
     --sidebar-foreground: 210 40% 98%;
+    --chart-1: 160 84% 39%;
+    --chart-2: 210 70% 50%;
+    --chart-3: 280 65% 60%;
+    --chart-4: 40 90% 50%;
+    --chart-5: 0 72% 51%;
 
     /* Status Colors */
     --status-hadir: #10b981;
@@ -41,27 +46,32 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
+    --background: 222 47% 7%;
     --foreground: 210 40% 98%;
-    --card: 215 28% 12%;
+    --card: 222 47% 10%;
     --card-foreground: 210 40% 98%;
-    --popover: 215 28% 12%;
+    --popover: 222 47% 10%;
     --popover-foreground: 210 40% 98%;
     --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 28% 17%;
+    --secondary: 215 28% 16%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 215 28% 17%;
+    --muted: 215 28% 16%;
     --muted-foreground: 215 20% 65%;
-    --accent: 215 28% 17%;
+    --accent: 215 25% 18%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 28% 22%;
-    --input: 215 28% 22%;
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
     --ring: 160 84% 39%;
-    --sidebar: 222 47% 8%;
+    --sidebar: 222 47% 5%;
     --sidebar-foreground: 210 40% 90%;
+    --chart-1: 160 84% 45%;
+    --chart-2: 210 70% 60%;
+    --chart-3: 280 65% 70%;
+    --chart-4: 40 90% 60%;
+    --chart-5: 0 72% 60%;
   }
 }
 
@@ -91,6 +101,36 @@
 }
 
 /* Smooth transitions for theme switching */
-body {
-  transition: background-color 0.3s ease, color 0.3s ease;
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Disable transitions on page load to prevent flash */
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition: none !important;
+}
+
+/* Dark mode specific improvements */
+.dark {
+  color-scheme: dark;
+}
+
+/* Form elements in dark mode */
+.dark input[type="checkbox"] {
+  @apply border-border bg-muted;
+}
+
+.dark select {
+  @apply bg-background text-foreground border-border;
+}
+
+/* Better focus rings in dark mode */
+.dark *:focus-visible {
+  @apply ring-primary/50;
 }
