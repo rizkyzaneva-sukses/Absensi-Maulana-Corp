@@ -145,9 +145,15 @@ export interface PayrollRecord {
   company_id: string;
   employee_id: string;
   employee_name: string;
+  employee_nik: string;
   period: string; // YYYY-MM
+  working_days: number;
+  days_present: number;
   base_salary: number;
+  transport: number;
+  uang_makan: number;
   overtime_pay: number;
+  bonus: number;
   deductions: number;
   late_deductions: number;
   absence_deductions: number;

@@ -1,155 +1,330 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDataStore } from '@/stores/dataStore';
+import { useAttendanceStore } from '@/stores/attendanceStore';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/common/StatusBadge';
-import { payrollRecords, employees } from '@/lib/mock-data';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { DollarSign, FileText, Send } from 'lucide-react';
+import { generateCompanyPayroll, exportPayrollToCSV, downloadCSV } from '@/lib/payroll';
+import { getWorkingDaysInMonth } from '@/lib/attendance';
+import { formatCurrency } from '@/lib/utils';
+import { Settings, Download, RefreshCw, Pencil, Check, Trash2 } from 'lucide-react';
+import type { PayrollRecord } from '@/types';
+
+const MONTHS = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
 
 export default function PayrollPage() {
   const { activeCompany } = useAuthStore();
-  const [showPreview, setShowPreview] = useState(false);
-  const [selectedPayroll, setSelectedPayroll] = useState<typeof payrollRecords[0] | null>(null);
+  const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, payrollRates } = useDataStore();
+  const { attendances } = useAttendanceStore();
 
-  const companyPayroll = payrollRecords.filter(p => p.company_id === activeCompany?.id);
-  const companyEmployees = employees.filter(e => e.company_id === activeCompany?.id && e.is_active);
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+  const [showSettings, setShowSettings] = useState(false);
 
-  const totalPayroll = companyPayroll.reduce((sum, p) => sum + p.total_pay, 0);
-  const draftCount = companyPayroll.filter(p => p.status === 'DRAFT').length;
-  const finalCount = companyPayroll.filter(p => p.status === 'FINALIZED').length;
+  const companyId = activeCompany?.id || '';
 
-  const handlePreview = (payroll: typeof payrollRecords[0]) => {
-    setSelectedPayroll(payroll);
-    setShowPreview(true);
+  // Filter payroll records for selected period
+  const period = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+  const periodRecords = payrollRecords.filter(
+    (p) => p.company_id === companyId && p.period === period
+  );
+
+  // Calculate working days for the selected month
+  const workingDays = useMemo(
+    () => getWorkingDaysInMonth(selectedYear, selectedMonth, holidays, companyId),
+    [selectedYear, selectedMonth, holidays, companyId]
+  );
+
+  // Summary totals
+  const totals = useMemo(() => {
+    return periodRecords.reduce(
+      (acc, r) => ({
+        gajiPokok: acc.gajiPokok + r.base_salary,
+        transport: acc.transport + r.transport,
+        makan: acc.makan + r.uang_makan,
+        lembur: acc.lembur + r.overtime_pay,
+        bonus: acc.bonus + r.bonus,
+        potongan: acc.potongan + r.deductions,
+        gajiBersih: acc.gajiBersih + r.total_pay,
+      }),
+      { gajiPokok: 0, transport: 0, makan: 0, lembur: 0, bonus: 0, potongan: 0, gajiBersih: 0 }
+    );
+  }, [periodRecords]);
+
+  // Generate payroll
+  const handleGenerate = () => {
+    const companyEmps = employees.filter((e) => e.company_id === companyId && e.is_active);
+    if (companyEmps.length === 0) return;
+
+    const newRecords = generateCompanyPayroll(
+      employees,
+      attendances,
+      holidays,
+      selectedYear,
+      selectedMonth,
+      companyId,
+      payrollRecords,
+      payrollRates.lembur_rate_per_jam
+    );
+
+    // Replace existing records for this period, keep others
+    const otherRecords = payrollRecords.filter(
+      (p) => !(p.company_id === companyId && p.period === period)
+    );
+    setPayrollRecords([...otherRecords, ...newRecords]);
+  };
+
+  // Export CSV
+  const handleExportCSV = () => {
+    if (periodRecords.length === 0) return;
+    const csv = exportPayrollToCSV(periodRecords);
+    downloadCSV(csv, `payroll_${activeCompany?.name || 'company'}_${period}.csv`);
+  };
+
+  // Finalize a record
+  const handleFinalize = (record: PayrollRecord) => {
+    updatePayrollRecord(record.id, {
+      status: 'FINALIZED',
+      finalized_at: new Date().toISOString(),
+    });
+  };
+
+  // Delete a record
+  const handleDelete = (id: string) => {
+    deletePayrollRecord(id);
+  };
+
+  // Format number with dots (Indonesian format)
+  const formatNum = (num: number) => {
+    return num.toLocaleString('id-ID');
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Payroll</h1>
-          <p className="text-muted-foreground">Kelola penggajian karyawan {activeCompany?.name}</p>
+          <h1 className="text-2xl font-bold">Data Payroll</h1>
+          <p className="text-muted-foreground">Kelola data gaji karyawan</p>
         </div>
-        <Button className="gap-2">
-          <DollarSign size={16} /> Generate Payroll
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowSettings(true)} className="gap-2">
+            <Settings size={16} /> Setting
+          </Button>
+          <Button variant="outline" onClick={handleExportCSV} className="gap-2">
+            <Download size={16} /> Export CSV
+          </Button>
+          <Button onClick={handleGenerate} className="gap-2">
+            <RefreshCw size={16} /> Generate Payroll
+          </Button>
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Total Payroll Bulan Ini</p>
-            <p className="text-2xl font-bold mt-1">{formatCurrency(totalPayroll)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Draft</p>
-            <p className="text-2xl font-bold mt-1">{draftCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Finalized</p>
-            <p className="text-2xl font-bold mt-1">{finalCount}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Payroll List */}
+      {/* Period Selector */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Daftar Payroll</CardTitle>
-        </CardHeader>
+        <CardContent className="p-4 flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Tahun:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              {[2024, 2025, 2026, 2027].map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Bulan:</span>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              {MONTHS.map((m, i) => (
+                <option key={i} value={i + 1}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <span className="text-sm text-muted-foreground">
+            Hari kerja: <strong>{workingDays} hari</strong>
+          </span>
+        </CardContent>
+      </Card>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Gaji Pokok</p>
+            <p className="text-sm font-bold text-yellow-500 mt-1">{formatNum(totals.gajiPokok)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Transport</p>
+            <p className="text-sm font-bold text-green-500 mt-1">{formatNum(totals.transport)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Makan</p>
+            <p className="text-sm font-bold text-orange-500 mt-1">{formatNum(totals.makan)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Lembur</p>
+            <p className="text-sm font-bold text-emerald-500 mt-1">{formatNum(totals.lembur)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Bonus</p>
+            <p className="text-sm font-bold text-purple-500 mt-1">{formatNum(totals.bonus)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Potongan</p>
+            <p className="text-sm font-bold text-red-500 mt-1">{formatNum(totals.potongan)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground">Total Gaji Bersih</p>
+            <p className="text-sm font-bold text-blue-500 mt-1">{formatNum(totals.gajiBersih)}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Payroll Table */}
+      <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50">
+              <thead className="bg-muted/50 border-b">
                 <tr>
-                  <th className="text-left p-3 font-medium">Karyawan</th>
-                  <th className="text-left p-3 font-medium">Periode</th>
+                  <th className="text-left p-3 font-medium w-8">
+                    <input type="checkbox" className="rounded" />
+                  </th>
+                  <th className="text-left p-3 font-medium">NIK</th>
+                  <th className="text-left p-3 font-medium">Nama</th>
                   <th className="text-right p-3 font-medium">Gaji Pokok</th>
+                  <th className="text-center p-3 font-medium">Hadir</th>
+                  <th className="text-right p-3 font-medium">Transport</th>
+                  <th className="text-right p-3 font-medium">Makan</th>
                   <th className="text-right p-3 font-medium">Lembur</th>
+                  <th className="text-right p-3 font-medium">Bonus</th>
                   <th className="text-right p-3 font-medium">Potongan</th>
-                  <th className="text-right p-3 font-medium">Total</th>
+                  <th className="text-right p-3 font-medium">Gaji Bersih</th>
                   <th className="text-center p-3 font-medium">Status</th>
                   <th className="text-center p-3 font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {companyPayroll.map(payroll => (
-                  <tr key={payroll.id} className="hover:bg-muted/30">
-                    <td className="p-3 font-medium">{payroll.employee_name}</td>
-                    <td className="p-3 text-muted-foreground">{payroll.period}</td>
-                    <td className="p-3 text-right">{formatCurrency(payroll.base_salary)}</td>
-                    <td className="p-3 text-right">{formatCurrency(payroll.overtime_pay)}</td>
-                    <td className="p-3 text-right text-red-600">-{formatCurrency(payroll.deductions)}</td>
-                    <td className="p-3 text-right font-semibold">{formatCurrency(payroll.total_pay)}</td>
-                    <td className="p-3 text-center"><StatusBadge status={payroll.status} /></td>
-                    <td className="p-3 text-center">
-                      <div className="flex gap-1 justify-center">
-                        <Button size="sm" variant="ghost" onClick={() => handlePreview(payroll)} title="Preview">
-                          <FileText size={14} />
-                        </Button>
-                        <Button size="sm" variant="ghost" title="Kirim Slip">
-                          <Send size={14} />
-                        </Button>
-                      </div>
+                {periodRecords.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="p-8 text-center text-muted-foreground">
+                      Belum ada data payroll untuk periode ini. Klik "Generate Payroll" untuk membuat.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  periodRecords.map((record) => (
+                    <tr key={record.id} className="hover:bg-muted/30">
+                      <td className="p-3">
+                        <input type="checkbox" className="rounded" />
+                      </td>
+                      <td className="p-3 font-mono text-xs">{record.employee_nik}</td>
+                      <td className="p-3 font-medium">{record.employee_name}</td>
+                      <td className="p-3 text-right">{formatNum(record.base_salary)}</td>
+                      <td className="p-3 text-center">
+                        {record.days_present}/{record.working_days}
+                      </td>
+                      <td className="p-3 text-right">{formatNum(record.transport)}</td>
+                      <td className="p-3 text-right">{formatNum(record.uang_makan)}</td>
+                      <td className="p-3 text-right">{formatNum(record.overtime_pay)}</td>
+                      <td className="p-3 text-right">{formatNum(record.bonus)}</td>
+                      <td className="p-3 text-right">-{formatNum(record.deductions)}</td>
+                      <td className="p-3 text-right font-bold">{formatNum(record.total_pay)}</td>
+                      <td className="p-3 text-center">
+                        <Badge
+                          variant={record.status === 'FINALIZED' ? 'default' : 'secondary'}
+                          className={
+                            record.status === 'DRAFT'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : record.status === 'FINALIZED'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : ''
+                          }
+                        >
+                          {record.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1 justify-center">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Edit"
+                            className="h-7 w-7 p-0"
+                          >
+                            <Pencil size={14} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Finalize"
+                            className="h-7 w-7 p-0 text-green-600"
+                            onClick={() => handleFinalize(record)}
+                            disabled={record.status === 'FINALIZED'}
+                          >
+                            <Check size={14} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Hapus"
+                            className="h-7 w-7 p-0 text-red-600"
+                            onClick={() => handleDelete(record.id)}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Preview Modal */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-md">
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Preview Slip Gaji</DialogTitle>
+            <DialogTitle>Pengaturan Payroll</DialogTitle>
           </DialogHeader>
-          {selectedPayroll && (
-            <div className="space-y-4">
-              <div className="text-center border-b pb-4">
-                <h3 className="font-bold text-lg">{activeCompany?.name}</h3>
-                <p className="text-sm text-muted-foreground">Slip Gaji - {selectedPayroll.period}</p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Nama</span>
-                  <span className="font-medium">{selectedPayroll.employee_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Gaji Pokok</span>
-                  <span>{formatCurrency(selectedPayroll.base_salary)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Lembur</span>
-                  <span>{formatCurrency(selectedPayroll.overtime_pay)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tunjangan</span>
-                  <span>{formatCurrency(selectedPayroll.allowances)}</span>
-                </div>
-                <div className="flex justify-between text-red-600">
-                  <span>Potongan</span>
-                  <span>-{formatCurrency(selectedPayroll.deductions)}</span>
-                </div>
-                <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>{formatCurrency(selectedPayroll.total_pay)}</span>
-                </div>
-              </div>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Pengaturan gaji per karyawan dapat diubah di halaman Karyawan (edit karyawan).
+            </p>
+            <div className="text-sm space-y-2">
+              <p><strong>Rate Lembur:</strong> {formatCurrency(payrollRates.lembur_rate_per_jam)}/jam</p>
+              <p><strong>Potongan Terlambat:</strong> Rp 5.000/menit</p>
             </div>
-          )}
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPreview(false)}>Tutup</Button>
-            <Button>Finalize & Kirim</Button>
+            <Button variant="outline" onClick={() => setShowSettings(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -9,13 +9,14 @@ export interface PayrollInput {
   month: number;
   companyId: string;
   existingRecord?: PayrollRecord;
+  lemburRatePerJam?: number;
 }
 
 /**
  * Generate payroll for a single employee
  */
 export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
-  const { employee, attendances, holidays, year, month, companyId, existingRecord } = input;
+  const { employee, attendances, holidays, year, month, companyId, existingRecord, lemburRatePerJam = 25000 } = input;
 
   const workingDays = getWorkingDaysInMonth(year, month, holidays, companyId);
   const daysPresent = countAttendanceDays(attendances, employee.id, year, month);
@@ -24,11 +25,20 @@ export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
 
   // Calculate salary components
   const baseSalary = employee.base_salary;
-  const overtimePay = Math.round(overtimeHours * (baseSalary / (workingDays * 8)));
   
+  // Transport & Makan are per attendance day
+  const transport = daysPresent * (employee.uang_transport || 0);
+  const uangMakan = daysPresent * (employee.uang_makan || 0);
+  
+  // Overtime pay
+  const overtimePay = Math.round(overtimeHours * lemburRatePerJam);
+  
+  // Bonus = uang_kehadiran * days present + tunjangan_kesehatan (fixed monthly)
+  const bonus = daysPresent * (employee.uang_kehadiran || 0) + (employee.tunjangan_kesehatan || 0);
+
   // Deductions
   const absentDays = Math.max(0, workingDays - daysPresent);
-  const dailyRate = baseSalary / workingDays;
+  const dailyRate = baseSalary / (workingDays || 1);
   const absenceDeductions = Math.round(absentDays * dailyRate);
 
   // Late deductions (sum late minutes * rate)
@@ -42,10 +52,10 @@ export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
 
   const totalDeductions = absenceDeductions + lateDeductions;
 
-  // Allowances (simplified - could be expanded)
+  // Allowances (kept for backward compat)
   const allowances = existingRecord?.allowances || 0;
 
-  const totalPay = baseSalary + overtimePay + allowances - totalDeductions;
+  const totalPay = baseSalary + transport + uangMakan + overtimePay + bonus + allowances - totalDeductions;
 
   const period = `${year}-${month.toString().padStart(2, '0')}`;
 
@@ -54,9 +64,15 @@ export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
     company_id: companyId,
     employee_id: employee.id,
     employee_name: employee.full_name,
+    employee_nik: employee.employee_id,
     period,
+    working_days: workingDays,
+    days_present: daysPresent,
     base_salary: baseSalary,
+    transport,
+    uang_makan: uangMakan,
     overtime_pay: overtimePay,
+    bonus,
     deductions: totalDeductions,
     late_deductions: lateDeductions,
     absence_deductions: absenceDeductions,
@@ -78,7 +94,8 @@ export function generateCompanyPayroll(
   year: number,
   month: number,
   companyId: string,
-  existingRecords: PayrollRecord[]
+  existingRecords: PayrollRecord[],
+  lemburRatePerJam?: number
 ): PayrollRecord[] {
   const activeEmployees = employees.filter(
     (e) => e.company_id === companyId && e.is_active
@@ -97,6 +114,7 @@ export function generateCompanyPayroll(
       month,
       companyId,
       existingRecord: existing,
+      lemburRatePerJam,
     });
   });
 }
@@ -106,18 +124,21 @@ export function generateCompanyPayroll(
  */
 export function exportPayrollToCSV(records: PayrollRecord[]): string {
   const headers = [
-    'Nama', 'Periode', 'Gaji Pokok', 'Lembur', 'Tunjangan',
-    'Potongan Absen', 'Potongan Terlambat', 'Total Potongan', 'Total Gaji', 'Status'
+    'NIK', 'Nama', 'Periode', 'Hari Kerja', 'Hadir', 'Gaji Pokok', 'Transport', 'Makan',
+    'Lembur', 'Bonus', 'Potongan', 'Gaji Bersih', 'Status'
   ];
 
   const rows = records.map((r) => [
+    r.employee_nik,
     r.employee_name,
     r.period,
+    r.working_days,
+    r.days_present,
     r.base_salary,
+    r.transport,
+    r.uang_makan,
     r.overtime_pay,
-    r.allowances,
-    r.absence_deductions,
-    r.late_deductions,
+    r.bonus,
     r.deductions,
     r.total_pay,
     r.status,

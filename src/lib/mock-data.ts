@@ -452,24 +452,37 @@ export const corrections: AttendanceCorrection[] = [
 function generatePayroll(): PayrollRecord[] {
   const records: PayrollRecord[] = [];
   const activeEmps = employees.filter(e => e.role !== 'SUPER_ADMIN');
+  const workingDays = 26; // April 2026 working days
 
   activeEmps.forEach(emp => {
-    const overtime = Math.floor(Math.random() * 1500000);
-    const deductions = Math.floor(Math.random() * 500000);
-    const allowances = Math.floor(emp.base_salary * 0.1);
+    const daysPresent = Math.floor(Math.random() * 3) + 23; // 23-25 days
+    const overtimeHours = Math.round((Math.random() * 10) * 100) / 100;
+    const overtimePay = Math.round(overtimeHours * 25000);
+    const transport = daysPresent * (emp.uang_transport || 0);
+    const uangMakan = daysPresent * (emp.uang_makan || 0);
+    const bonus = daysPresent * (emp.uang_kehadiran || 0) + (emp.tunjangan_kesehatan || 0);
+    const deductions = 0;
+    const totalPay = emp.base_salary + transport + uangMakan + overtimePay + bonus - deductions;
+
     records.push({
       id: `pay_${emp.id}_2026-04`,
       company_id: emp.company_id,
       employee_id: emp.id,
       employee_name: emp.full_name,
+      employee_nik: emp.employee_id,
       period: '2026-04',
+      working_days: workingDays,
+      days_present: daysPresent,
       base_salary: emp.base_salary,
-      overtime_pay: overtime,
+      transport,
+      uang_makan: uangMakan,
+      overtime_pay: overtimePay,
+      bonus,
       deductions,
-      late_deductions: Math.floor(Math.random() * 200000),
+      late_deductions: 0,
       absence_deductions: 0,
-      allowances,
-      total_pay: emp.base_salary + overtime + allowances - deductions,
+      allowances: 0,
+      total_pay: Math.max(0, totalPay),
       status: 'DRAFT',
       generated_at: '2026-05-01',
       finalized_at: null,
