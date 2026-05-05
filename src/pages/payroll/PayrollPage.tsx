@@ -19,7 +19,7 @@ const MONTHS = [
 
 export default function PayrollPage() {
   const { activeCompany } = useAuthStore();
-  const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, payrollRates } = useDataStore();
+  const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, overtimeSettings } = useDataStore();
   const { attendances } = useAttendanceStore();
 
   const now = new Date();
@@ -70,7 +70,7 @@ export default function PayrollPage() {
       selectedMonth,
       companyId,
       payrollRecords,
-      payrollRates.lembur_rate_per_jam
+      overtimeSettings
     );
 
     // Replace existing records for this period, keep others
@@ -319,8 +319,9 @@ export default function PayrollPage() {
               Pengaturan gaji per karyawan dapat diubah di halaman Karyawan (edit karyawan).
             </p>
             <div className="text-sm space-y-2">
-              <p><strong>Rate Lembur:</strong> {formatCurrency(payrollRates.lembur_rate_per_jam)}/jam</p>
-              <p><strong>Potongan Terlambat:</strong> Rp 5.000/menit</p>
+              <p><strong>Rate Lembur:</strong> gaji_pokok / (hari_kerja × 8) per jam (per karyawan)</p>
+              <p><strong>Toleransi Lembur:</strong> {overtimeSettings.tolerance_minutes} menit</p>
+              <p><strong>Maks Lembur/hari:</strong> {overtimeSettings.lembur_max_minutes} menit</p>
             </div>
           </div>
           <DialogFooter>

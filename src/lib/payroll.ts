@@ -1,5 +1,10 @@
 import type { Employee, Attendance, PayrollRecord, Holiday } from '@/types';
-import { getWorkingDaysInMonth, countAttendanceDays, sumOvertimeMinutes, generateId } from './attendance';
+import { getWorkingDaysInMonth, countAttendanceDays, generateId } from './attendance';
+
+export interface OvertimeConfig {
+  tolerance_minutes: number;
+  lembur_max_minutes: number;
+}
 
 export interface PayrollInput {
   employee: Employee;
@@ -9,53 +14,73 @@ export interface PayrollInput {
   month: number;
   companyId: string;
   existingRecord?: PayrollRecord;
-  lemburRatePerJam?: number;
+  overtimeConfig: OvertimeConfig;
+}
+
+/**
+ * Calculate overtime minutes for a single attendance record
+ * Based on: extra_minutes = checkout_time - scheduled_end
+ * lembur_minutes = min(extra_minutes - tolerance_minutes, lembur_max_minutes)
+ * Only counted if extra_minutes > tolerance_minutes
+ */
+function calculateOvertimeMinutesFromRecord(
+  attendance: Attendance,
+  toleranceMinutes: number,
+  maxMinutes: number
+): number {
+  // Use overtime_minutes from attendance record (already calculated at checkout)
+  const extraMinutes = attendance.overtime_minutes || 0;
+  if (extraMinutes <= toleranceMinutes) return 0;
+  const lemburMinutes = extraMinutes - toleranceMinutes;
+  return Math.min(lemburMinutes, maxMinutes);
 }
 
 /**
  * Generate payroll for a single employee
+ * 
+ * Formula:
+ * - lembur_rate_per_jam = gaji_pokok / (hari_kerja × 8)
+ * - total_lembur_jam = SUM(lembur_minutes) / 60
+ * - lembur_total = total_lembur_jam × lembur_rate_per_jam
+ * - transport = hari_hadir × uang_transport
+ * - makan = hari_hadir × uang_makan
+ * - bonus = hari_hadir × uang_kehadiran + tunjangan_kesehatan
+ * - total = gaji_pokok + transport + makan + lembur + bonus - potongan(0)
  */
 export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
-  const { employee, attendances, holidays, year, month, companyId, existingRecord, lemburRatePerJam = 25000 } = input;
+  const { employee, attendances, holidays, year, month, companyId, existingRecord, overtimeConfig } = input;
 
   const workingDays = getWorkingDaysInMonth(year, month, holidays, companyId);
   const daysPresent = countAttendanceDays(attendances, employee.id, year, month);
-  const overtimeMinutes = sumOvertimeMinutes(attendances, employee.id, year, month);
-  const overtimeHours = Math.round((overtimeMinutes / 60) * 100) / 100;
 
-  // Calculate salary components
+  // Calculate overtime using per-employee rate
+  // lembur_rate_per_jam = gaji_pokok / (hari_kerja × 8)
+  const lemburRatePerJam = workingDays > 0 ? employee.base_salary / (workingDays * 8) : 0;
+
+  // Get all attendance records for this employee in this month
+  const monthAttendances = attendances.filter((a) => {
+    const d = new Date(a.date);
+    return a.employee_id === employee.id && d.getFullYear() === year && d.getMonth() + 1 === month;
+  });
+
+  // Sum lembur minutes with tolerance and max applied
+  const totalLemburMinutes = monthAttendances.reduce((sum, a) => {
+    return sum + calculateOvertimeMinutesFromRecord(a, overtimeConfig.tolerance_minutes, overtimeConfig.lembur_max_minutes);
+  }, 0);
+
+  const totalLemburJam = totalLemburMinutes / 60;
+  const overtimePay = Math.round(totalLemburJam * lemburRatePerJam * 10) / 10;
+
+  // Salary components
   const baseSalary = employee.base_salary;
-  
-  // Transport & Makan are per attendance day
   const transport = daysPresent * (employee.uang_transport || 0);
   const uangMakan = daysPresent * (employee.uang_makan || 0);
-  
-  // Overtime pay
-  const overtimePay = Math.round(overtimeHours * lemburRatePerJam);
-  
-  // Bonus = uang_kehadiran * days present + tunjangan_kesehatan (fixed monthly)
   const bonus = daysPresent * (employee.uang_kehadiran || 0) + (employee.tunjangan_kesehatan || 0);
 
-  // Deductions
-  const absentDays = Math.max(0, workingDays - daysPresent);
-  const dailyRate = baseSalary / (workingDays || 1);
-  const absenceDeductions = Math.round(absentDays * dailyRate);
+  // No deductions (no late penalty, no absence penalty)
+  const deductions = 0;
 
-  // Late deductions (sum late minutes * rate)
-  const lateMinutes = attendances
-    .filter((a) => {
-      const d = new Date(a.date);
-      return a.employee_id === employee.id && d.getFullYear() === year && d.getMonth() + 1 === month;
-    })
-    .reduce((sum, a) => sum + (a.late_minutes || 0), 0);
-  const lateDeductions = lateMinutes * 5000; // Rp 5000 per minute late
-
-  const totalDeductions = absenceDeductions + lateDeductions;
-
-  // Allowances (kept for backward compat)
-  const allowances = existingRecord?.allowances || 0;
-
-  const totalPay = baseSalary + transport + uangMakan + overtimePay + bonus + allowances - totalDeductions;
+  const totalPay = baseSalary + transport + uangMakan + overtimePay + bonus - deductions;
 
   const period = `${year}-${month.toString().padStart(2, '0')}`;
 
@@ -71,13 +96,13 @@ export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
     base_salary: baseSalary,
     transport,
     uang_makan: uangMakan,
-    overtime_pay: overtimePay,
+    overtime_pay: Math.round(overtimePay * 10) / 10,
     bonus,
-    deductions: totalDeductions,
-    late_deductions: lateDeductions,
-    absence_deductions: absenceDeductions,
-    allowances,
-    total_pay: Math.max(0, totalPay),
+    deductions,
+    late_deductions: 0,
+    absence_deductions: 0,
+    allowances: 0,
+    total_pay: Math.max(0, Math.round(totalPay * 10) / 10),
     status: existingRecord?.status || 'DRAFT',
     generated_at: new Date().toISOString(),
     finalized_at: existingRecord?.finalized_at || null,
@@ -95,7 +120,7 @@ export function generateCompanyPayroll(
   month: number,
   companyId: string,
   existingRecords: PayrollRecord[],
-  lemburRatePerJam?: number
+  overtimeConfig: OvertimeConfig
 ): PayrollRecord[] {
   const activeEmployees = employees.filter(
     (e) => e.company_id === companyId && e.is_active
@@ -114,7 +139,7 @@ export function generateCompanyPayroll(
       month,
       companyId,
       existingRecord: existing,
-      lemburRatePerJam,
+      overtimeConfig,
     });
   });
 }

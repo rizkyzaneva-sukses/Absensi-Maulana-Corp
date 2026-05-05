@@ -29,7 +29,8 @@ export default function OwnerDashboard() {
       currentYear,
       currentMonth,
       company.id,
-      []
+      [],
+      { tolerance_minutes: 15, lembur_max_minutes: 180 }
     );
     const totalPayroll = payrollEstimation.reduce((sum, p) => sum + p.total_pay, 0);
 
