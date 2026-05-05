@@ -204,6 +204,6 @@ export const useDataStore = create<DataState>()(
       setOvertimeSettings: (settings) => set({ overtimeSettings: settings }),
       setPayrollRates: (rates) => set({ payrollRates: rates }),
     }),
-    { name: 'data-storage' }
+    { name: 'data-storage-v2' }
   )
 );

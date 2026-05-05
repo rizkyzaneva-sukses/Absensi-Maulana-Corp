@@ -74,6 +74,6 @@ export const useAttendanceStore = create<AttendanceState>()(
           ),
         })),
     }),
-    { name: 'attendance-storage' }
+    { name: 'attendance-storage-v2' }
   )
 );
