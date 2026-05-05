@@ -4,6 +4,7 @@ import { useDataStore } from '@/stores/dataStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { generateCompanyPayroll, exportPayrollToCSV, downloadCSV } from '@/lib/payroll';
@@ -26,6 +27,8 @@ export default function PayrollPage() {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [showSettings, setShowSettings] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
+  const [editForm, setEditForm] = useState({ bonus: '0', deductions: '0' });
 
   const companyId = activeCompany?.id || '';
 
@@ -98,6 +101,30 @@ export default function PayrollPage() {
   // Delete a record
   const handleDelete = (id: string) => {
     deletePayrollRecord(id);
+  };
+
+  // Open edit dialog
+  const handleEdit = (record: PayrollRecord) => {
+    setEditingRecord(record);
+    setEditForm({
+      bonus: String(record.bonus),
+      deductions: String(record.deductions),
+    });
+  };
+
+  // Save edit
+  const handleSaveEdit = () => {
+    if (!editingRecord) return;
+    const newBonus = parseInt(editForm.bonus) || 0;
+    const newDeductions = parseInt(editForm.deductions) || 0;
+    // Recalculate total_pay
+    const totalPay = editingRecord.base_salary + editingRecord.transport + editingRecord.uang_makan + editingRecord.overtime_pay + newBonus - newDeductions;
+    updatePayrollRecord(editingRecord.id, {
+      bonus: newBonus,
+      deductions: newDeductions,
+      total_pay: Math.max(0, totalPay),
+    });
+    setEditingRecord(null);
   };
 
   // Format number with dots (Indonesian format)
@@ -275,6 +302,7 @@ export default function PayrollPage() {
                             variant="ghost"
                             title="Edit"
                             className="h-7 w-7 p-0"
+                            onClick={() => handleEdit(record)}
                           >
                             <Pencil size={14} />
                           </Button>
@@ -307,6 +335,91 @@ export default function PayrollPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Payroll Dialog */}
+      <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit Payroll - {editingRecord?.employee_name}</DialogTitle>
+          </DialogHeader>
+          {editingRecord && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground">NIK</p>
+                  <p className="font-medium">{editingRecord.employee_nik}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Gaji Pokok</p>
+                  <p className="font-medium">{formatCurrency(editingRecord.base_salary)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Transport</p>
+                  <p className="font-medium">{formatCurrency(editingRecord.transport)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Makan</p>
+                  <p className="font-medium">{formatCurrency(editingRecord.uang_makan)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Lembur</p>
+                  <p className="font-medium">{formatCurrency(editingRecord.overtime_pay)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Hadir</p>
+                  <p className="font-medium">{editingRecord.days_present}/{editingRecord.working_days}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 border-t pt-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Bonus (Rp)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    value={editForm.bonus}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, bonus: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Potongan (Rp)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    value={editForm.deductions}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, deductions: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-3">
+                <div className="flex justify-between text-sm font-bold">
+                  <span>Estimasi Gaji Bersih:</span>
+                  <span>
+                    {formatCurrency(
+                      Math.max(
+                        0,
+                        editingRecord.base_salary +
+                          editingRecord.transport +
+                          editingRecord.uang_makan +
+                          editingRecord.overtime_pay +
+                          (parseInt(editForm.bonus) || 0) -
+                          (parseInt(editForm.deductions) || 0)
+                      )
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingRecord(null)}>Batal</Button>
+            <Button onClick={handleSaveEdit}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Settings Dialog */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
