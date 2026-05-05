@@ -3,29 +3,27 @@ import type {
   AttendanceCorrection, Team, PayrollRecord, Notification, Holiday, Location
 } from '@/types';
 
-// ============ COMPANIES ============
 export const companies: Company[] = [
   {
-    id: 'comp_elyasr',
-    name: 'ELYASR',
-    slug: 'elyasr',
-    logo_url: '',
-    industry: 'Retail & Fashion',
-    address: 'Bandung, Jawa Barat',
-    npwp: '01.234.567.8-901.000',
-    is_active: true,
-    owner_email: 'rizkyzaneva@gmail.com',
-    subscription_plan: 'ENTERPRISE',
-    max_employees: 100,
-    created_at: '2026-01-21',
-    updated_at: '2026-05-05',
-  },
+    "id": "comp_elyasr",
+    "name": "ELYASR",
+    "slug": "elyasr",
+    "logo_url": "",
+    "industry": "Retail & Fashion",
+    "address": "Bandung, Jawa Barat",
+    "npwp": "01.234.567.8-901.000",
+    "is_active": true,
+    "owner_email": "rizkyzaneva@gmail.com",
+    "subscription_plan": "ENTERPRISE",
+    "max_employees": 100,
+    "created_at": "2026-01-21",
+    "updated_at": "2026-05-05"
+  }
 ];
 
-// ============ EMPLOYEES ============
 export const employees: Employee[] = [
   {
-    "id": "emp_owner",
+    "id": "69cc9ba87030f27d5b9bd839",
     "company_id": "comp_elyasr",
     "user_email": "rizkyzaneva@gmail.com",
     "employee_id": "OWN-1",
@@ -35,7 +33,7 @@ export const employees: Employee[] = [
     "department": "",
     "team_id": "team_elyasr",
     "role": "SUPER_ADMIN",
-    "join_date": "2026-04-01",
+    "join_date": "2026-01-01",
     "photo_url": "",
     "is_active": true,
     "cuti_tahunan": 12,
@@ -48,7 +46,7 @@ export const employees: Employee[] = [
     "created_at": "2026-04-01"
   },
   {
-    "id": "emp_adm01",
+    "id": "69a168535c11687be484d192",
     "company_id": "comp_elyasr",
     "user_email": "yasrikhaira1@gmail.com",
     "employee_id": "ADM01",
@@ -58,7 +56,7 @@ export const employees: Employee[] = [
     "department": "",
     "team_id": "team_elyasr",
     "role": "COMPANY_ADMIN",
-    "join_date": "2026-02-27",
+    "join_date": "2026-01-01",
     "photo_url": "",
     "is_active": false,
     "cuti_tahunan": 12,
@@ -71,7 +69,7 @@ export const employees: Employee[] = [
     "created_at": "2026-02-27"
   },
   {
-    "id": "emp_el_04",
+    "id": "69705cec51ca2bef9c5ccdd7",
     "company_id": "comp_elyasr",
     "user_email": "cselyasrsukses@gmail.com",
     "employee_id": "EL-EM-04",
@@ -81,7 +79,7 @@ export const employees: Employee[] = [
     "department": "",
     "team_id": "team_elyasr",
     "role": "KARYAWAN",
-    "join_date": "2026-01-21",
+    "join_date": "2026-01-01",
     "photo_url": "",
     "is_active": true,
     "cuti_tahunan": 0,
@@ -94,7 +92,7 @@ export const employees: Employee[] = [
     "created_at": "2026-01-21"
   },
   {
-    "id": "emp_el_03",
+    "id": "69705ccf821338a5238bf548",
     "company_id": "comp_elyasr",
     "user_email": "creativeelyasrnew@gmail.com",
     "employee_id": "EL-EM-03",
@@ -104,7 +102,7 @@ export const employees: Employee[] = [
     "department": "",
     "team_id": "team_elyasr",
     "role": "KARYAWAN",
-    "join_date": "2026-01-21",
+    "join_date": "2026-01-01",
     "photo_url": "",
     "is_active": true,
     "cuti_tahunan": 0,
@@ -117,7 +115,7 @@ export const employees: Employee[] = [
     "created_at": "2026-01-21"
   },
   {
-    "id": "emp_el_02",
+    "id": "69705cb9c87c315049a3d86a",
     "company_id": "comp_elyasr",
     "user_email": "annisanurafifahh@gmail.com",
     "employee_id": "EL-EM-02",
@@ -127,7 +125,7 @@ export const employees: Employee[] = [
     "department": "",
     "team_id": "team_elyasr",
     "role": "KARYAWAN",
-    "join_date": "2026-01-21",
+    "join_date": "2026-01-01",
     "photo_url": "",
     "is_active": true,
     "cuti_tahunan": 20,
@@ -140,7 +138,7 @@ export const employees: Employee[] = [
     "created_at": "2026-01-21"
   },
   {
-    "id": "emp_el_01",
+    "id": "69705c978aaecd6d1b6098dd",
     "company_id": "comp_elyasr",
     "user_email": "financeelyasr@gmail.com",
     "employee_id": "EL-EM-01",
@@ -150,7 +148,7 @@ export const employees: Employee[] = [
     "department": "",
     "team_id": "team_elyasr",
     "role": "KARYAWAN",
-    "join_date": "2026-01-21",
+    "join_date": "2026-01-01",
     "photo_url": "",
     "is_active": true,
     "cuti_tahunan": 0,
@@ -163,7 +161,7 @@ export const employees: Employee[] = [
     "created_at": "2026-01-21"
   },
   {
-    "id": "emp_asfi",
+    "id": "69703ee3cdb0341809bba875",
     "company_id": "comp_elyasr",
     "user_email": "asfizaneva@gmail.com",
     "employee_id": "EMP001",
@@ -187,17 +185,21 @@ export const employees: Employee[] = [
   }
 ];
 
-// ============ TEAMS ============
 export const teams: Team[] = [
-  { id: 'team_elyasr', company_id: 'comp_elyasr', name: 'ELYASR Team', manager_id: 'emp_owner', member_count: 7 },
+  {
+    "id": "team_elyasr",
+    "company_id": "comp_elyasr",
+    "name": "ELYASR Team",
+    "manager_id": "emp_owner",
+    "member_count": 7
+  }
 ];
 
-// ============ ATTENDANCE ============
 export const attendanceRecords: Attendance[] = [
   {
     "id": "69f93ec713c61911d03eb09d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-05-05",
     "check_in_time": "07:50",
     "check_out_time": "17:13",
@@ -221,7 +223,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f93f465f4c4cfb221d217a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-05-05",
     "check_in_time": "07:52",
     "check_out_time": "17:10",
@@ -245,7 +247,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f93e26322cc30c3a3b4877",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-05-05",
     "check_in_time": "07:47",
     "check_out_time": "17:10",
@@ -269,7 +271,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f93ec5d1e64974dd73fb01",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-05-05",
     "check_in_time": "07:50",
     "check_out_time": "17:09",
@@ -293,7 +295,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f7ef9d977cd004029de677",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-05-04",
     "check_in_time": "08:00",
     "check_out_time": "17:36",
@@ -317,7 +319,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f7ef81d075356f84c6c84a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-05-04",
     "check_in_time": "07:59",
     "check_out_time": "18:02",
@@ -341,7 +343,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f7ef4703584b841569fb5f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-05-04",
     "check_in_time": "07:58",
     "check_out_time": "17:24",
@@ -365,7 +367,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f7ecaec3f79b6ed426abc8",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-05-04",
     "check_in_time": "07:47",
     "check_out_time": "17:45",
@@ -389,7 +391,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f54b08572fd3c135c8785b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-05-02",
     "check_in_time": "07:53",
     "check_out_time": "15:29",
@@ -413,7 +415,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f54a903bd46940e3b1411b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-05-02",
     "check_in_time": "07:51",
     "check_out_time": "15:29",
@@ -437,7 +439,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f5498b86f1b7644b8a6ef2",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-05-02",
     "check_in_time": "07:47",
     "check_out_time": null,
@@ -458,7 +460,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f5473acbcb87eb58b876eb",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-05-02",
     "check_in_time": "07:37",
     "check_out_time": "15:21",
@@ -482,7 +484,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f3f6dafc455cd9cce656f4",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-05-01",
     "check_in_time": "07:42",
     "check_out_time": "13:20",
@@ -506,7 +508,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f3f3e344d80321e2f466d0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-05-01",
     "check_in_time": "07:29",
     "check_out_time": "15:38",
@@ -530,7 +532,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f3f9b71507f1f921897d1d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-05-01",
     "check_in_time": "07:54",
     "check_out_time": "15:33",
@@ -554,7 +556,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f3f9e314fffc8b4d9fca61",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-05-01",
     "check_in_time": "07:54",
     "check_out_time": "13:20",
@@ -578,7 +580,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f2a7d90e3570f3d4248de5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-30",
     "check_in_time": "07:52",
     "check_out_time": "17:46",
@@ -602,7 +604,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f2a6c47fa334d40cd7e390",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-30",
     "check_in_time": "07:48",
     "check_out_time": "18:02",
@@ -626,7 +628,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f2a6b7061b884760189c86",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-30",
     "check_in_time": "07:47",
     "check_out_time": "17:42",
@@ -650,7 +652,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f2a5d5182980f9e4a1b9b4",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-30",
     "check_in_time": "07:44",
     "check_out_time": "17:44",
@@ -674,7 +676,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f1570b644a2a51aef4a009",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-29",
     "check_in_time": "07:55",
     "check_out_time": null,
@@ -695,7 +697,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f1547a16fc4ccbd15bb9c0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-29",
     "check_in_time": "07:44",
     "check_out_time": null,
@@ -716,7 +718,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f1546bd1b1822b734d9543",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-29",
     "check_in_time": "07:44",
     "check_out_time": "17:23",
@@ -740,7 +742,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f00481afb39baf3c3a4387",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-28",
     "check_in_time": "07:51",
     "check_out_time": "17:21",
@@ -764,7 +766,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f0041279cf82fc24ea0b61",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-28",
     "check_in_time": "07:49",
     "check_out_time": "17:19",
@@ -788,7 +790,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f002cd1c7ceb455ac2b79e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-28",
     "check_in_time": "07:43",
     "check_out_time": "17:27",
@@ -812,7 +814,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eeb18fbe4aafbadcece099",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-27",
     "check_in_time": "07:45",
     "check_out_time": "17:24",
@@ -836,7 +838,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eeb2f22b935f062df358af",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-27",
     "check_in_time": "07:50",
     "check_out_time": "17:24",
@@ -860,7 +862,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eeb316ab2f6b7a9e95db0f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-27",
     "check_in_time": "07:51",
     "check_out_time": "17:27",
@@ -884,7 +886,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eeb33255aa91fbe92da7c3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-27",
     "check_in_time": "07:52",
     "check_out_time": "17:24",
@@ -908,7 +910,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ec80faa53d5c584aa7d366",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-25",
     "check_in_time": "15:53",
     "check_out_time": "15:53",
@@ -932,7 +934,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ec17f8354583d538954300",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-25",
     "check_in_time": "08:25",
     "check_out_time": "16:30",
@@ -956,7 +958,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ec0efaa1e03a7a81932d48",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-25",
     "check_in_time": "07:46",
     "check_out_time": "15:53",
@@ -980,7 +982,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eabd1d3c10ee9f0a34c7e0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-24",
     "check_in_time": "07:45",
     "check_out_time": "17:14",
@@ -1004,7 +1006,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eabde9f91ca8d5080fb15d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-24",
     "check_in_time": "07:48",
     "check_out_time": "17:13",
@@ -1028,7 +1030,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69eabd46cecc74d0aeda6113",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-24",
     "check_in_time": "07:45",
     "check_out_time": "17:12",
@@ -1052,7 +1054,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e96ce1f75b8bfd053f9d89",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-23",
     "check_in_time": "07:50",
     "check_out_time": "17:11",
@@ -1076,7 +1078,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e96bb33757006353284eee",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-23",
     "check_in_time": "07:45",
     "check_out_time": "17:13",
@@ -1100,7 +1102,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e96b73b5a31e1457a36340",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-23",
     "check_in_time": "07:44",
     "check_out_time": "17:08",
@@ -1124,7 +1126,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e81d14ab38b12dd1bff8cd",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-22",
     "check_in_time": "07:57",
     "check_out_time": null,
@@ -1145,7 +1147,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e81cd6db82ded83fbb2b88",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-22",
     "check_in_time": "07:56",
     "check_out_time": "17:35",
@@ -1169,7 +1171,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e81c80e5f1167b8c4fbebb",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-22",
     "check_in_time": "07:55",
     "check_out_time": "17:31",
@@ -1193,7 +1195,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e81a9e197d59b53a28bec0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-22",
     "check_in_time": "07:47",
     "check_out_time": "17:29",
@@ -1217,7 +1219,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e6c8b6c97ebd946315d1c3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-21",
     "check_in_time": "07:45",
     "check_out_time": "17:26",
@@ -1241,7 +1243,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e6c8e3c01ec2bf115ac24c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-21",
     "check_in_time": "07:46",
     "check_out_time": "17:22",
@@ -1265,7 +1267,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e6c8f62689bb32dcb62f2c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-21",
     "check_in_time": "07:46",
     "check_out_time": "17:24",
@@ -1289,7 +1291,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e6c90c4ae2ba1056523288",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-21",
     "check_in_time": "07:47",
     "check_out_time": "17:20",
@@ -1313,7 +1315,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e57995d45bff2a994f514d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-20",
     "check_in_time": "07:55",
     "check_out_time": "17:18",
@@ -1337,7 +1339,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e5793bd3a7f5650115eca1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-20",
     "check_in_time": "07:54",
     "check_out_time": "17:23",
@@ -1361,7 +1363,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e5789de8389bc52be7ced3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-20",
     "check_in_time": "07:51",
     "check_out_time": "17:23",
@@ -1385,7 +1387,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e5789443413fcd57629df2",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-20",
     "check_in_time": "07:51",
     "check_out_time": "17:22",
@@ -1409,12 +1411,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f4611360f8a6cd479921d3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_owner",
+    "employee_id": "69cc9ba87030f27d5b9bd839",
     "date": "2026-04-18",
     "check_in_time": "08:00",
     "check_out_time": "17:00",
     "status": "HADIR",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -1427,12 +1429,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f4611360f8a6cd479921d6",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-18",
     "check_in_time": "08:00",
     "check_out_time": "17:00",
     "status": "HADIR",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -1445,12 +1447,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f4611360f8a6cd479921d5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-18",
     "check_in_time": "08:00",
     "check_out_time": "17:00",
     "status": "HADIR",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -1463,12 +1465,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f4611360f8a6cd479921d7",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-18",
     "check_in_time": "08:00",
     "check_out_time": "17:00",
     "status": "HADIR",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -1481,12 +1483,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69f4611360f8a6cd479921d4",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-18",
     "check_in_time": "08:00",
     "check_out_time": "17:00",
     "status": "HADIR",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -1499,7 +1501,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e184f194b729568e833de1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-17",
     "check_in_time": "07:55",
     "check_out_time": "17:13",
@@ -1523,7 +1525,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e184be6b1b8b71293aa697",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-17",
     "check_in_time": "07:54",
     "check_out_time": "17:09",
@@ -1547,7 +1549,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e1842622f35ecbe2014104",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-17",
     "check_in_time": "07:51",
     "check_out_time": "17:16",
@@ -1571,7 +1573,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e1801da7fd602b27b45298",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-17",
     "check_in_time": "07:34",
     "check_out_time": null,
@@ -1592,7 +1594,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e030ae14c46b07e945eebd",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-16",
     "check_in_time": "07:43",
     "check_out_time": "17:13",
@@ -1616,7 +1618,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e032569592a84ce5eee19e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-16",
     "check_in_time": "07:50",
     "check_out_time": "17:29",
@@ -1640,7 +1642,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e03372f2c07e1af3f43971",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-16",
     "check_in_time": "07:55",
     "check_out_time": null,
@@ -1661,7 +1663,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69e03413e6c1bd017640777e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-16",
     "check_in_time": "07:57",
     "check_out_time": "17:11",
@@ -1685,7 +1687,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69df11ab36bbe029574dd444",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-15",
     "check_in_time": "11:18",
     "check_out_time": "17:37",
@@ -1709,7 +1711,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dee356ef9a8bd7b6e28bbc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-15",
     "check_in_time": "08:01",
     "check_out_time": "17:35",
@@ -1733,7 +1735,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dee1341cf99a306f56ab7a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-15",
     "check_in_time": "07:52",
     "check_out_time": "17:29",
@@ -1757,7 +1759,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dee1210f5f46a246da5aaf",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-15",
     "check_in_time": "07:51",
     "check_out_time": "17:33",
@@ -1781,7 +1783,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ddb20b49f692d5ffd01c0e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-14",
     "check_in_time": "10:18",
     "check_out_time": "19:26",
@@ -1805,7 +1807,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ddb1f44808e8888066e556",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-14",
     "check_in_time": "10:18",
     "check_out_time": "19:25",
@@ -1829,7 +1831,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dd8f6633456a0e4fad78a3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-14",
     "check_in_time": "07:50",
     "check_out_time": "17:20",
@@ -1853,7 +1855,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dd8f5bf174ef4c1f535d78",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-14",
     "check_in_time": "07:50",
     "check_out_time": "17:04",
@@ -1877,7 +1879,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dc4ec3be5a829f9f1601a5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-13",
     "check_in_time": "09:02",
     "check_out_time": "17:34",
@@ -1901,7 +1903,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dc3daf9eee6d7b5a9c7f38",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-13",
     "check_in_time": "07:49",
     "check_out_time": "17:35",
@@ -1925,7 +1927,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dc3ece08438e877fb1b55f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-13",
     "check_in_time": "07:54",
     "check_out_time": "17:28",
@@ -1949,7 +1951,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69dc3df438d14d4b282e0cb9",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-13",
     "check_in_time": "07:50",
     "check_out_time": "17:30",
@@ -1973,7 +1975,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d99dc6a130d47f1c8841a5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-11",
     "check_in_time": "08:03",
     "check_out_time": "16:12",
@@ -1997,7 +1999,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d99c79a9a777b2a4a20482",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-11",
     "check_in_time": "07:57",
     "check_out_time": null,
@@ -2018,7 +2020,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d99b275551ef163b8bc7f4",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-11",
     "check_in_time": "07:51",
     "check_out_time": "15:28",
@@ -2042,7 +2044,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d99a20fbfd6992f655ebfc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-11",
     "check_in_time": "07:47",
     "check_out_time": "15:22",
@@ -2066,7 +2068,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d84a26fb8e8ab72f080b0a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-10",
     "check_in_time": "07:53",
     "check_out_time": "17:24",
@@ -2090,7 +2092,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d84a1faebc664c6924a2c5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-10",
     "check_in_time": "07:53",
     "check_out_time": "17:20",
@@ -2114,7 +2116,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d849f5be0b2da9610148cc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-10",
     "check_in_time": "07:53",
     "check_out_time": "17:18",
@@ -2138,7 +2140,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d8465edb66ccf247cb7265",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-10",
     "check_in_time": "07:37",
     "check_out_time": "17:29",
@@ -2162,7 +2164,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d6fa11fad2ac484be994ad",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-09",
     "check_in_time": "08:00",
     "check_out_time": "17:07",
@@ -2186,7 +2188,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d6f950df87bbae82bed220",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-09",
     "check_in_time": "07:56",
     "check_out_time": "17:07",
@@ -2210,7 +2212,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d6f78c4698e50d31d3a7eb",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-09",
     "check_in_time": "07:49",
     "check_out_time": "17:10",
@@ -2234,7 +2236,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d6f6974001577c73acaf0f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-09",
     "check_in_time": "07:45",
     "check_out_time": "17:10",
@@ -2258,7 +2260,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d5a477fdc0c122e4f96063",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-08",
     "check_in_time": "07:42",
     "check_out_time": "11:40",
@@ -2282,7 +2284,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d5a6ff1b30f39d3f8684ef",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-08",
     "check_in_time": "07:53",
     "check_out_time": "17:17",
@@ -2306,7 +2308,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d5a7a2ff3074593de87359",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-08",
     "check_in_time": "07:56",
     "check_out_time": "17:06",
@@ -2330,7 +2332,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d5a7b9660ebd6e0740b349",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-08",
     "check_in_time": "07:56",
     "check_out_time": "17:17",
@@ -2354,7 +2356,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d4571bb266a97ceeab4888",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-07",
     "check_in_time": "08:00",
     "check_out_time": "18:12",
@@ -2378,7 +2380,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d45622d50f12fe0f4689f5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-07",
     "check_in_time": "07:56",
     "check_out_time": "18:01",
@@ -2402,7 +2404,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d454b115746c7f723f060c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-07",
     "check_in_time": "07:49",
     "check_out_time": "18:52",
@@ -2426,7 +2428,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d45301951b37b9cf22e292",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-07",
     "check_in_time": "07:42",
     "check_out_time": "18:09",
@@ -2450,7 +2452,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d309a706e06118dd763e2e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-06",
     "check_in_time": "08:17",
     "check_out_time": "18:03",
@@ -2474,7 +2476,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d303fc6bba2a085b90ef18",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-06",
     "check_in_time": "07:53",
     "check_out_time": "17:39",
@@ -2498,7 +2500,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d303bea1c40eaaf7662445",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-06",
     "check_in_time": "07:52",
     "check_out_time": "17:29",
@@ -2522,7 +2524,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d302f4665b88672caa1c45",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-06",
     "check_in_time": "07:48",
     "check_out_time": "17:40",
@@ -2546,7 +2548,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d061a2cd41d9e70f052df8",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-04",
     "check_in_time": "07:56",
     "check_out_time": "15:41",
@@ -2570,7 +2572,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d060a665fed0ba10d6fd11",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-04",
     "check_in_time": "07:51",
     "check_out_time": "15:37",
@@ -2594,7 +2596,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69d05ca143ad682c818dca85",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-04",
     "check_in_time": "07:34",
     "check_out_time": "15:39",
@@ -2618,7 +2620,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cf113a4f3ec65e8f958f33",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-03",
     "check_in_time": "08:00",
     "check_out_time": "15:04",
@@ -2642,7 +2644,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cf1048e22a649c355845b0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-03",
     "check_in_time": "07:56",
     "check_out_time": "15:26",
@@ -2666,7 +2668,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cf101d5051b42496ba42e1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-03",
     "check_in_time": "07:55",
     "check_out_time": "15:11",
@@ -2690,7 +2692,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cf0ddd368a5b5998f0433e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-03",
     "check_in_time": "07:46",
     "check_out_time": "15:26",
@@ -2714,7 +2716,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cdbb701064124d94f5b7c1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-02",
     "check_in_time": "07:42",
     "check_out_time": "17:14",
@@ -2738,7 +2740,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cdbe9b9a55daaae9b5afb1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-02",
     "check_in_time": "07:55",
     "check_out_time": "17:18",
@@ -2762,7 +2764,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cdbd975547898846cd4139",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-02",
     "check_in_time": "07:51",
     "check_out_time": "17:21",
@@ -2786,7 +2788,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cdbc68cc87167120e7c4a6",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-02",
     "check_in_time": "07:46",
     "check_out_time": "17:17",
@@ -2810,7 +2812,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cc6c9945ddfa47c228dc5f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-04-01",
     "check_in_time": "07:53",
     "check_out_time": "17:31",
@@ -2834,7 +2836,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cc6bbd83203fb19f91b696",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-04-01",
     "check_in_time": "07:50",
     "check_out_time": "17:31",
@@ -2858,7 +2860,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cc6b9c3896bec0471e9baa",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-04-01",
     "check_in_time": "07:49",
     "check_out_time": "17:12",
@@ -2882,7 +2884,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cc6b1bf1706f174015ee5e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-04-01",
     "check_in_time": "07:47",
     "check_out_time": "17:19",
@@ -2906,7 +2908,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cb1c131302b9a83e953259",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-31",
     "check_in_time": "07:57",
     "check_out_time": "17:14",
@@ -2930,7 +2932,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cb1bd10c650e55456bc983",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-31",
     "check_in_time": "07:56",
     "check_out_time": "17:10",
@@ -2954,7 +2956,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cb19af2031b0aadeb19744",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-31",
     "check_in_time": "07:47",
     "check_out_time": "17:10",
@@ -2978,7 +2980,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69cb185f92a4457308ed4b4c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-31",
     "check_in_time": "07:42",
     "check_out_time": "17:14",
@@ -3002,7 +3004,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69c9ca982af83325079ce6c5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-30",
     "check_in_time": "07:57",
     "check_out_time": "18:21",
@@ -3026,7 +3028,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69c9c888ff779ff3e6e51210",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-30",
     "check_in_time": "07:49",
     "check_out_time": "18:21",
@@ -3050,7 +3052,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69c9c766e7023c5d32703c17",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-30",
     "check_in_time": "07:44",
     "check_out_time": "18:23",
@@ -3074,7 +3076,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69c9c6075d7fc1429c6020c3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-30",
     "check_in_time": "07:38",
     "check_out_time": "17:35",
@@ -3098,7 +3100,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b8a5f9d9013aab2ff6e94d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-17",
     "check_in_time": "07:53",
     "check_out_time": "17:15",
@@ -3122,7 +3124,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b8a58f852ce61e5014b53f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-17",
     "check_in_time": "07:51",
     "check_out_time": "17:08",
@@ -3146,7 +3148,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b8a649bb7542331f33166f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-17",
     "check_in_time": "07:54",
     "check_out_time": "17:07",
@@ -3170,7 +3172,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b8aedb60b951aba784a020",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-17",
     "check_in_time": "08:31",
     "check_out_time": "17:15",
@@ -3191,7 +3193,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b755fe55bef37c3a6f24c1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-16",
     "check_in_time": "07:59",
     "check_out_time": "17:40",
@@ -3212,7 +3214,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b755029aa66942112b6f44",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-16",
     "check_in_time": "07:55",
     "check_out_time": "17:41",
@@ -3236,7 +3238,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b7544fec67912f31b9f886",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-16",
     "check_in_time": "07:52",
     "check_out_time": "17:41",
@@ -3260,7 +3262,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b75291acae82f475222fe6",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-16",
     "check_in_time": "07:45",
     "check_out_time": "17:23",
@@ -3281,7 +3283,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b4b28beaf6bd583ba7adc7",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-14",
     "check_in_time": "07:57",
     "check_out_time": "17:27",
@@ -3305,7 +3307,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b4b178df1fc45c3ab10480",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-14",
     "check_in_time": "07:53",
     "check_out_time": "20:13",
@@ -3329,7 +3331,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b4b168c95948f3f24dfb5c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-14",
     "check_in_time": "07:52",
     "check_out_time": "20:38",
@@ -3350,7 +3352,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b4b0f6d59e577529afaaa8",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-14",
     "check_in_time": "07:51",
     "check_out_time": "20:37",
@@ -3374,7 +3376,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b3616bf6d5227cd6c0c701",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-13",
     "check_in_time": "07:59",
     "check_out_time": null,
@@ -3395,7 +3397,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b360b5091f124b4a41d6a7",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-13",
     "check_in_time": "07:56",
     "check_out_time": "19:52",
@@ -3419,7 +3421,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b36078cc2299b9db7b2f98",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-13",
     "check_in_time": "07:55",
     "check_out_time": "20:08",
@@ -3440,7 +3442,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b3604835618aba752dee67",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-13",
     "check_in_time": "07:54",
     "check_out_time": null,
@@ -3461,7 +3463,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b20e5c31ca07676c70e75c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-12",
     "check_in_time": "07:52",
     "check_out_time": "17:36",
@@ -3485,7 +3487,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b20f24bc258fd73edbec1e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-12",
     "check_in_time": "07:56",
     "check_out_time": null,
@@ -3506,7 +3508,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b211b084fa18e9c48e806f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-12",
     "check_in_time": "08:06",
     "check_out_time": "17:34",
@@ -3530,7 +3532,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b20f2ca4f144aa1121820b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-12",
     "check_in_time": "07:56",
     "check_out_time": "17:25",
@@ -3554,7 +3556,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b0be63a7b4b8ef04643da7",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-11",
     "check_in_time": "07:59",
     "check_out_time": "19:40",
@@ -3578,7 +3580,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b0bce7b6d248a0fc5c8a9d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-11",
     "check_in_time": "07:52",
     "check_out_time": "18:41",
@@ -3602,7 +3604,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b0bbf12f40f9f6036f78cb",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-11",
     "check_in_time": "07:48",
     "check_out_time": "19:40",
@@ -3626,7 +3628,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69b0bb8bf1e6c0cf63a3be5e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-11",
     "check_in_time": "07:47",
     "check_out_time": "19:37",
@@ -3650,7 +3652,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69af69d0047bcf1410f9b78e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-10",
     "check_in_time": "07:46",
     "check_out_time": "21:19",
@@ -3671,7 +3673,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69af6bf4b0bfd16317884426",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-10",
     "check_in_time": "07:55",
     "check_out_time": "20:28",
@@ -3695,7 +3697,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69af6bf6da35a5dc1f1030b5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-10",
     "check_in_time": "07:55",
     "check_out_time": null,
@@ -3716,7 +3718,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69af6cfd043af1f85a020423",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-10",
     "check_in_time": "07:59",
     "check_out_time": "20:07",
@@ -3740,7 +3742,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ae273d6fb57247e69e92fa",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-09",
     "check_in_time": "08:49",
     "check_out_time": "21:03",
@@ -3764,7 +3766,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ae273b843e317e0f0d5631",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-09",
     "check_in_time": "08:49",
     "check_out_time": "21:07",
@@ -3785,7 +3787,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ae1b41351ecad741c203cc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-09",
     "check_in_time": "07:58",
     "check_out_time": "19:29",
@@ -3806,7 +3808,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ab79310bf91c121ffe7857",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-07",
     "check_in_time": "08:02",
     "check_out_time": "17:38",
@@ -3830,7 +3832,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ab76ca7a29cf4f228b5ab3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-07",
     "check_in_time": "07:52",
     "check_out_time": "17:21",
@@ -3854,7 +3856,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ab7675ab9cb87eb7514fe1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-07",
     "check_in_time": "07:51",
     "check_out_time": null,
@@ -3875,7 +3877,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69ab7655c2093e2c554761ad",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-07",
     "check_in_time": "07:50",
     "check_out_time": null,
@@ -3896,7 +3898,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69aa265c150017622c7f893d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-06",
     "check_in_time": "07:56",
     "check_out_time": "21:06",
@@ -3920,7 +3922,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69aa24c301039be80ceacce4",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-06",
     "check_in_time": "07:50",
     "check_out_time": "21:06",
@@ -3944,7 +3946,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69aa25967b4feddf46d5625f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-06",
     "check_in_time": "07:53",
     "check_out_time": "19:43",
@@ -3968,7 +3970,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69aa26219b6c678a5a3fe38d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-06",
     "check_in_time": "07:56",
     "check_out_time": "19:13",
@@ -3992,7 +3994,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a8d5b25721b055b63d60f0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-05",
     "check_in_time": "08:00",
     "check_out_time": "19:41",
@@ -4016,7 +4018,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a8d543e57090949e7a166c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-05",
     "check_in_time": "07:58",
     "check_out_time": "20:17",
@@ -4040,7 +4042,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a8d2b95f3a7d24da237e6d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-05",
     "check_in_time": "07:47",
     "check_out_time": "20:14",
@@ -4064,7 +4066,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a8d25f6bcaebf049b41a66",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-05",
     "check_in_time": "07:46",
     "check_out_time": "19:53",
@@ -4088,7 +4090,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a784a6c3c9712e0cc5760c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-04",
     "check_in_time": "08:02",
     "check_out_time": "19:09",
@@ -4109,7 +4111,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a7831d73b26a856adec6ac",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-04",
     "check_in_time": "07:55",
     "check_out_time": "18:55",
@@ -4130,7 +4132,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a78152025425eb62e7293d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-04",
     "check_in_time": "07:48",
     "check_out_time": "19:03",
@@ -4154,7 +4156,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a633742d82c8689a4e9e53",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-03",
     "check_in_time": "08:03",
     "check_out_time": "21:04",
@@ -4175,7 +4177,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a632700b9f250062fcac59",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-03",
     "check_in_time": "07:59",
     "check_out_time": "20:54",
@@ -4199,7 +4201,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a631da36ce3c957210f740",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-03",
     "check_in_time": "07:56",
     "check_out_time": "20:51",
@@ -4220,7 +4222,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a63083b06a80413b64f8e5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-03",
     "check_in_time": "07:51",
     "check_out_time": "20:58",
@@ -4244,7 +4246,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a4dff8ed732e4ba23422e7",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-03-02",
     "check_in_time": "07:55",
     "check_out_time": "20:49",
@@ -4265,7 +4267,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a4dfe8b99e19e521d04c74",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-03-02",
     "check_in_time": "07:55",
     "check_out_time": "20:35",
@@ -4286,7 +4288,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a4dff34e1c845d98431658",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-03-02",
     "check_in_time": "07:55",
     "check_out_time": "20:49",
@@ -4307,7 +4309,7 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a4e03e7c5844262e5d5989",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-03-02",
     "check_in_time": "07:56",
     "check_out_time": "20:34",
@@ -4328,12 +4330,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699ba57302456d9da7a88d88",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-23",
     "check_in_time": "07:55",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874188,
       "lng": 107.5465524
@@ -4349,12 +4351,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699ba5047b35ac69fbf2bf24",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-23",
     "check_in_time": "07:53",
     "check_out_time": "19:30",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887424,
       "lng": 107.5463992
@@ -4373,12 +4375,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699ba43fadfac300da43c3ac",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-23",
     "check_in_time": "07:50",
     "check_out_time": "19:32",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874717,
       "lng": 107.54656
@@ -4397,12 +4399,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699ba248fec3c7f74b98d310",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-23",
     "check_in_time": "07:41",
     "check_out_time": "18:42",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887366084393365,
       "lng": 107.5465146819032
@@ -4421,12 +4423,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699901aecb78bbc06f860095",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-21",
     "check_in_time": "07:51",
     "check_out_time": "16:28",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874858,
       "lng": 107.5465592
@@ -4445,12 +4447,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699901937e9a3dbabdc330f0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-21",
     "check_in_time": "07:51",
     "check_out_time": "15:49",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874637,
       "lng": 107.5465291
@@ -4469,12 +4471,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6998feda34d8c6a8cbcb8b64",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-21",
     "check_in_time": "07:39",
     "check_out_time": "15:40",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873645831121415,
       "lng": 107.54651490404798
@@ -4493,12 +4495,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6998fe72e16c0f1201dc2932",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-21",
     "check_in_time": "07:38",
     "check_out_time": "16:26",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874961,
       "lng": 107.5465554
@@ -4517,12 +4519,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6997b0c1454cb30179c7af22",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-20",
     "check_in_time": "07:54",
     "check_out_time": "18:49",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873908,
       "lng": 107.5464918
@@ -4541,12 +4543,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6997ae12b715578f8b3d37a3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-20",
     "check_in_time": "07:42",
     "check_out_time": "18:45",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887364602818324,
       "lng": 107.5465185597787
@@ -4565,12 +4567,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6997af92445c380b9241aaee",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-20",
     "check_in_time": "07:49",
     "check_out_time": "18:50",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874265,
       "lng": 107.5465595
@@ -4589,12 +4591,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6997b0ad28d4e908d7af4609",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-20",
     "check_in_time": "07:54",
     "check_out_time": "18:49",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874373,
       "lng": 107.5465576
@@ -4613,12 +4615,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69965ed6f08e64015a696327",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-19",
     "check_in_time": "07:52",
     "check_out_time": "18:03",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887431,
       "lng": 107.5465619
@@ -4637,12 +4639,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69965e975f600bf1dc2557a9",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-19",
     "check_in_time": "07:51",
     "check_out_time": "18:02",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874272,
       "lng": 107.5465558
@@ -4661,12 +4663,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69965e59b8efcc77ece278ce",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-19",
     "check_in_time": "07:50",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887397,
       "lng": 107.5464534
@@ -4682,12 +4684,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69965ab94c1f1ab47e18e8be",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-19",
     "check_in_time": "07:35",
     "check_out_time": "18:02",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8875100740972615,
       "lng": 107.54649276376654
@@ -4706,12 +4708,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69950f44c1806f1522896813",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-18",
     "check_in_time": "08:00",
     "check_out_time": "18:07",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887427,
       "lng": 107.5465536
@@ -4730,12 +4732,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69950c31bc9b9f6c87fff958",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-18",
     "check_in_time": "07:47",
     "check_out_time": "18:04",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874509,
       "lng": 107.5465523
@@ -4754,12 +4756,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69950c063f6339640127bb7d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-18",
     "check_in_time": "07:47",
     "check_out_time": "18:04",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874779,
       "lng": 107.5465639
@@ -4778,12 +4780,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6994fe51d84b2ddc008b8891",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-18",
     "check_in_time": "06:48",
     "check_out_time": "18:05",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873663798467994,
       "lng": 107.54651646246114
@@ -4802,12 +4804,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6993aff570a2d7c271e36c5b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-17",
     "check_in_time": "07:01",
     "check_out_time": "14:41",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887357789628315,
       "lng": 107.54652273530935
@@ -4826,12 +4828,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6993bcc3069cb1957045f76e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-17",
     "check_in_time": "07:56",
     "check_out_time": "14:48",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873212,
       "lng": 107.5465527
@@ -4850,12 +4852,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6993bc79855a2ce8db51a777",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-17",
     "check_in_time": "07:55",
     "check_out_time": "14:42",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874893,
       "lng": 107.546556
@@ -4874,12 +4876,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6993bbc4c70c120741b002a4",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-17",
     "check_in_time": "07:52",
     "check_out_time": "14:56",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874489,
       "lng": 107.546556
@@ -4898,12 +4900,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699267b48ebfecc040842514",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-16",
     "check_in_time": "07:41",
     "check_out_time": "17:45",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873787,
       "lng": 107.5464905
@@ -4922,12 +4924,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "699269aa9e93bdace774afd5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-16",
     "check_in_time": "07:49",
     "check_out_time": "17:48",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874849,
       "lng": 107.54656
@@ -4946,12 +4948,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6992694295e33f6833b20978",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-16",
     "check_in_time": "07:48",
     "check_out_time": "17:52",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874883,
       "lng": 107.5465545
@@ -4970,12 +4972,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69925a923715768f09ff340e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-16",
     "check_in_time": "06:45",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873663798467994,
       "lng": 107.54651646246114
@@ -4991,12 +4993,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698fe87ec454b170a8f397e0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-14",
     "check_in_time": "10:14",
     "check_out_time": "15:27",
     "status": "TERLAMBAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874914,
       "lng": 107.5465592
@@ -5015,12 +5017,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698fc5635acac036a014b3c0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-14",
     "check_in_time": "07:44",
     "check_out_time": "15:22",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874885,
       "lng": 107.5465623
@@ -5039,12 +5041,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698fc53598757193f9913780",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-14",
     "check_in_time": "07:43",
     "check_out_time": "15:22",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874341,
       "lng": 107.5465576
@@ -5063,12 +5065,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a15b3027ccb1d94d95dcce",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-14",
     "check_in_time": null,
     "check_out_time": null,
     "status": "IZIN",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -5081,12 +5083,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698e763fc32ed44d15f02d48",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-13",
     "check_in_time": "07:54",
     "check_out_time": "18:03",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874789,
       "lng": 107.5465596
@@ -5105,12 +5107,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698e761bf0305af909984703",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-13",
     "check_in_time": "07:53",
     "check_out_time": "19:00",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887371,
       "lng": 107.5463668
@@ -5129,12 +5131,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698e73d5eeb09960b4e13adc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-13",
     "check_in_time": "07:44",
     "check_out_time": "18:46",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874822,
       "lng": 107.5465632
@@ -5153,12 +5155,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698e7099e822ef4b24f26558",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-13",
     "check_in_time": "07:30",
     "check_out_time": "12:08",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.88735802031717,
       "lng": 107.54651886173511
@@ -5177,12 +5179,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698d25bb698dfa361dc4a9c9",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-12",
     "check_in_time": "07:58",
     "check_out_time": "17:24",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.88735802031717,
       "lng": 107.54651886173511
@@ -5201,12 +5203,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698d24515b74d2e85288ffad",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-12",
     "check_in_time": "07:52",
     "check_out_time": "17:37",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874245,
       "lng": 107.5465535
@@ -5225,12 +5227,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698d21ec7f786724ed8d8732",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-12",
     "check_in_time": "07:42",
     "check_out_time": "17:33",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887475,
       "lng": 107.5465629
@@ -5249,12 +5251,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698d21a4fb9dcae1c6cab2b1",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-12",
     "check_in_time": "07:41",
     "check_out_time": "14:35",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874868,
       "lng": 107.5463068
@@ -5273,12 +5275,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698bd2757ce354d679e86f2c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-11",
     "check_in_time": "07:51",
     "check_out_time": "17:25",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874549,
       "lng": 107.5463235
@@ -5297,12 +5299,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698bd1b85030c1e305515798",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-11",
     "check_in_time": "07:47",
     "check_out_time": "17:22",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887453,
       "lng": 107.5465601
@@ -5321,12 +5323,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698bd193f03727922c2dde72",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-11",
     "check_in_time": "07:47",
     "check_out_time": "17:23",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874809,
       "lng": 107.5465624
@@ -5345,12 +5347,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698bd0db898ecd80308cd5ee",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-11",
     "check_in_time": "07:44",
     "check_out_time": "17:21",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887365564134921,
       "lng": 107.54651932769005
@@ -5369,12 +5371,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698a7f4f87110689a4d7b2a0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-10",
     "check_in_time": "07:43",
     "check_out_time": "17:25",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874735,
       "lng": 107.5465565
@@ -5393,12 +5395,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698a7770d0c0c64378f014ee",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-10",
     "check_in_time": "07:10",
     "check_out_time": "17:23",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887370705507689,
       "lng": 107.54651577315275
@@ -5417,12 +5419,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698a7ee7b3df03bbf5ace9aa",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-10",
     "check_in_time": "07:42",
     "check_out_time": "17:57",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874779,
       "lng": 107.5465662
@@ -5441,12 +5443,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698a8328601dd97ec2cbbb0b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-10",
     "check_in_time": "08:00",
     "check_out_time": "17:57",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874994,
       "lng": 107.5465666
@@ -5465,12 +5467,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6989b74fe74b8146b91a04e3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-09",
     "check_in_time": "17:30",
     "check_out_time": "17:31",
     "status": "TERLAMBAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874876,
       "lng": 107.5465688
@@ -5489,12 +5491,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69892ef207635462a4575588",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-09",
     "check_in_time": "07:48",
     "check_out_time": "17:33",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8873967,
       "lng": 107.5465575
@@ -5513,12 +5515,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69892d34a20db83b654fd110",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-09",
     "check_in_time": "07:41",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874861,
       "lng": 107.5465642
@@ -5534,12 +5536,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69892cf47dea223c94136a7f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-09",
     "check_in_time": "07:40",
     "check_out_time": "17:28",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887384433949144,
       "lng": 107.54650796759418
@@ -5558,12 +5560,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a15b34d182ed25a2987026",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-06",
     "check_in_time": null,
     "check_out_time": null,
     "status": "IZIN_SEPARUH",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -5576,12 +5578,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6982979250593898c34b1a39",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-04",
     "check_in_time": "07:49",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887383359534955,
       "lng": 107.54650832668172
@@ -5597,12 +5599,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6982967d6c217da1f7b05d63",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-04",
     "check_in_time": "07:44",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874685,
       "lng": 107.5465504
@@ -5618,12 +5620,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6981464fd4d7507ff53bfba8",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-03",
     "check_in_time": "07:50",
     "check_out_time": "18:21",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874869,
       "lng": 107.5465662
@@ -5642,12 +5644,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698145c92645d9b7e23a860a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-03",
     "check_in_time": "07:48",
     "check_out_time": "17:57",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887383359534955,
       "lng": 107.54650832668172
@@ -5666,12 +5668,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69814596532f2870272d31eb",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-03",
     "check_in_time": "07:47",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874696,
       "lng": 107.5465618
@@ -5687,12 +5689,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "698144f603e8389fa677c52b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-03",
     "check_in_time": "07:44",
     "check_out_time": "17:40",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874358,
       "lng": 107.5465605
@@ -5711,12 +5713,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697fefcfd294aa1e646a9a74",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-02-02",
     "check_in_time": "07:29",
     "check_out_time": "17:33",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887387830878953,
       "lng": 107.54650403417341
@@ -5735,12 +5737,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697ff5b07f64b38b4e6b1f02",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-02-02",
     "check_in_time": "07:54",
     "check_out_time": "17:49",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874559,
       "lng": 107.5465566
@@ -5759,12 +5761,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697ff55744c3cfdfaa0799e9",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-02-02",
     "check_in_time": "07:52",
     "check_out_time": "17:47",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874793,
       "lng": 107.5465675
@@ -5783,12 +5785,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697ff4f6f9f78d60fb7a723e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-02-02",
     "check_in_time": "07:51",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874217,
       "lng": 107.5464442
@@ -5804,12 +5806,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697d51698c624ad703cf25e6",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-31",
     "check_in_time": "07:48",
     "check_out_time": "15:17",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887475,
       "lng": 107.5465606
@@ -5828,12 +5830,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697d5102d4fd0c03bdbe875f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-31",
     "check_in_time": "07:46",
     "check_out_time": "15:15",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874781,
       "lng": 107.5465465
@@ -5852,12 +5854,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697d52ca7413b5f0d60bae97",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-31",
     "check_in_time": "07:54",
     "check_out_time": "15:18",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874281,
       "lng": 107.5465616
@@ -5876,12 +5878,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697d52f6d24283f17088f58d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-31",
     "check_in_time": "07:55",
     "check_out_time": "10:12",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887387830878953,
       "lng": 107.54650403417341
@@ -5900,12 +5902,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697c028dda83fccb7a2fcb71",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-30",
     "check_in_time": "07:59",
     "check_out_time": "17:22",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887387830878953,
       "lng": 107.54650403417341
@@ -5924,12 +5926,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697c0140561fb21c3589f051",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-30",
     "check_in_time": "07:54",
     "check_out_time": "17:46",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874365,
       "lng": 107.5465643
@@ -5948,12 +5950,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697c009f150acaadfbabe322",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-30",
     "check_in_time": "07:51",
     "check_out_time": "17:47",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874594,
       "lng": 107.5465579
@@ -5972,12 +5974,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697bfffdbeef78de6b1783fb",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-30",
     "check_in_time": "07:49",
     "check_out_time": "17:46",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8875202,
       "lng": 107.546556
@@ -5996,12 +5998,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697aafb74bd45722c2c15590",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-29",
     "check_in_time": "07:54",
     "check_out_time": "17:48",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8875121,
       "lng": 107.5465587
@@ -6020,12 +6022,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697aaf9cefce2fd286127d4a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-29",
     "check_in_time": "07:53",
     "check_out_time": "17:47",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874714,
       "lng": 107.5465604
@@ -6044,12 +6046,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697aae392b9fa616c4a4e819",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-29",
     "check_in_time": "07:47",
     "check_out_time": "17:46",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887411,
       "lng": 107.5465192
@@ -6068,12 +6070,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697aa418f46732caadc1c394",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-29",
     "check_in_time": "07:04",
     "check_out_time": "17:44",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887387830878953,
       "lng": 107.54650403417341
@@ -6092,12 +6094,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69795db2f0643e620b6a00f2",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-28",
     "check_in_time": "07:52",
     "check_out_time": "17:13",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874337,
       "lng": 107.5464694
@@ -6116,12 +6118,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69795ce4e7db6c6ed345a759",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-28",
     "check_in_time": "07:48",
     "check_out_time": "17:11",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874756,
       "lng": 107.5465621
@@ -6140,12 +6142,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69795b0b919681fb51b709f6",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-28",
     "check_in_time": "07:40",
     "check_out_time": "17:10",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874811,
       "lng": 107.546555
@@ -6164,12 +6166,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "697953a09beeb3b8136b1185",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-28",
     "check_in_time": "07:09",
     "check_out_time": "17:10",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887387830878953,
       "lng": 107.54650403417341
@@ -6188,12 +6190,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6977fc8b41cc38ff7d933201",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-27",
     "check_in_time": "06:45",
     "check_out_time": "17:02",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887360903809927,
       "lng": 107.54650239349814
@@ -6212,12 +6214,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69780a70adf7b10c2b948745",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-27",
     "check_in_time": "07:44",
     "check_out_time": "17:06",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874263,
       "lng": 107.5465199
@@ -6236,12 +6238,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69780b7e32e8080a66e42355",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-27",
     "check_in_time": "07:49",
     "check_out_time": "17:19",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874634,
       "lng": 107.546557
@@ -6260,12 +6262,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69780b904dd90aebb8417196",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-27",
     "check_in_time": "07:49",
     "check_out_time": "17:09",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874783,
       "lng": 107.5465555
@@ -6284,12 +6286,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6976bbfebd13c0f2c75259ef",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-26",
     "check_in_time": "07:57",
     "check_out_time": null,
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874815,
       "lng": 107.5465609
@@ -6305,12 +6307,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6976bad9b454f8d80c5ffd12",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-26",
     "check_in_time": "07:52",
     "check_out_time": "17:18",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874185,
       "lng": 107.5465137
@@ -6329,12 +6331,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6976b9f58396be2538519cfc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-26",
     "check_in_time": "07:48",
     "check_out_time": "17:12",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874854,
       "lng": 107.5465566
@@ -6346,19 +6348,19 @@ export const attendanceRecords: Attendance[] = [
     "check_in_photo_url": "https://base44.app/api/apps/69703e20455c76de15d60ffe/files/public/69703e20455c76de15d60ffe/74a919516_Annisa-2026-01-26-07_48-checkin.jpg",
     "notes": "",
     "is_auto_checkout": false,
-    "overtime_minutes": 12,
+    "overtime_minutes": 0,
     "late_minutes": 0,
     "early_leave_minutes": 0
   },
   {
     "id": "6976aed0f0fb97ded6b3f05b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-26",
     "check_in_time": "07:01",
     "check_out_time": "17:11",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887360903809927,
       "lng": 107.54650239349814
@@ -6370,19 +6372,19 @@ export const attendanceRecords: Attendance[] = [
     "check_in_photo_url": "https://base44.app/api/apps/69703e20455c76de15d60ffe/files/public/69703e20455c76de15d60ffe/51e574da6_Mawar-2026-01-26-07_01-checkin.jpg",
     "notes": "",
     "is_auto_checkout": false,
-    "overtime_minutes": 11,
+    "overtime_minutes": 0,
     "late_minutes": 0,
     "early_leave_minutes": 0
   },
   {
     "id": "6974173509656e4005664e04",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-24",
     "check_in_time": "07:49",
     "check_out_time": "16:32",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874816,
       "lng": 107.5465639
@@ -6394,19 +6396,19 @@ export const attendanceRecords: Attendance[] = [
     "check_in_photo_url": "https://base44.app/api/apps/69703e20455c76de15d60ffe/files/public/69703e20455c76de15d60ffe/7da840725_Desil-2026-01-24-07_49-checkin.jpg",
     "notes": "",
     "is_auto_checkout": false,
-    "overtime_minutes": 60,
+    "overtime_minutes": 32,
     "late_minutes": 0,
     "early_leave_minutes": 0
   },
   {
     "id": "6974172ff0dadbd87fae70b3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-24",
     "check_in_time": "07:49",
     "check_out_time": "16:32",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874545,
       "lng": 107.5465569
@@ -6425,12 +6427,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69741790374724f33e5a7af5",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-24",
     "check_in_time": "07:51",
     "check_out_time": "15:19",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8875025,
       "lng": 107.5465708
@@ -6442,19 +6444,19 @@ export const attendanceRecords: Attendance[] = [
     "check_in_photo_url": "https://base44.app/api/apps/69703e20455c76de15d60ffe/files/public/69703e20455c76de15d60ffe/a8c85ce16_Annisa-2026-01-24-07_51-checkin.jpg",
     "notes": "",
     "is_auto_checkout": false,
-    "overtime_minutes": 19,
+    "overtime_minutes": 0,
     "late_minutes": 0,
     "early_leave_minutes": 0
   },
   {
     "id": "697417db82149ad12667e0e8",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-24",
     "check_in_time": "07:52",
     "check_out_time": "10:25",
     "status": "PULANG_CEPAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887360903809927,
       "lng": 107.54650239349814
@@ -6473,12 +6475,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6972c84855d3bd7629793974",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-23",
     "check_in_time": "08:00",
     "check_out_time": "18:12",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874292,
       "lng": 107.5465624
@@ -6497,12 +6499,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6972c67562a8c04585767443",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-23",
     "check_in_time": "07:53",
     "check_out_time": "17:14",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887360903809927,
       "lng": 107.54650239349814
@@ -6521,12 +6523,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6972c600134759f9a37658dc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-23",
     "check_in_time": "07:51",
     "check_out_time": "18:15",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874784,
       "lng": 107.5465598
@@ -6545,12 +6547,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6972c51f807141c0779b14bd",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-23",
     "check_in_time": "07:47",
     "check_out_time": "17:13",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874947,
       "lng": 107.5465639
@@ -6569,12 +6571,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6971733b5a35fd490d75f307",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-22",
     "check_in_time": "07:45",
     "check_out_time": "17:31",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874596,
       "lng": 107.5465623
@@ -6593,12 +6595,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69731a057fb7f8cd751a3980",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-22",
     "check_in_time": null,
     "check_out_time": null,
     "status": "SAKIT",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -6611,12 +6613,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6971742e731e6a9d3dd86449",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-22",
     "check_in_time": "07:49",
     "check_out_time": "17:27",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874806,
       "lng": 107.546559
@@ -6635,12 +6637,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6971740b8989abcd9272d708",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-22",
     "check_in_time": "07:49",
     "check_out_time": "17:25",
     "status": "HADIR",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887360903809927,
       "lng": 107.54650239349814
@@ -6659,12 +6661,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6970a64ac4cf734096d1c2c7",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "date": "2026-01-21",
     "check_in_time": "17:11",
     "check_out_time": "17:11",
     "status": "TERLAMBAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874408,
       "lng": 107.5464903
@@ -6683,12 +6685,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69705dd05e5ce028323bff58",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "date": "2026-01-21",
     "check_in_time": "12:02",
     "check_out_time": null,
     "status": "TERLAMBAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874356,
       "lng": 107.5465591
@@ -6704,12 +6706,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6970a60653c4e8650cc2bef0",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "date": "2026-01-21",
     "check_in_time": "17:10",
     "check_out_time": "17:10",
     "status": "TERLAMBAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.887360903809927,
       "lng": 107.54650239349814
@@ -6728,12 +6730,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "6970a6cad12e8a91617e8674",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-21",
     "check_in_time": "17:13",
     "check_out_time": "17:13",
     "status": "TERLAMBAT",
-    "check_in_method": "SELFIE",
+    "check_in_method": "MANUAL",
     "check_in_location": {
       "lat": -6.8874146,
       "lng": 107.5465548
@@ -6752,12 +6754,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a15b314a1ae73f2de3134e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-14",
     "check_in_time": null,
     "check_out_time": null,
     "status": "IZIN_SEPARUH",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -6770,12 +6772,12 @@ export const attendanceRecords: Attendance[] = [
   {
     "id": "69a15b36ee88969c4d93130a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "date": "2026-01-12",
     "check_in_time": null,
     "check_out_time": null,
     "status": "IZIN_SEPARUH",
-    "check_in_method": "QR",
+    "check_in_method": "MANUAL",
     "check_in_location": null,
     "check_out_location": null,
     "check_in_photo_url": "",
@@ -6787,7 +6789,6 @@ export const attendanceRecords: Attendance[] = [
   }
 ];
 
-// ============ LEAVE REQUESTS ============
 export const leaveRequests: LeaveRequest[] = [
   {
     "id": "6989b77b61ea78784f394ee9",
@@ -6869,18 +6870,15 @@ export const leaveRequests: LeaveRequest[] = [
   }
 ];
 
-// ============ OVERTIME REQUESTS ============
 export const overtimeRequests: OvertimeRequest[] = [];
 
-// ============ CORRECTIONS ============
 export const corrections: AttendanceCorrection[] = [];
 
-// ============ PAYROLL ============
 export const payrollRecords: PayrollRecord[] = [
   {
     "id": "69f45bee195e637f939ab75c",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "employee_name": "Salma",
     "employee_nik": "EL-EM-01",
     "period": "2026-04",
@@ -6890,20 +6888,20 @@ export const payrollRecords: PayrollRecord[] = [
     "transport": 250000,
     "uang_makan": 0,
     "overtime_pay": 50187.49999999999,
-    "bonus": 450000,
+    "bonus": 275000,
     "deductions": 0,
     "late_deductions": 0,
     "absence_deductions": 0,
-    "allowances": 950000,
+    "allowances": 1125000,
     "total_pay": 3000187.5,
     "status": "DRAFT",
-    "generated_at": "2026-05-01",
-    "finalized_at": null
+    "generated_at": "2026-05-01T07:53:18.424000",
+    "finalized_at": "2026-05-01T08:43:54.137000"
   },
   {
     "id": "69f45beef963eb8e675826cd",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "employee_name": "Annisa",
     "employee_nik": "EL-EM-02",
     "period": "2026-04",
@@ -6920,13 +6918,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-05-01",
-    "finalized_at": null
+    "generated_at": "2026-05-01T07:53:18.185000",
+    "finalized_at": "2026-05-01T08:41:58.714000"
   },
   {
     "id": "69f45bedf901825460c41651",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "employee_name": "Mawar",
     "employee_nik": "EL-EM-03",
     "period": "2026-04",
@@ -6943,13 +6941,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 795000,
     "total_pay": 2723243.6,
     "status": "DRAFT",
-    "generated_at": "2026-05-01",
-    "finalized_at": null
+    "generated_at": "2026-05-01T07:53:17.952000",
+    "finalized_at": "2026-05-01T08:47:23.874000"
   },
   {
     "id": "69f45bedd2d901ef6b4fe5dc",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "employee_name": "Desil",
     "employee_nik": "EL-EM-04",
     "period": "2026-04",
@@ -6966,13 +6964,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 1075000,
     "total_pay": 2562422,
     "status": "DRAFT",
-    "generated_at": "2026-05-01",
-    "finalized_at": null
+    "generated_at": "2026-05-01T07:53:17.714000",
+    "finalized_at": "2026-05-01T08:41:58.134000"
   },
   {
     "id": "69f45bed7a0677d21c41a0d6",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_owner",
+    "employee_id": "69cc9ba87030f27d5b9bd839",
     "employee_name": "Muhammad Rizky Maulana",
     "employee_nik": "OWN-1",
     "period": "2026-04",
@@ -6989,13 +6987,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-05-01",
-    "finalized_at": null
+    "generated_at": "2026-05-01T07:53:17.482000",
+    "finalized_at": "2026-05-01T08:41:57.889000"
   },
   {
     "id": "69cf6f92fbcdb8a763a5fd02",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "employee_name": "Salma",
     "employee_nik": "EL-EM-01",
     "period": "2026-02",
@@ -7012,13 +7010,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 565000,
     "total_pay": 2087381,
     "status": "DRAFT",
-    "generated_at": "2026-04-03",
-    "finalized_at": null
+    "generated_at": "2026-04-03T07:43:14.810000",
+    "finalized_at": "2026-04-03T07:43:14.810000"
   },
   {
     "id": "69cf6f92030d8e3c40ad670e",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "employee_name": "Annisa",
     "employee_nik": "EL-EM-02",
     "period": "2026-02",
@@ -7035,13 +7033,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-04-03",
-    "finalized_at": null
+    "generated_at": "2026-04-03T07:43:14.509000",
+    "finalized_at": "2026-04-03T07:43:14.509000"
   },
   {
     "id": "69cf6f92d4dd17e24d5d5e2f",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "employee_name": "Mawar",
     "employee_nik": "EL-EM-03",
     "period": "2026-02",
@@ -7058,13 +7056,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 465000,
     "total_pay": 1797716,
     "status": "DRAFT",
-    "generated_at": "2026-04-03",
-    "finalized_at": null
+    "generated_at": "2026-04-03T07:43:14.207000",
+    "finalized_at": "2026-04-03T07:43:14.207000"
   },
   {
     "id": "69cf6f91dd9471c9c18bde59",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "employee_name": "Desil",
     "employee_nik": "EL-EM-04",
     "period": "2026-02",
@@ -7081,13 +7079,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 635000,
     "total_pay": 1831941,
     "status": "DRAFT",
-    "generated_at": "2026-04-03",
-    "finalized_at": null
+    "generated_at": "2026-04-03T07:43:13.959000",
+    "finalized_at": "2026-04-03T07:43:13.959000"
   },
   {
     "id": "69cf6f91996c2ac213ec2264",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_owner",
+    "employee_id": "69cc9ba87030f27d5b9bd839",
     "employee_name": "Muhammad Rizky Maulana",
     "employee_nik": "OWN-1",
     "period": "2026-02",
@@ -7104,13 +7102,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-04-03",
-    "finalized_at": null
+    "generated_at": "2026-04-03T07:43:13.668000",
+    "finalized_at": "2026-04-03T07:50:34.248000"
   },
   {
     "id": "69cce3f05b2ff729fac9f2e3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "employee_name": "Salma",
     "employee_nik": "EL-EM-01",
     "period": "2026-03",
@@ -7126,14 +7124,14 @@ export const payrollRecords: PayrollRecord[] = [
     "absence_deductions": 0,
     "allowances": 600000,
     "total_pay": 3372721.08,
-    "status": 'FINALIZED',
-    "generated_at": "2026-04-01",
-    "finalized_at": "2026-04-02"
+    "status": "FINALIZED",
+    "generated_at": "2026-04-01T09:22:56.010000",
+    "finalized_at": "2026-04-02T03:02:26.192000"
   },
   {
     "id": "69cce3ef8b749e3d7d863b4a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "employee_name": "Annisa",
     "employee_nik": "EL-EM-02",
     "period": "2026-03",
@@ -7149,14 +7147,14 @@ export const payrollRecords: PayrollRecord[] = [
     "absence_deductions": 0,
     "allowances": 0,
     "total_pay": 3000000,
-    "status": 'FINALIZED',
-    "generated_at": "2026-04-01",
-    "finalized_at": "2026-04-02"
+    "status": "FINALIZED",
+    "generated_at": "2026-04-01T09:22:55.708000",
+    "finalized_at": "2026-04-02T03:02:26.546000"
   },
   {
     "id": "69cce3ef7da6a8b87ce5eac3",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "employee_name": "Mawar",
     "employee_nik": "EL-EM-03",
     "period": "2026-03",
@@ -7172,14 +7170,14 @@ export const payrollRecords: PayrollRecord[] = [
     "absence_deductions": 0,
     "allowances": 525000,
     "total_pay": 2833052.2,
-    "status": 'FINALIZED',
-    "generated_at": "2026-04-01",
-    "finalized_at": "2026-04-02"
+    "status": "FINALIZED",
+    "generated_at": "2026-04-01T09:22:55.428000",
+    "finalized_at": "2026-04-02T03:02:26.980000"
   },
   {
     "id": "69cce3eed749bfc625df37d8",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "employee_name": "Desil",
     "employee_nik": "EL-EM-04",
     "period": "2026-03",
@@ -7195,14 +7193,14 @@ export const payrollRecords: PayrollRecord[] = [
     "absence_deductions": 0,
     "allowances": 715000,
     "total_pay": 2808764.96,
-    "status": 'FINALIZED',
-    "generated_at": "2026-04-01",
-    "finalized_at": "2026-04-02"
+    "status": "FINALIZED",
+    "generated_at": "2026-04-01T09:22:54.888000",
+    "finalized_at": "2026-04-02T03:02:27.285000"
   },
   {
     "id": "69cce3eebc927d5f2a6cd390",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_owner",
+    "employee_id": "69cc9ba87030f27d5b9bd839",
     "employee_name": "Muhammad Rizky Maulana",
     "employee_nik": "OWN-1",
     "period": "2026-03",
@@ -7218,14 +7216,14 @@ export const payrollRecords: PayrollRecord[] = [
     "absence_deductions": 0,
     "allowances": 0,
     "total_pay": 0,
-    "status": 'FINALIZED',
-    "generated_at": "2026-04-01",
-    "finalized_at": "2026-04-02"
+    "status": "FINALIZED",
+    "generated_at": "2026-04-01T09:22:54.525000",
+    "finalized_at": "2026-04-02T03:02:27.572000"
   },
   {
     "id": "69731a23017a604811c1f44a",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_asfi",
+    "employee_id": "69703ee3cdb0341809bba875",
     "employee_name": "Asfi Zaneva",
     "employee_nik": "EMP001",
     "period": "2026-01",
@@ -7242,13 +7240,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-01-23",
-    "finalized_at": null
+    "generated_at": "2026-01-23T06:50:11.835000",
+    "finalized_at": "2026-01-23T06:50:11.835000"
   },
   {
     "id": "697069beafdf00d25357291d",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_01",
+    "employee_id": "69705c978aaecd6d1b6098dd",
     "employee_name": "Salma",
     "employee_nik": "EL-EM-01",
     "period": "2026-01",
@@ -7265,13 +7263,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-01-21",
-    "finalized_at": null
+    "generated_at": "2026-01-21T05:53:02.410000",
+    "finalized_at": "2026-01-23T06:50:11.495000"
   },
   {
     "id": "697069be3901b3b6fba69b89",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_02",
+    "employee_id": "69705cb9c87c315049a3d86a",
     "employee_name": "Annisa",
     "employee_nik": "EL-EM-02",
     "period": "2026-01",
@@ -7288,13 +7286,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-01-21",
-    "finalized_at": null
+    "generated_at": "2026-01-21T05:53:02.072000",
+    "finalized_at": "2026-01-23T06:50:11.233000"
   },
   {
     "id": "697069bdf7d4b0c4530c2e17",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_03",
+    "employee_id": "69705ccf821338a5238bf548",
     "employee_name": "Mawar",
     "employee_nik": "EL-EM-03",
     "period": "2026-01",
@@ -7311,13 +7309,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-01-21",
-    "finalized_at": null
+    "generated_at": "2026-01-21T05:53:01.727000",
+    "finalized_at": "2026-01-23T06:50:10.984000"
   },
   {
     "id": "697069bd7a6666629669c71b",
     "company_id": "comp_elyasr",
-    "employee_id": "emp_el_04",
+    "employee_id": "69705cec51ca2bef9c5ccdd7",
     "employee_name": "Desil",
     "employee_nik": "EL-EM-04",
     "period": "2026-01",
@@ -7334,15 +7332,13 @@ export const payrollRecords: PayrollRecord[] = [
     "allowances": 0,
     "total_pay": 0,
     "status": "DRAFT",
-    "generated_at": "2026-01-21",
-    "finalized_at": null
+    "generated_at": "2026-01-21T05:53:01.464000",
+    "finalized_at": "2026-01-23T06:50:10.730000"
   }
 ];
 
-// ============ NOTIFICATIONS ============
 export const notifications: Notification[] = [];
 
-// ============ HOLIDAYS ============
 export const holidays: Holiday[] = [
   {
     "id": "69f46a36aa550f801499b19d",
@@ -7584,7 +7580,6 @@ export const holidays: Holiday[] = [
   }
 ];
 
-// ============ LOCATIONS ============
 export const locations: Location[] = [
   {
     "id": "69705a074077f3efae83ed22",
@@ -7606,15 +7601,40 @@ export const locations: Location[] = [
   }
 ];
 
-// ============ DEMO ACCOUNTS ============
 export const demoAccounts = [
-  { email: 'rizkyzaneva@gmail.com', password: 'admin123', label: 'Owner (Super Admin)' },
-  { email: 'asfizaneva@gmail.com', password: 'admin123', label: 'Admin ELYASR' },
-  { email: 'financeelyasr@gmail.com', password: 'admin123', label: 'Karyawan - Salma' },
-  { email: 'creativeelyasrnew@gmail.com', password: 'admin123', label: 'Karyawan - Mawar' },
-  { email: 'cselyasrsukses@gmail.com', password: 'admin123', label: 'Karyawan - Desil' },
-  { email: 'annisanurafifahh@gmail.com', password: 'admin123', label: 'Karyawan - Annisa' },
-  { email: 'yasrikhaira1@gmail.com', password: 'admin123', label: 'Admin - Yasri Khaira' },
+  {
+    "email": "rizkyzaneva@gmail.com",
+    "password": "admin123",
+    "label": "Owner (Super Admin)"
+  },
+  {
+    "email": "asfizaneva@gmail.com",
+    "password": "admin123",
+    "label": "Admin ELYASR"
+  },
+  {
+    "email": "financeelyasr@gmail.com",
+    "password": "admin123",
+    "label": "Karyawan - Salma"
+  },
+  {
+    "email": "creativeelyasrnew@gmail.com",
+    "password": "admin123",
+    "label": "Karyawan - Mawar"
+  },
+  {
+    "email": "cselyasrsukses@gmail.com",
+    "password": "admin123",
+    "label": "Karyawan - Desil"
+  },
+  {
+    "email": "annisanurafifahh@gmail.com",
+    "password": "admin123",
+    "label": "Karyawan - Annisa"
+  },
+  {
+    "email": "yasrikhaira1@gmail.com",
+    "password": "admin123",
+    "label": "Admin - Yasri Khaira"
+  }
 ];
-
-export type AttendanceStatus = import('@/types').AttendanceStatus;
