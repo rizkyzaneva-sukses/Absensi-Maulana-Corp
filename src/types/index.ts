@@ -7,6 +7,7 @@ export type AttendanceStatus =
   | 'TERLAMBAT'
   | 'PULANG_CEPAT'
   | 'IZIN'
+  | 'IZIN_SEPARUH'
   | 'SAKIT'
   | 'CUTI'
   | 'DINAS_LUAR'
