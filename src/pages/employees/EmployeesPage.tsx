@@ -10,12 +10,12 @@ import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { EmptyState } from '@/components/common/EmptyState';
 import { generateId } from '@/lib/attendance';
 import { formatCurrency, getInitials } from '@/lib/utils';
-import { Plus, Search, Pencil, Trash2, Users, Eye, X } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Users, Eye } from 'lucide-react';
 import type { Employee, Role } from '@/types';
 
 export default function EmployeesPage() {
   const { activeCompany } = useAuthStore();
-  const { employees, addEmployee, updateEmployee, deleteEmployee } = useDataStore();
+  const { employees, teams, addEmployee, updateEmployee, deleteEmployee } = useDataStore();
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -23,6 +23,8 @@ export default function EmployeesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
 
   const companyId = activeCompany?.id || '';
+
+  const companyTeams = teams.filter((t) => t.company_id === companyId);
 
   const companyEmployees = employees
     .filter((e) => e.company_id === companyId)
@@ -42,9 +44,19 @@ export default function EmployeesPage() {
     position: '',
     department: '',
     role: 'KARYAWAN' as Role,
+    team_id: '',
     join_date: '',
-    base_salary: '',
     is_active: true,
+    // Jatah Cuti
+    cuti_tahunan: '0',
+    cuti_sakit: '0',
+    // Pengaturan Gaji (Fix/Bulan)
+    base_salary: '',
+    tunjangan_kesehatan: '0',
+    // Tunjangan per Kehadiran (× hari hadir)
+    uang_kehadiran: '0',
+    uang_transport: '0',
+    uang_makan: '0',
   });
 
   const resetForm = () => {
@@ -56,9 +68,16 @@ export default function EmployeesPage() {
       position: '',
       department: '',
       role: 'KARYAWAN',
+      team_id: '',
       join_date: '',
-      base_salary: '',
       is_active: true,
+      cuti_tahunan: '0',
+      cuti_sakit: '0',
+      base_salary: '',
+      tunjangan_kesehatan: '0',
+      uang_kehadiran: '0',
+      uang_transport: '0',
+      uang_makan: '0',
     });
     setEditing(null);
     setShowForm(false);
@@ -79,9 +98,16 @@ export default function EmployeesPage() {
       position: emp.position,
       department: emp.department,
       role: emp.role,
+      team_id: emp.team_id,
       join_date: emp.join_date,
-      base_salary: String(emp.base_salary),
       is_active: emp.is_active,
+      cuti_tahunan: String(emp.cuti_tahunan),
+      cuti_sakit: String(emp.cuti_sakit),
+      base_salary: String(emp.base_salary),
+      tunjangan_kesehatan: String(emp.tunjangan_kesehatan),
+      uang_kehadiran: String(emp.uang_kehadiran),
+      uang_transport: String(emp.uang_transport),
+      uang_makan: String(emp.uang_makan),
     });
     setShowForm(true);
   };
@@ -99,9 +125,16 @@ export default function EmployeesPage() {
         position: formData.position.trim(),
         department: formData.department.trim(),
         role: formData.role,
+        team_id: formData.team_id,
         join_date: formData.join_date,
-        base_salary: parseInt(formData.base_salary) || 0,
         is_active: formData.is_active,
+        cuti_tahunan: parseInt(formData.cuti_tahunan) || 0,
+        cuti_sakit: parseInt(formData.cuti_sakit) || 0,
+        base_salary: parseInt(formData.base_salary) || 0,
+        tunjangan_kesehatan: parseInt(formData.tunjangan_kesehatan) || 0,
+        uang_kehadiran: parseInt(formData.uang_kehadiran) || 0,
+        uang_transport: parseInt(formData.uang_transport) || 0,
+        uang_makan: parseInt(formData.uang_makan) || 0,
       });
     } else {
       const newEmployee: Employee = {
@@ -113,12 +146,18 @@ export default function EmployeesPage() {
         phone: formData.phone.trim(),
         position: formData.position.trim(),
         department: formData.department.trim(),
-        team_id: '',
+        team_id: formData.team_id,
         role: formData.role,
         join_date: formData.join_date || new Date().toISOString().split('T')[0],
         photo_url: '',
         is_active: formData.is_active,
+        cuti_tahunan: parseInt(formData.cuti_tahunan) || 0,
+        cuti_sakit: parseInt(formData.cuti_sakit) || 0,
         base_salary: parseInt(formData.base_salary) || 0,
+        tunjangan_kesehatan: parseInt(formData.tunjangan_kesehatan) || 0,
+        uang_kehadiran: parseInt(formData.uang_kehadiran) || 0,
+        uang_transport: parseInt(formData.uang_transport) || 0,
+        uang_makan: parseInt(formData.uang_makan) || 0,
         created_at: new Date().toISOString(),
       };
       addEmployee(newEmployee);
@@ -233,15 +272,16 @@ export default function EmployeesPage() {
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Karyawan' : 'Tambah Karyawan Baru'}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Info */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-2">
-                <label className="text-sm font-medium">Nama Lengkap *</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email *</label>
                 <Input
-                  value={formData.full_name}
-                  onChange={(e) => updateField('full_name', e.target.value)}
-                  placeholder="Nama lengkap karyawan"
-                  required
+                  type="email"
+                  value={formData.user_email}
+                  onChange={(e) => updateField('user_email', e.target.value)}
+                  placeholder="email@company.com"
                 />
               </div>
               <div className="space-y-2">
@@ -249,17 +289,17 @@ export default function EmployeesPage() {
                 <Input
                   value={formData.employee_id}
                   onChange={(e) => updateField('employee_id', e.target.value)}
-                  placeholder="EMP-001"
+                  placeholder="EL-EM-04"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email</label>
+              <div className="col-span-2 space-y-2">
+                <label className="text-sm font-medium">Nama Lengkap *</label>
                 <Input
-                  type="email"
-                  value={formData.user_email}
-                  onChange={(e) => updateField('user_email', e.target.value)}
-                  placeholder="email@company.com"
+                  value={formData.full_name}
+                  onChange={(e) => updateField('full_name', e.target.value)}
+                  placeholder="Nama lengkap karyawan"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -271,11 +311,11 @@ export default function EmployeesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Posisi/Jabatan</label>
+                <label className="text-sm font-medium">Jabatan</label>
                 <Input
                   value={formData.position}
                   onChange={(e) => updateField('position', e.target.value)}
-                  placeholder="Staff IT"
+                  placeholder="Software Engineer"
                 />
               </div>
               <div className="space-y-2">
@@ -283,7 +323,7 @@ export default function EmployeesPage() {
                 <Input
                   value={formData.department}
                   onChange={(e) => updateField('department', e.target.value)}
-                  placeholder="IT"
+                  placeholder="Engineering"
                 />
               </div>
               <div className="space-y-2">
@@ -300,37 +340,133 @@ export default function EmployeesPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tanggal Bergabung</label>
-                <Input
-                  type="date"
-                  value={formData.join_date}
-                  onChange={(e) => updateField('join_date', e.target.value)}
-                />
+                <label className="text-sm font-medium">Primary Team *</label>
+                <select
+                  value={formData.team_id}
+                  onChange={(e) => updateField('team_id', e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">-- Pilih Team --</option>
+                  {companyTeams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Gaji Pokok (Rp)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="100000"
-                  value={formData.base_salary}
-                  onChange={(e) => updateField('base_salary', e.target.value)}
-                  placeholder="5000000"
-                />
-              </div>
-              <div className="flex items-center gap-2 pt-6">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => updateField('is_active', e.target.checked)}
-                  className="rounded"
-                />
-                <label htmlFor="is_active" className="text-sm font-medium">
-                  Status Aktif
-                </label>
+                <label className="text-sm font-medium">Status</label>
+                <select
+                  value={formData.is_active ? 'aktif' : 'nonaktif'}
+                  onChange={(e) => updateField('is_active', e.target.value === 'aktif')}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="aktif">Aktif</option>
+                  <option value="nonaktif">Nonaktif</option>
+                </select>
               </div>
             </div>
+
+            {/* Jatah Cuti */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm border-b pb-2">
+                Jatah Cuti Tahun {new Date().getFullYear()}
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Cuti Tahunan (hari)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.cuti_tahunan}
+                    onChange={(e) => updateField('cuti_tahunan', e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Cuti Sakit (hari)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.cuti_sakit}
+                    onChange={(e) => updateField('cuti_sakit', e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Pengaturan Gaji Fix/Bulan */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm border-b pb-2">Pengaturan Gaji (Fix/Bulan)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Gaji Pokok (Rp/bulan)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="100000"
+                    value={formData.base_salary}
+                    onChange={(e) => updateField('base_salary', e.target.value)}
+                    placeholder="1000000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Tunjangan Kesehatan (Rp/bulan)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    value={formData.tunjangan_kesehatan}
+                    onChange={(e) => updateField('tunjangan_kesehatan', e.target.value)}
+                    placeholder="75000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Tunjangan per Kehadiran */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm border-b pb-2">
+                Tunjangan per Kehadiran (× hari hadir)
+              </h4>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Uang Kehadiran (Rp/hari)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="5000"
+                    value={formData.uang_kehadiran}
+                    onChange={(e) => updateField('uang_kehadiran', e.target.value)}
+                    placeholder="40000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Uang Transport (Rp/hari)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="5000"
+                    value={formData.uang_transport}
+                    onChange={(e) => updateField('uang_transport', e.target.value)}
+                    placeholder="10000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Uang Makan (Rp/hari)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="5000"
+                    value={formData.uang_makan}
+                    onChange={(e) => updateField('uang_makan', e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
                 Batal
@@ -343,7 +479,7 @@ export default function EmployeesPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!viewDetail} onOpenChange={(open) => !open && setViewDetail(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detail Karyawan</DialogTitle>
           </DialogHeader>
@@ -384,22 +520,59 @@ export default function EmployeesPage() {
                   <p className="font-medium">{viewDetail.role}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Tanggal Bergabung</p>
+                  <p className="text-muted-foreground">Primary Team</p>
                   <p className="font-medium">
-                    {viewDetail.join_date
-                      ? new Date(viewDetail.join_date).toLocaleDateString('id-ID')
-                      : '-'}
+                    {companyTeams.find((t) => t.id === viewDetail.team_id)?.name || '-'}
                   </p>
                 </div>
-                <div>
-                  <p className="text-muted-foreground">Gaji Pokok</p>
-                  <p className="font-medium">{formatCurrency(viewDetail.base_salary)}</p>
+              </div>
+
+              {/* Jatah Cuti */}
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm border-b pb-1">Jatah Cuti</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Cuti Tahunan</p>
+                    <p className="font-medium">{viewDetail.cuti_tahunan} hari</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Cuti Sakit</p>
+                    <p className="font-medium">{viewDetail.cuti_sakit} hari</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-muted-foreground">Dibuat</p>
-                  <p className="font-medium">
-                    {new Date(viewDetail.created_at).toLocaleDateString('id-ID')}
-                  </p>
+              </div>
+
+              {/* Gaji Fix/Bulan */}
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm border-b pb-1">Gaji Fix/Bulan</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Gaji Pokok</p>
+                    <p className="font-medium">{formatCurrency(viewDetail.base_salary)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Tunjangan Kesehatan</p>
+                    <p className="font-medium">{formatCurrency(viewDetail.tunjangan_kesehatan)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tunjangan per Kehadiran */}
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm border-b pb-1">Tunjangan per Kehadiran (× hari hadir)</h4>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Uang Kehadiran</p>
+                    <p className="font-medium">{formatCurrency(viewDetail.uang_kehadiran)}/hari</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Uang Transport</p>
+                    <p className="font-medium">{formatCurrency(viewDetail.uang_transport)}/hari</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Uang Makan</p>
+                    <p className="font-medium">{formatCurrency(viewDetail.uang_makan)}/hari</p>
+                  </div>
                 </div>
               </div>
             </div>

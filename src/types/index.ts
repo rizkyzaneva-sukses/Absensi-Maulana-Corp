@@ -49,7 +49,16 @@ export interface Employee {
   join_date: string;
   photo_url: string;
   is_active: boolean;
+  // Jatah Cuti
+  cuti_tahunan: number;
+  cuti_sakit: number;
+  // Pengaturan Gaji (Fix/Bulan)
   base_salary: number;
+  tunjangan_kesehatan: number;
+  // Tunjangan per Kehadiran (× hari hadir)
+  uang_kehadiran: number;
+  uang_transport: number;
+  uang_makan: number;
   created_at: string;
 }
 
