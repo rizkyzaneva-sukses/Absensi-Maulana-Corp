@@ -32,12 +32,12 @@ export const useAuthStore = create<AuthState>()(
 
         const { customPasswords } = get();
         const defaultPasswords: Record<string, string> = {
-          'asfizaneva@gmail.com': 'suksesmudaaye',
+          'asfizaneva@gmail.com': '100Jtperhari',
           'financeelyasr@gmail.com': 'sukses123',
           'creativeelyasrnew@gmail.com': 'suksesmudaaye',
           'cselyasrsukses@gmail.com': 'suksesberlimpah1',
           'annisanurafifahh@gmail.com': 'berkahsukses04',
-          'yasrikhaira1@gmail.com': 'insyaaAlloohsukses1',
+          'yasrikhaira1@gmail.com': '100Jtperhari',
           'rizkyzaneva@gmail.com': 'admin123'
         };
         const validPassword = customPasswords[employee.id] || defaultPasswords[email] || 'admin123';
