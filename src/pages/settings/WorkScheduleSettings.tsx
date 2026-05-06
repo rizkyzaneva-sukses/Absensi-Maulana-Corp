@@ -27,8 +27,8 @@ const DEFAULT_HOURS: Record<string, { start: string; end: string; is_workday: bo
   wednesday: { start: '08:00', end: '17:00', is_workday: true },
   thursday: { start: '08:00', end: '17:00', is_workday: true },
   friday: { start: '08:00', end: '17:00', is_workday: true },
-  saturday: { start: '08:00', end: '12:00', is_workday: false },
-  sunday: { start: '08:00', end: '12:00', is_workday: false },
+  saturday: { start: '08:00', end: '17:00', is_workday: true },
+  sunday: { start: '08:00', end: '17:00', is_workday: false },
 };
 
 export default function WorkScheduleSettings() {

@@ -1,4 +1,4 @@
-export type Role = 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'MANAGER' | 'KARYAWAN';
+export type Role = 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COO' | 'MANAGER' | 'KARYAWAN';
 
 export type SubscriptionPlan = 'BASIC' | 'PRO' | 'ENTERPRISE';
 
@@ -184,12 +184,17 @@ export interface CompanyConfig {
   config_type: 'string' | 'number' | 'boolean' | 'json';
 }
 
+export type HolidayType = 'Islam' | 'Nasional' | 'Setengah Hari';
+
 export interface Holiday {
   id: string;
   company_id: string;
   name: string;
   date: string;
+  type: HolidayType;
   is_national: boolean;
+  is_active: boolean;
+  early_leave_time?: string | null; // Jam pulang untuk Setengah Hari (e.g. "15:00")
 }
 
 export interface Location {

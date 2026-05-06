@@ -156,7 +156,12 @@ export function determineCheckOutStatus(
 // ============ WORKING DAYS CALCULATION ============
 
 /**
- * Get all working days in a month, excluding Sundays and active holidays
+ * Get all working days in a month, excluding Sundays and active holidays.
+ * Holiday rules:
+ * - Islam holidays: full day off (libur total)
+ * - Nasional (Kemerdekaan): full day off
+ * - Setengah Hari: still counts as working day (masuk tapi pulang jam 15:00)
+ * Only active holidays are considered.
  */
 export function getWorkingDaysInMonth(
   year: number,
@@ -168,20 +173,29 @@ export function getWorkingDaysInMonth(
   let workingDays = 0;
 
   const activeHolidays = holidays.filter(
-    (h) => h.company_id === companyId
+    (h) => h.company_id === companyId && h.is_active !== false
   );
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month - 1, day);
     const dayOfWeek = date.getDay();
 
-    // Skip Sundays
+    // Skip Sundays (default libur)
     if (dayOfWeek === 0) continue;
 
-    // Skip holidays
+    // Check holidays for this date
     const dateStr = date.toISOString().split('T')[0];
-    const isHoliday = activeHolidays.some((h) => h.date === dateStr && h.is_national);
-    if (isHoliday) continue;
+    const holiday = activeHolidays.find((h) => h.date === dateStr);
+    
+    if (holiday) {
+      // Setengah Hari: still counts as working day (masuk tapi pulang lebih awal)
+      if (holiday.type === 'Setengah Hari') {
+        workingDays++;
+        continue;
+      }
+      // Islam & Nasional: full day off
+      continue;
+    }
 
     workingDays++;
   }

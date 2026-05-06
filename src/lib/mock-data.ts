@@ -7341,242 +7341,354 @@ export const notifications: Notification[] = [];
 
 export const holidays: Holiday[] = [
   {
-    "id": "69f46a36aa550f801499b19d",
+    "id": "hol_newyear",
     "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Natal",
-    "date": "2026-12-26",
-    "is_national": true
-  },
-  {
-    "id": "69f4693796908143741aca09",
-    "company_id": "comp_elyasr",
-    "name": "Hari Natal",
-    "date": "2026-12-25",
-    "is_national": true
-  },
-  {
-    "id": "69f4693796908143741aca0a",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Natal",
-    "date": "2026-12-24",
-    "is_national": true
-  },
-  {
-    "id": "69f4693796908143741aca08",
-    "company_id": "comp_elyasr",
-    "name": "Maulid Nabi Muhammad SAW",
-    "date": "2026-09-15",
-    "is_national": false
-  },
-  {
-    "id": "69f4693796908143741aca07",
-    "company_id": "comp_elyasr",
-    "name": "Hari Kemerdekaan RI",
-    "date": "2026-08-17",
-    "is_national": true
-  },
-  {
-    "id": "69f4693796908143741aca06",
-    "company_id": "comp_elyasr",
-    "name": "Tahun Baru Islam 1448H",
-    "date": "2026-07-07",
-    "is_national": false
-  },
-  {
-    "id": "69f4693796908143741aca05",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Idul Adha",
-    "date": "2026-06-18",
-    "is_national": true
-  },
-  {
-    "id": "69f4693796908143741aca04",
-    "company_id": "comp_elyasr",
-    "name": "Idul Adha",
-    "date": "2026-06-17",
-    "is_national": false
-  },
-  {
-    "id": "69f4693796908143741aca03",
-    "company_id": "comp_elyasr",
-    "name": "Hari Lahir Pancasila",
-    "date": "2026-06-01",
-    "is_national": false
-  },
-  {
-    "id": "69f46a36aa550f801499b19b",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Waisak",
-    "date": "2026-05-25",
-    "is_national": false
-  },
-  {
-    "id": "69f4693796908143741aca02",
-    "company_id": "comp_elyasr",
-    "name": "Hari Raya Waisak",
-    "date": "2026-05-23",
-    "is_national": false
-  },
-  {
-    "id": "69f4693796908143741aca01",
-    "company_id": "comp_elyasr",
-    "name": "Kenaikan Isa Almasih",
-    "date": "2026-05-14",
-    "is_national": false
-  },
-  {
-    "id": "69f4693796908143741aca00",
-    "company_id": "comp_elyasr",
-    "name": "Hari Buruh",
-    "date": "2026-05-01",
-    "is_national": false
-  },
-  {
-    "id": "69f46a36aa550f801499b19a",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Idul Fitri",
-    "date": "2026-04-14",
-    "is_national": false
-  },
-  {
-    "id": "69f46a36aa550f801499b199",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Idul Fitri",
-    "date": "2026-04-13",
-    "is_national": false
-  },
-  {
-    "id": "69f46903e03d56c6ee009f9f",
-    "company_id": "comp_elyasr",
-    "name": "Idul Fitri 2",
-    "date": "2026-04-11",
-    "is_national": false
-  },
-  {
-    "id": "69f46903182f29220d732f90",
-    "company_id": "comp_elyasr",
-    "name": "Idul Fitri 1",
-    "date": "2026-04-10",
-    "is_national": false
-  },
-  {
-    "id": "69f46a36aa550f801499b198",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Idul Fitri",
-    "date": "2026-04-09",
-    "is_national": false
-  },
-  {
-    "id": "69f46a36aa550f801499b197",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Idul Fitri",
-    "date": "2026-04-08",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe61b",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-29",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe61a",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-28",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe619",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-27",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe618",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-26",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe617",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-25",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe616",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-24",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe615",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-23",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe614",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-22",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe613",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-21",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe612",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-20",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe611",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-19",
-    "is_national": false
-  },
-  {
-    "id": "69cce3cc05bf2ee1d95fe610",
-    "company_id": "comp_elyasr",
-    "name": "Libur Lebaran",
-    "date": "2026-03-18",
-    "is_national": false
-  },
-  {
-    "id": "69f46a36aa550f801499b196",
-    "company_id": "comp_elyasr",
-    "name": "Cuti Bersama Isra Miraj",
-    "date": "2026-02-09",
-    "is_national": false
-  },
-  {
-    "id": "69f46902a23e635516e8b1f9",
-    "company_id": "comp_elyasr",
-    "name": "Isra Miraj",
-    "date": "2026-02-08",
-    "is_national": false
+    "name": "Tahun Baru",
+    "date": "2026-01-01",
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
   },
   {
     "id": "69f46a36aa550f801499b195",
     "company_id": "comp_elyasr",
     "name": "Cuti Bersama Tahun Baru",
     "date": "2026-01-02",
-    "is_national": true
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46902a23e635516e8b1f9",
+    "company_id": "comp_elyasr",
+    "name": "Isra Miraj",
+    "date": "2026-02-08",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46a36aa550f801499b196",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Isra Miraj",
+    "date": "2026-02-09",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe610",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-18",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe611",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-19",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe612",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-20",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe613",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-21",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe614",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-22",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe615",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-23",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe616",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-24",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe617",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-25",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe618",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-26",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe619",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-27",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe61a",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-28",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69cce3cc05bf2ee1d95fe61b",
+    "company_id": "comp_elyasr",
+    "name": "Libur Lebaran",
+    "date": "2026-03-29",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46a36aa550f801499b197",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Idul Fitri",
+    "date": "2026-04-08",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46a36aa550f801499b198",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Idul Fitri",
+    "date": "2026-04-09",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46903182f29220d732f90",
+    "company_id": "comp_elyasr",
+    "name": "Idul Fitri 1",
+    "date": "2026-04-10",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46903e03d56c6ee009f9f",
+    "company_id": "comp_elyasr",
+    "name": "Idul Fitri 2",
+    "date": "2026-04-11",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46a36aa550f801499b199",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Idul Fitri",
+    "date": "2026-04-13",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46a36aa550f801499b19a",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Idul Fitri",
+    "date": "2026-04-14",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca00",
+    "company_id": "comp_elyasr",
+    "name": "Hari Buruh",
+    "date": "2026-05-01",
+    "type": "Setengah Hari",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": "15:00"
+  },
+  {
+    "id": "69f4693796908143741aca01",
+    "company_id": "comp_elyasr",
+    "name": "Kenaikan Isa Almasih",
+    "date": "2026-05-14",
+    "type": "Setengah Hari",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": "15:00"
+  },
+  {
+    "id": "69f4693796908143741aca02",
+    "company_id": "comp_elyasr",
+    "name": "Hari Raya Waisak",
+    "date": "2026-05-23",
+    "type": "Setengah Hari",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": "15:00"
+  },
+  {
+    "id": "69f46a36aa550f801499b19b",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Waisak",
+    "date": "2026-05-25",
+    "type": "Setengah Hari",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": "15:00"
+  },
+  {
+    "id": "69f4693796908143741aca03",
+    "company_id": "comp_elyasr",
+    "name": "Hari Lahir Pancasila",
+    "date": "2026-06-01",
+    "type": "Setengah Hari",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": "15:00"
+  },
+  {
+    "id": "69f4693796908143741aca04",
+    "company_id": "comp_elyasr",
+    "name": "Idul Adha",
+    "date": "2026-06-17",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca05",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Idul Adha",
+    "date": "2026-06-18",
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca06",
+    "company_id": "comp_elyasr",
+    "name": "Tahun Baru Islam 1448H",
+    "date": "2026-07-07",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca07",
+    "company_id": "comp_elyasr",
+    "name": "Hari Kemerdekaan RI",
+    "date": "2026-08-17",
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca08",
+    "company_id": "comp_elyasr",
+    "name": "Maulid Nabi Muhammad SAW",
+    "date": "2026-09-15",
+    "type": "Islam",
+    "is_national": false,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca0a",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Natal",
+    "date": "2026-12-24",
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f4693796908143741aca09",
+    "company_id": "comp_elyasr",
+    "name": "Hari Natal",
+    "date": "2026-12-25",
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
+  },
+  {
+    "id": "69f46a36aa550f801499b19d",
+    "company_id": "comp_elyasr",
+    "name": "Cuti Bersama Natal",
+    "date": "2026-12-26",
+    "type": "Nasional",
+    "is_national": true,
+    "is_active": true,
+    "early_leave_time": null
   }
 ];
 

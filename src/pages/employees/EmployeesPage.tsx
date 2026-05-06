@@ -188,7 +188,7 @@ export default function EmployeesPage() {
     }
   };
 
-  const isOwner = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'COMPANY_ADMIN';
+  const isOwner = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'COMPANY_ADMIN' || currentUser?.role === 'COO';
 
   const updateField = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -358,6 +358,7 @@ export default function EmployeesPage() {
                 >
                   <option value="KARYAWAN">Karyawan</option>
                   <option value="MANAGER">Manager</option>
+                  <option value="COO">COO (Manager + Admin)</option>
                   <option value="COMPANY_ADMIN">Admin Perusahaan</option>
                   <option value="SUPER_ADMIN">Super Admin</option>
                 </select>

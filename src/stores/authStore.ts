@@ -104,8 +104,8 @@ export const useAuthStore = create<AuthState>()(
 
       changeEmployeePassword: (employeeId: string, newPassword: string) => {
         const { currentUser } = get();
-        // Only owner (SUPER_ADMIN or COMPANY_ADMIN) can change employee passwords
-        if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'COMPANY_ADMIN')) return false;
+        // Only owner (SUPER_ADMIN, COMPANY_ADMIN, or COO) can change employee passwords
+        if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'COMPANY_ADMIN' && currentUser.role !== 'COO')) return false;
         set((state) => ({
           customPasswords: {
             ...state.customPasswords,

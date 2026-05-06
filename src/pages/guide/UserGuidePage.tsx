@@ -58,13 +58,14 @@ function WorkflowArrow() {
 }
 
 /**
- * Role hierarchy: SUPER_ADMIN > COMPANY_ADMIN > MANAGER > KARYAWAN
- * Each role sees their own guide + all lower role guides.
+ * Role hierarchy: SUPER_ADMIN > COMPANY_ADMIN > COO > MANAGER > KARYAWAN
+ * COO = Manager + Admin combined. Each role sees their own guide + all lower role guides.
  */
 function getRoleLevel(role: string): number {
   switch (role) {
-    case 'SUPER_ADMIN': return 4;
-    case 'COMPANY_ADMIN': return 3;
+    case 'SUPER_ADMIN': return 5;
+    case 'COMPANY_ADMIN': return 4;
+    case 'COO': return 3;
     case 'MANAGER': return 2;
     case 'KARYAWAN': return 1;
     default: return 1;
@@ -75,6 +76,7 @@ function getRoleLabel(role: string): string {
   switch (role) {
     case 'SUPER_ADMIN': return 'Super Admin (Owner)';
     case 'COMPANY_ADMIN': return 'Admin Perusahaan';
+    case 'COO': return 'COO (Manager + Admin)';
     case 'MANAGER': return 'Manager';
     case 'KARYAWAN': return 'Karyawan';
     default: return role;
@@ -85,6 +87,7 @@ function getRoleBadgeColor(role: string): string {
   switch (role) {
     case 'SUPER_ADMIN': return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
     case 'COMPANY_ADMIN': return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+    case 'COO': return 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300';
     case 'MANAGER': return 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300';
     case 'KARYAWAN': return 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300';
     default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';

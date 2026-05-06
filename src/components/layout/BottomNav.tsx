@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 import { LayoutDashboard, Clock, FileText, History, BarChart3 } from 'lucide-react';
 
 const navItems = [
-  { label: 'Home', path: '/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'COMPANY_ADMIN', 'MANAGER', 'KARYAWAN'] },
-  { label: 'Check In', path: '/check-in', icon: Clock, roles: ['KARYAWAN', 'MANAGER'] },
-  { label: 'Pengajuan', path: '/my-requests', icon: FileText, roles: ['KARYAWAN', 'MANAGER'] },
-  { label: 'Riwayat', path: '/my-history', icon: History, roles: ['KARYAWAN', 'MANAGER'] },
-  { label: 'Analytics', path: '/analytics', icon: BarChart3, roles: ['MANAGER', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Home', path: '/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'COMPANY_ADMIN', 'COO', 'MANAGER', 'KARYAWAN'] },
+  { label: 'Check In', path: '/check-in', icon: Clock, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Pengajuan', path: '/my-requests', icon: FileText, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Riwayat', path: '/my-history', icon: History, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Analytics', path: '/analytics', icon: BarChart3, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
 ];
 
 export function BottomNav() {
