@@ -19,7 +19,7 @@ const MONTHS = [
 ];
 
 export default function PayrollPage() {
-  const { activeCompany } = useAuthStore();
+  const { currentUser, activeCompany } = useAuthStore();
   const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, overtimeSettings } = useDataStore();
   const { attendances } = useAttendanceStore();
 
@@ -34,8 +34,9 @@ export default function PayrollPage() {
 
   // Filter payroll records for selected period
   const period = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+  const isKaryawan = currentUser?.role === 'KARYAWAN';
   const periodRecords = payrollRecords.filter(
-    (p) => p.company_id === companyId && p.period === period
+    (p) => p.company_id === companyId && p.period === period && (!isKaryawan || p.employee_id === currentUser?.id)
   );
 
   // Calculate working days for the selected month
@@ -141,15 +142,19 @@ export default function PayrollPage() {
           <p className="text-muted-foreground">Kelola data gaji karyawan</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowSettings(true)} className="gap-2">
-            <Settings size={16} /> Setting
-          </Button>
+          {!isKaryawan && (
+            <Button variant="outline" onClick={() => setShowSettings(true)} className="gap-2">
+              <Settings size={16} /> Setting
+            </Button>
+          )}
           <Button variant="outline" onClick={handleExportCSV} className="gap-2">
             <Download size={16} /> Export CSV
           </Button>
-          <Button onClick={handleGenerate} className="gap-2">
-            <RefreshCw size={16} /> Generate Payroll
-          </Button>
+          {!isKaryawan && (
+            <Button onClick={handleGenerate} className="gap-2">
+              <RefreshCw size={16} /> Generate Payroll
+            </Button>
+          )}
         </div>
       </div>
 
@@ -253,7 +258,7 @@ export default function PayrollPage() {
                   <th className="text-right p-3 font-medium">Potongan</th>
                   <th className="text-right p-3 font-medium">Gaji Bersih</th>
                   <th className="text-center p-3 font-medium">Status</th>
-                  <th className="text-center p-3 font-medium">Aksi</th>
+                  {!isKaryawan && <th className="text-center p-3 font-medium">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -295,38 +300,40 @@ export default function PayrollPage() {
                           {record.status}
                         </Badge>
                       </td>
-                      <td className="p-3">
-                        <div className="flex gap-1 justify-center">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            title="Edit"
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleEdit(record)}
-                          >
-                            <Pencil size={14} />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            title="Finalize"
-                            className="h-7 w-7 p-0 text-green-600"
-                            onClick={() => handleFinalize(record)}
-                            disabled={record.status === 'FINALIZED'}
-                          >
-                            <Check size={14} />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            title="Hapus"
-                            className="h-7 w-7 p-0 text-red-600"
-                            onClick={() => handleDelete(record.id)}
-                          >
-                            <Trash2 size={14} />
-                          </Button>
-                        </div>
-                      </td>
+                      {!isKaryawan && (
+                        <td className="p-3">
+                          <div className="flex gap-1 justify-center">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Edit"
+                              className="h-7 w-7 p-0"
+                              onClick={() => handleEdit(record)}
+                            >
+                              <Pencil size={14} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Finalize"
+                              className="h-7 w-7 p-0 text-green-600"
+                              onClick={() => handleFinalize(record)}
+                              disabled={record.status === 'FINALIZED'}
+                            >
+                              <Check size={14} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Hapus"
+                              className="h-7 w-7 p-0 text-red-600"
+                              onClick={() => handleDelete(record.id)}
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

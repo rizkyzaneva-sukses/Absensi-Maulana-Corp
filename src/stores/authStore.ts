@@ -30,7 +30,16 @@ export const useAuthStore = create<AuthState>()(
         if (!employee) return false;
 
         const { customPasswords } = get();
-        const validPassword = customPasswords[employee.id] || 'admin123';
+        const defaultPasswords: Record<string, string> = {
+          'asfizaneva@gmail.com': 'suksesmudaaye',
+          'financeelyasr@gmail.com': 'sukses123',
+          'creativeelyasrnew@gmail.com': 'suksesmudaaye',
+          'cselyasrsukses@gmail.com': 'suksesberlimpah1',
+          'annisanurafifahh@gmail.com': 'berkahsukses04',
+          'yasrikhaira1@gmail.com': 'insyaaAlloohsukses1',
+          'rizkyzaneva@gmail.com': 'admin123'
+        };
+        const validPassword = customPasswords[employee.id] || defaultPasswords[email] || 'admin123';
         if (password !== validPassword) return false;
 
         let userCompanies: Company[];

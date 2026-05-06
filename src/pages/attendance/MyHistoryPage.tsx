@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { attendanceRecords, leaveRequests, overtimeRequests, corrections } from '@/lib/mock-data';
@@ -7,6 +9,11 @@ import { formatDate } from '@/lib/utils';
 
 export default function MyHistoryPage() {
   const { currentUser, activeCompany } = useAuthStore();
+  const [visibleAtt, setVisibleAtt] = useState(10);
+  const [visibleLeave, setVisibleLeave] = useState(10);
+  const [visibleOt, setVisibleOt] = useState(10);
+  const [visibleCorr, setVisibleCorr] = useState(10);
+
   if (!currentUser || !activeCompany) return null;
 
   const myAttendance = attendanceRecords
@@ -47,7 +54,7 @@ export default function MyHistoryPage() {
                 {myAttendance.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">Belum ada data absensi</div>
                 ) : (
-                  myAttendance.map(att => (
+                  myAttendance.slice(0, visibleAtt).map(att => (
                     <div key={att.id} className="flex items-center justify-between p-4 hover:bg-muted/50">
                       <div>
                         <p className="font-medium">{formatDate(att.date)}</p>
@@ -61,6 +68,11 @@ export default function MyHistoryPage() {
                   ))
                 )}
               </div>
+              {visibleAtt < myAttendance.length && (
+                <div className="p-4 flex justify-center border-t">
+                  <Button variant="outline" size="sm" onClick={() => setVisibleAtt(p => p + 10)}>Tampilkan Lebih Banyak</Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -72,7 +84,7 @@ export default function MyHistoryPage() {
                 {myLeaves.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">Belum ada pengajuan cuti</div>
                 ) : (
-                  myLeaves.map(leave => (
+                  myLeaves.slice(0, visibleLeave).map(leave => (
                     <div key={leave.id} className="flex items-center justify-between p-4 hover:bg-muted/50">
                       <div>
                         <p className="font-medium">{leave.type} - {leave.reason}</p>
@@ -83,6 +95,11 @@ export default function MyHistoryPage() {
                   ))
                 )}
               </div>
+              {visibleLeave < myLeaves.length && (
+                <div className="p-4 flex justify-center border-t">
+                  <Button variant="outline" size="sm" onClick={() => setVisibleLeave(p => p + 10)}>Tampilkan Lebih Banyak</Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -94,7 +111,7 @@ export default function MyHistoryPage() {
                 {myOvertime.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">Belum ada pengajuan lembur</div>
                 ) : (
-                  myOvertime.map(ot => (
+                  myOvertime.slice(0, visibleOt).map(ot => (
                     <div key={ot.id} className="flex items-center justify-between p-4 hover:bg-muted/50">
                       <div>
                         <p className="font-medium">{formatDate(ot.date)} • {ot.duration_hours} jam</p>
@@ -105,6 +122,11 @@ export default function MyHistoryPage() {
                   ))
                 )}
               </div>
+              {visibleOt < myOvertime.length && (
+                <div className="p-4 flex justify-center border-t">
+                  <Button variant="outline" size="sm" onClick={() => setVisibleOt(p => p + 10)}>Tampilkan Lebih Banyak</Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -116,7 +138,7 @@ export default function MyHistoryPage() {
                 {myCorrections.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">Belum ada koreksi absensi</div>
                 ) : (
-                  myCorrections.map(corr => (
+                  myCorrections.slice(0, visibleCorr).map(corr => (
                     <div key={corr.id} className="flex items-center justify-between p-4 hover:bg-muted/50">
                       <div>
                         <p className="font-medium">Koreksi {formatDate(corr.date)}</p>
@@ -130,6 +152,11 @@ export default function MyHistoryPage() {
                   ))
                 )}
               </div>
+              {visibleCorr < myCorrections.length && (
+                <div className="p-4 flex justify-center border-t">
+                  <Button variant="outline" size="sm" onClick={() => setVisibleCorr(p => p + 10)}>Tampilkan Lebih Banyak</Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
