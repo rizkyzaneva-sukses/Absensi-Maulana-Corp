@@ -5,7 +5,6 @@ import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { demoAccounts } from '@/lib/mock-data';
 import { Building2, Eye, EyeOff, Moon, Sun } from 'lucide-react';
 
 export default function LoginPage() {
@@ -32,22 +31,6 @@ export default function LoginPage() {
       }
     } else {
       setError('Email atau password salah');
-    }
-  };
-
-  const handleDemoLogin = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('admin123');
-    const success = login(demoEmail, 'admin123');
-    if (success) {
-      const state = useAuthStore.getState();
-      if (state.userCompanies.length > 1) {
-        navigate('/pick-company');
-      } else if (state.currentUser?.role === 'SUPER_ADMIN') {
-        navigate('/owner');
-      } else {
-        navigate('/dashboard');
-      }
     }
   };
 
@@ -116,25 +99,6 @@ export default function LoginPage() {
                 Masuk
               </Button>
             </form>
-          </CardContent>
-        </Card>
-
-        {/* Demo Accounts */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Demo Accounts (klik untuk login)</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            {demoAccounts.map(account => (
-              <button
-                key={account.email}
-                onClick={() => handleDemoLogin(account.email)}
-                className="flex items-center justify-between px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors text-left"
-              >
-                <span className="font-medium">{account.label}</span>
-                <span className="text-xs text-muted-foreground">{account.email}</span>
-              </button>
-            ))}
           </CardContent>
         </Card>
       </div>
