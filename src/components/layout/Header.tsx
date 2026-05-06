@@ -146,6 +146,12 @@ export function Header() {
                 </button>
               )}
               <button
+                onClick={() => { navigate('/profile'); setShowUserMenu(false); }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm"
+              >
+                Profil & Keamanan
+              </button>
+              <button
                 onClick={() => { logout(); navigate('/login'); setShowUserMenu(false); }}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm text-red-600"
               >

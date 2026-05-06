@@ -12,6 +12,8 @@ interface AuthState {
   logout: () => void;
   setActiveCompany: (company: Company) => void;
   switchCompany: (companyId: string) => void;
+  updatePassword: (newPassword: string) => boolean;
+  customPasswords: Record<string, string>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -21,10 +23,15 @@ export const useAuthStore = create<AuthState>()(
       currentUser: null,
       userCompanies: [],
       activeCompany: null,
+      customPasswords: {} as Record<string, string>,
 
-      login: (email: string, _password: string) => {
+      login: (email: string, password: string) => {
         const employee = employees.find(e => e.user_email === email && e.is_active);
         if (!employee) return false;
+
+        const { customPasswords } = get();
+        const validPassword = customPasswords[employee.id] || 'admin123';
+        if (password !== validPassword) return false;
 
         let userCompanies: Company[];
         if (employee.role === 'SUPER_ADMIN') {
@@ -63,6 +70,18 @@ export const useAuthStore = create<AuthState>()(
         if (company) {
           set({ activeCompany: company });
         }
+      },
+
+      updatePassword: (newPassword: string) => {
+        const { currentUser } = get();
+        if (!currentUser) return false;
+        set((state) => ({
+          customPasswords: {
+            ...state.customPasswords,
+            [currentUser.id]: newPassword
+          }
+        }));
+        return true;
       },
     }),
     {

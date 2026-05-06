@@ -36,6 +36,7 @@ const WorkScheduleSettings = lazy(() => import('@/pages/settings/WorkScheduleSet
 const OvertimeSettings = lazy(() => import('@/pages/settings/OvertimeSettings'));
 const PayrollSettings = lazy(() => import('@/pages/settings/PayrollSettings'));
 const UserGuidePage = lazy(() => import('@/pages/guide/UserGuidePage'));
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -115,6 +116,9 @@ function App() {
 
             {/* Guide */}
             <Route path="/guide" element={<UserGuidePage />} />
+
+            {/* Profile */}
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
           {/* Default redirect */}
