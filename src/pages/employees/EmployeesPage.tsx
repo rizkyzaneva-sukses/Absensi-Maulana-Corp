@@ -10,17 +10,20 @@ import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { EmptyState } from '@/components/common/EmptyState';
 import { generateId } from '@/lib/attendance';
 import { formatCurrency, getInitials } from '@/lib/utils';
-import { Plus, Search, Pencil, Trash2, Users, Eye } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Users, Eye, KeyRound } from 'lucide-react';
 import type { Employee, Role } from '@/types';
 
 export default function EmployeesPage() {
-  const { activeCompany } = useAuthStore();
+  const { activeCompany, currentUser, changeEmployeePassword } = useAuthStore();
   const { employees, teams, addEmployee, updateEmployee, deleteEmployee } = useDataStore();
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [viewDetail, setViewDetail] = useState<Employee | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
+  const [passwordTarget, setPasswordTarget] = useState<Employee | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   const companyId = activeCompany?.id || '';
 
@@ -172,6 +175,21 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleChangePassword = () => {
+    if (!passwordTarget || !newPassword.trim()) return;
+    const success = changeEmployeePassword(passwordTarget.id, newPassword.trim());
+    if (success) {
+      setPasswordSuccess(true);
+      setTimeout(() => {
+        setPasswordTarget(null);
+        setNewPassword('');
+        setPasswordSuccess(false);
+      }, 2000);
+    }
+  };
+
+  const isOwner = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'COMPANY_ADMIN';
+
   const updateField = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -253,6 +271,11 @@ export default function EmployeesPage() {
                   <Button variant="ghost" size="sm" onClick={() => setViewDetail(emp)}>
                     <Eye className="h-4 w-4" />
                   </Button>
+                  {isOwner && (
+                    <Button variant="ghost" size="sm" onClick={() => { setPasswordTarget(emp); setNewPassword(''); setPasswordSuccess(false); }} title="Ganti Password">
+                      <KeyRound className="h-4 w-4 text-amber-500" />
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" onClick={() => openEdit(emp)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -603,6 +626,69 @@ export default function EmployeesPage() {
         variant="destructive"
         onConfirm={handleDelete}
       />
+
+      {/* Change Password Dialog */}
+      <Dialog open={!!passwordTarget} onOpenChange={(open) => { if (!open) { setPasswordTarget(null); setNewPassword(''); setPasswordSuccess(false); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-amber-500" />
+              Ganti Password Karyawan
+            </DialogTitle>
+          </DialogHeader>
+          {passwordTarget && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                  {getInitials(passwordTarget.full_name)}
+                </div>
+                <div>
+                  <p className="font-medium">{passwordTarget.full_name}</p>
+                  <p className="text-sm text-muted-foreground">{passwordTarget.user_email}</p>
+                </div>
+              </div>
+
+              {passwordSuccess ? (
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium text-center">
+                    ✓ Password berhasil diubah!
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Password Baru</label>
+                    <Input
+                      type="text"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Masukkan password baru"
+                      autoFocus
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Password akan langsung berlaku saat karyawan login berikutnya.
+                    </p>
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => { setPasswordTarget(null); setNewPassword(''); }}>
+                      Batal
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleChangePassword}
+                      disabled={!newPassword.trim()}
+                      className="gap-2"
+                    >
+                      <KeyRound className="h-4 w-4" />
+                      Simpan Password
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

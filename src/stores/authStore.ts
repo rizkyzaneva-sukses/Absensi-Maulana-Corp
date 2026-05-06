@@ -13,6 +13,7 @@ interface AuthState {
   setActiveCompany: (company: Company) => void;
   switchCompany: (companyId: string) => void;
   updatePassword: (newPassword: string) => boolean;
+  changeEmployeePassword: (employeeId: string, newPassword: string) => boolean;
   customPasswords: Record<string, string>;
 }
 
@@ -88,6 +89,19 @@ export const useAuthStore = create<AuthState>()(
           customPasswords: {
             ...state.customPasswords,
             [currentUser.id]: newPassword
+          }
+        }));
+        return true;
+      },
+
+      changeEmployeePassword: (employeeId: string, newPassword: string) => {
+        const { currentUser } = get();
+        // Only owner (SUPER_ADMIN or COMPANY_ADMIN) can change employee passwords
+        if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'COMPANY_ADMIN')) return false;
+        set((state) => ({
+          customPasswords: {
+            ...state.customPasswords,
+            [employeeId]: newPassword
           }
         }));
         return true;
