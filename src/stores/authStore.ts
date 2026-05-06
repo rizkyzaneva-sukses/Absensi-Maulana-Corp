@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Employee, Company } from '@/types';
-import { employees, companies } from '@/lib/mock-data';
+import { employees as staticEmployees, companies } from '@/lib/mock-data';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -27,7 +27,15 @@ export const useAuthStore = create<AuthState>()(
       customPasswords: {} as Record<string, string>,
 
       login: (email: string, password: string) => {
-        const employee = employees.find(e => e.user_email === email && e.is_active);
+        // Try dataStore employees first (persisted, may have updated is_active)
+        const dataStoreState = JSON.parse(localStorage.getItem('data-storage') || '{}');
+        const dataStoreEmployees: Employee[] = dataStoreState?.state?.employees || [];
+        
+        // Check dataStore first (has latest updates from owner), then fallback to static
+        let employee = dataStoreEmployees.find(e => e.user_email === email && e.is_active);
+        if (!employee) {
+          employee = staticEmployees.find(e => e.user_email === email && e.is_active);
+        }
         if (!employee) return false;
 
         const { customPasswords } = get();
