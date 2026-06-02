@@ -13,6 +13,7 @@ import CheckInPage from '@/pages/attendance/CheckInPage';
 
 // Lazy loaded pages
 const OwnerDashboard = lazy(() => import('@/pages/owner/OwnerDashboard'));
+const OwnerAttendancePage = lazy(() => import('@/pages/owner/OwnerAttendancePage'));
 const CheckOutPage = lazy(() => import('@/pages/attendance/CheckOutPage'));
 const MyHistoryPage = lazy(() => import('@/pages/attendance/MyHistoryPage'));
 const MyRequestsPage = lazy(() => import('@/pages/requests/MyRequestsPage'));
@@ -75,6 +76,7 @@ function App() {
             {/* Dashboard */}
             <Route path="/dashboard" element={<EmployeeDashboard />} />
             <Route path="/owner" element={<OwnerDashboard />} />
+            <Route path="/owner/attendance" element={<OwnerAttendancePage />} />
 
             {/* Attendance */}
             <Route path="/check-in" element={<CheckInPage />} />

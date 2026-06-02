@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
 
 const ownerItems: NavItem[] = [
   { label: 'Owner Dashboard', path: '/owner', icon: <Building2 size={20} />, roles: ['SUPER_ADMIN'] },
+  { label: 'Riwayat Absensi', path: '/owner/attendance', icon: <History size={20} />, roles: ['SUPER_ADMIN'] },
 ];
 
 export function Sidebar() {
