@@ -11,7 +11,7 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <div className={cn('transition-all duration-300', sidebarOpen ? 'md:ml-64' : 'md:ml-16', 'ml-0')}>
+      <div className={cn('transition-all duration-300', sidebarOpen ? 'md:ml-64' : 'md:ml-0', 'ml-0')}>
         <Header />
         <main className="p-4 md:p-6 pb-20 md:pb-6 animate-fade-in">
           <Outlet />

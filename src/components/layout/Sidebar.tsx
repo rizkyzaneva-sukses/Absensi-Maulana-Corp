@@ -1,12 +1,12 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import {
   LayoutDashboard, Clock, History, FileText, Users, DollarSign,
-  BarChart3, Settings, Building2, ChevronLeft, LogOut,
+  BarChart3, Settings, Building2, LogOut,
   CheckCircle, ClipboardList, FileEdit, ScrollText, QrCode, ListTodo,
-  LogIn, LogOut as LogOutIcon, BookOpen
+  LogIn, LogOut as LogOutIcon, BookOpen, X
 } from 'lucide-react';
 
 interface NavItem {
@@ -44,7 +44,6 @@ const ownerItems: NavItem[] = [
 export function Sidebar() {
   const { currentUser, activeCompany, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUIStore();
-  const location = useLocation();
 
   if (!currentUser) return null;
 
@@ -53,82 +52,95 @@ export function Sidebar() {
   const filteredOwner = ownerItems.filter(item => item.roles.includes(role));
 
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col',
-        sidebarOpen ? 'w-64' : 'w-16'
+    <>
+      {/* Backdrop overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={toggleSidebar}
+        />
       )}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
-        {sidebarOpen && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">
+
+      {/* Sidebar panel */}
+      <aside
+        className={cn(
+          'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground flex flex-col transition-transform duration-300',
+          'w-64',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
               {activeCompany?.name?.charAt(0) || 'M'}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-white">{activeCompany?.name || 'Maulana Corp'}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold text-white truncate">{activeCompany?.name || 'Maulana Corp'}</span>
               <span className="text-xs text-slate-400">v2.0</span>
             </div>
           </div>
-        )}
-        <button
-          onClick={toggleSidebar}
-          className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
-        >
-          <ChevronLeft className={cn('w-5 h-5 transition-transform', !sidebarOpen && 'rotate-180')} />
-        </button>
-      </div>
+          <button
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-md hover:bg-white/10 transition-colors shrink-0"
+            title="Tutup Menu"
+          >
+            <X size={18} className="text-slate-300" />
+          </button>
+        </div>
 
-      {/* Owner Nav */}
-      {filteredOwner.length > 0 && (
-        <div className="px-3 py-2">
-          {sidebarOpen && <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Owner</p>}
-          {filteredOwner.map(item => (
+        {/* Owner Nav */}
+        {filteredOwner.length > 0 && (
+          <div className="px-3 pt-3 pb-1 shrink-0">
+            <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Owner</p>
+            {filteredOwner.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={toggleSidebar}
+                className={({ isActive }) => cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
+                  isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                )}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+            <div className="border-b border-white/10 my-2" />
+          </div>
+        )}
+
+        {/* Main Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Menu</p>
+          {filteredNav.map(item => (
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={toggleSidebar}
               className={({ isActive }) => cn(
                 'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
                 isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
               )}
             >
               {item.icon}
-              {sidebarOpen && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </NavLink>
           ))}
-          <div className="border-b border-white/10 my-2" />
-        </div>
-      )}
+        </nav>
 
-      {/* Main Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2">
-        {sidebarOpen && <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Menu</p>}
-        {filteredNav.map(item => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => cn(
-              'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
-              isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
-            )}
+        {/* Footer */}
+        <div className="p-3 border-t border-white/10 shrink-0">
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors w-full"
           >
-            {item.icon}
-            {sidebarOpen && <span>{item.label}</span>}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Footer */}
-      <div className="p-3 border-t border-white/10">
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors w-full"
-        >
-          <LogOut size={20} />
-          {sidebarOpen && <span>Keluar</span>}
-        </button>
-      </div>
-    </aside>
+            <LogOut size={20} />
+            <span>Keluar</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
