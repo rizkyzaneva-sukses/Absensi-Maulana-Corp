@@ -63,10 +63,10 @@ export default function CorrectionRequestForm() {
     }, 500);
   };
 
-  const formatTime = (isoTime: string | null) => {
-    if (!isoTime) return '-';
-    const date = new Date(isoTime);
-    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (t: string | null | undefined) => {
+    if (!t) return '-';
+    if (t.includes('T')) return new Date(t).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    return t; // already "HH:mm"
   };
 
   return (
