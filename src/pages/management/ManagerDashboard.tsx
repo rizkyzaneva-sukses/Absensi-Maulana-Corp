@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
-import { employees } from '@/lib/mock-data';
 import { getTodayStr, getMonthName } from '@/lib/attendance';
 import { getStatusColor, getStatusLabel } from '@/lib/utils';
 import {
@@ -23,7 +22,7 @@ export default function ManagerDashboard() {
   const navigate = useNavigate();
   const { currentUser, activeCompany } = useAuthStore();
   const { attendances, leaveRequests, overtimeRequests, corrections } = useAttendanceStore();
-  const { holidays } = useDataStore();
+  const { holidays, employees } = useDataStore();
 
   const companyId = activeCompany?.id || currentUser?.company_id || '';
   const today = getTodayStr();
@@ -33,6 +32,13 @@ export default function ManagerDashboard() {
   const companyEmployees = employees.filter(
     (e) => e.company_id === companyId && e.is_active
   );
+
+  // Helper: format time that may be HH:mm or ISO timestamp
+  const formatTime = (t: string | null | undefined) => {
+    if (!t) return '-';
+    if (t.includes('T')) return new Date(t).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    return t;
+  };
 
   // Today's attendance summary
   const todayAttendances = attendances.filter(
@@ -288,20 +294,10 @@ export default function ManagerDashboard() {
                         <p className="text-xs text-muted-foreground">{emp?.position}</p>
                       </td>
                       <td className="p-3 text-center text-xs">
-                        {att.check_in_time
-                          ? new Date(att.check_in_time).toLocaleTimeString('id-ID', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '-'}
+                        {formatTime(att.check_in_time)}
                       </td>
                       <td className="p-3 text-center text-xs">
-                        {att.check_out_time
-                          ? new Date(att.check_out_time).toLocaleTimeString('id-ID', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '-'}
+                        {formatTime(att.check_out_time)}
                       </td>
                       <td className="p-3 text-center">
                         <Badge className={getStatusColor(att.status)} variant="outline">

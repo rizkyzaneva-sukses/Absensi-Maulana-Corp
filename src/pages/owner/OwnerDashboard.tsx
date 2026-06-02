@@ -1,15 +1,23 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useDataStore } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { companies, employees, attendanceRecords, holidays } from '@/lib/mock-data';
+import { StatusBadge } from '@/components/common/StatusBadge';
+import { companies } from '@/lib/mock-data';
 import { generateCompanyPayroll } from '@/lib/payroll';
-import { formatCurrency } from '@/lib/utils';
-import { Building2, Users, DollarSign, Clock, ArrowRight } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { Building2, Users, DollarSign, ArrowRight, History, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function OwnerDashboard() {
   const { switchCompany } = useAuthStore();
+  const { attendances } = useAttendanceStore();
+  const { employees, holidays, overtimeSettings } = useDataStore();
   const navigate = useNavigate();
+  const [expandedHistory, setExpandedHistory] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState<Record<string, number>>({});
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -18,19 +26,19 @@ export default function OwnerDashboard() {
   const companyStats = companies.map(company => {
     const companyEmployees = employees.filter(e => e.company_id === company.id && e.is_active);
     const todayStr = new Date().toISOString().split('T')[0];
-    const todayAttendance = attendanceRecords.filter(a => a.company_id === company.id && a.date === todayStr);
+    const todayAttendance = attendances.filter(a => a.company_id === company.id && a.date === todayStr);
     const presentCount = todayAttendance.filter(a => ['HADIR', 'TERLAMBAT'].includes(a.status)).length;
 
-    // Calculate payroll estimation from real attendance data
+    // Calculate payroll estimation from live attendance data
     const payrollEstimation = generateCompanyPayroll(
       employees,
-      attendanceRecords,
+      attendances,
       holidays,
       currentYear,
       currentMonth,
       company.id,
       [],
-      { tolerance_minutes: 15, lembur_max_minutes: 180 }
+      overtimeSettings
     );
     const totalPayroll = payrollEstimation.reduce((sum, p) => sum + p.total_pay, 0);
 
@@ -48,6 +56,12 @@ export default function OwnerDashboard() {
   const handleEnterCompany = (companyId: string) => {
     switchCompany(companyId);
     navigate('/dashboard');
+  };
+
+  const formatTime = (t: string | null) => {
+    if (!t) return '-';
+    if (t.includes('T')) return new Date(t).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    return t;
   };
 
   return (
@@ -102,51 +116,132 @@ export default function OwnerDashboard() {
       </div>
 
       {/* Company Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {companyStats.map(company => (
-          <Card key={company.id} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary" />
+      <div className="grid grid-cols-1 gap-6">
+        {companyStats.map(company => {
+          const companyEmployees = employees.filter(e => e.company_id === company.id && e.is_active);
+          const companyAttendances = attendances
+            .filter(a => a.company_id === company.id)
+            .sort((a, b) => b.date.localeCompare(a.date));
+          const isExpanded = expandedHistory === company.id;
+          const page = historyPage[company.id] || 10;
+
+          return (
+            <Card key={company.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{company.name}</CardTitle>
+                      <p className="text-xs text-muted-foreground">{company.industry}</p>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">{company.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground">{company.industry}</p>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${company.is_active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
+                    {company.is_active ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-lg font-semibold">{company.employeeCount}</p>
+                    <p className="text-xs text-muted-foreground">Karyawan</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold">{company.presentToday}</p>
+                    <p className="text-xs text-muted-foreground">Hadir Hari Ini</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold">{formatCurrency(company.totalPayroll)}</p>
+                    <p className="text-xs text-muted-foreground">Est. Payroll</p>
                   </div>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${company.is_active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
-                  {company.is_active ? 'Aktif' : 'Nonaktif'}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center">
-                  <p className="text-lg font-semibold">{company.employeeCount}</p>
-                  <p className="text-xs text-muted-foreground">Karyawan</p>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleEnterCompany(company.id)}
+                  >
+                    Masuk ke {company.name}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setExpandedHistory(isExpanded ? null : company.id)}
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    Riwayat Absensi
+                    {isExpanded ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+                  </Button>
                 </div>
-                <div className="text-center">
-                  <p className="text-lg font-semibold">{company.presentToday}</p>
-                  <p className="text-xs text-muted-foreground">Hadir Hari Ini</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-semibold">{formatCurrency(company.totalPayroll)}</p>
-                  <p className="text-xs text-muted-foreground">Est. Payroll</p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleEnterCompany(company.id)}
-              >
-                Masuk ke {company.name}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+
+                {/* Attendance History Panel */}
+                {isExpanded && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-muted/50 px-4 py-2 flex items-center justify-between">
+                      <p className="text-sm font-medium">Riwayat Absensi Semua Karyawan</p>
+                      <p className="text-xs text-muted-foreground">{companyAttendances.length} record</p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/30">
+                          <tr>
+                            <th className="p-3 text-left font-medium">Tanggal</th>
+                            <th className="p-3 text-left font-medium">Karyawan</th>
+                            <th className="p-3 text-center font-medium">Check-in</th>
+                            <th className="p-3 text-center font-medium">Check-out</th>
+                            <th className="p-3 text-center font-medium">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {companyAttendances.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                                Belum ada data absensi
+                              </td>
+                            </tr>
+                          ) : (
+                            companyAttendances.slice(0, page).map(att => {
+                              const emp = companyEmployees.find(e => e.id === att.employee_id);
+                              return (
+                                <tr key={att.id} className="hover:bg-muted/20">
+                                  <td className="p-3 text-xs">{formatDate(att.date)}</td>
+                                  <td className="p-3">
+                                    <p className="font-medium text-xs">{emp?.full_name || att.employee_id}</p>
+                                    <p className="text-xs text-muted-foreground">{emp?.position || '-'}</p>
+                                  </td>
+                                  <td className="p-3 text-center text-xs">{formatTime(att.check_in_time)}</td>
+                                  <td className="p-3 text-center text-xs">{formatTime(att.check_out_time)}</td>
+                                  <td className="p-3 text-center">
+                                    <StatusBadge status={att.status} />
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {page < companyAttendances.length && (
+                      <div className="p-3 flex justify-center border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setHistoryPage(prev => ({ ...prev, [company.id]: (prev[company.id] || 10) + 20 }))}
+                        >
+                          Tampilkan Lebih Banyak ({companyAttendances.length - page} tersisa)
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

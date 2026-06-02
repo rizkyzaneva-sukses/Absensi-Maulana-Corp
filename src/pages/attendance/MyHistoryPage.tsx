@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
+import { useAttendanceStore } from '@/stores/attendanceStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { attendanceRecords, leaveRequests, overtimeRequests, corrections } from '@/lib/mock-data';
 import { formatDate } from '@/lib/utils';
 
 export default function MyHistoryPage() {
   const { currentUser, activeCompany } = useAuthStore();
+  const { attendances, leaveRequests, overtimeRequests, corrections } = useAttendanceStore();
   const [visibleAtt, setVisibleAtt] = useState(10);
   const [visibleLeave, setVisibleLeave] = useState(10);
   const [visibleOt, setVisibleOt] = useState(10);
@@ -16,20 +17,20 @@ export default function MyHistoryPage() {
 
   if (!currentUser || !activeCompany) return null;
 
-  const myAttendance = attendanceRecords
-    .filter(a => a.employee_id === currentUser.id)
+  const myAttendance = attendances
+    .filter(a => a.employee_id === currentUser.id && a.company_id === activeCompany.id)
     .sort((a, b) => b.date.localeCompare(a.date));
 
   const myLeaves = leaveRequests
-    .filter(l => l.employee_id === currentUser.id)
+    .filter(l => l.employee_id === currentUser.id && l.company_id === activeCompany.id)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   const myOvertime = overtimeRequests
-    .filter(o => o.employee_id === currentUser.id)
+    .filter(o => o.employee_id === currentUser.id && o.company_id === activeCompany.id)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   const myCorrections = corrections
-    .filter(c => c.employee_id === currentUser.id)
+    .filter(c => c.employee_id === currentUser.id && c.company_id === activeCompany.id)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
@@ -54,18 +55,26 @@ export default function MyHistoryPage() {
                 {myAttendance.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">Belum ada data absensi</div>
                 ) : (
-                  myAttendance.slice(0, visibleAtt).map(att => (
-                    <div key={att.id} className="flex items-center justify-between p-4 hover:bg-muted/50">
-                      <div>
-                        <p className="font-medium">{formatDate(att.date)}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {att.check_in_time || '-'} - {att.check_out_time || '-'}
-                          {att.late_minutes > 0 && ` • Terlambat ${att.late_minutes} menit`}
-                        </p>
+                  myAttendance.slice(0, visibleAtt).map(att => {
+                    // Handle both ISO timestamp and HH:mm string formats
+                    const formatTime = (t: string | null) => {
+                      if (!t) return '-';
+                      if (t.includes('T')) return new Date(t).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                      return t;
+                    };
+                    return (
+                      <div key={att.id} className="flex items-center justify-between p-4 hover:bg-muted/50">
+                        <div>
+                          <p className="font-medium">{formatDate(att.date)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatTime(att.check_in_time)} - {formatTime(att.check_out_time)}
+                            {att.late_minutes > 0 && ` • Terlambat ${att.late_minutes} menit`}
+                          </p>
+                        </div>
+                        <StatusBadge status={att.status} />
                       </div>
-                      <StatusBadge status={att.status} />
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
               {visibleAtt < myAttendance.length && (

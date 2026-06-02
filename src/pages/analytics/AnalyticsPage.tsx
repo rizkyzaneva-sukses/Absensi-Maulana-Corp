@@ -1,12 +1,15 @@
 import { useAuthStore } from '@/stores/authStore';
+import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useDataStore } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { attendanceRecords, employees } from '@/lib/mock-data';
 import { BarChart3, TrendingUp, Users, Clock } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const { activeCompany } = useAuthStore();
+  const { attendances } = useAttendanceStore();
+  const { employees } = useDataStore();
 
-  const companyAttendance = attendanceRecords.filter(a => a.company_id === activeCompany?.id);
+  const companyAttendance = attendances.filter(a => a.company_id === activeCompany?.id);
   const companyEmployees = employees.filter(e => e.company_id === activeCompany?.id && e.is_active);
 
   const totalRecords = companyAttendance.length;
@@ -17,13 +20,23 @@ export default function AnalyticsPage() {
   const hadirRate = totalRecords > 0 ? Math.round((hadirCount / totalRecords) * 100) : 0;
   const terlambatRate = totalRecords > 0 ? Math.round((terlambatCount / totalRecords) * 100) : 0;
 
-  // Simple bar chart data simulation
-  const weekDays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'];
-  const weekData = weekDays.map((day, i) => ({
-    day,
-    hadir: Math.floor(Math.random() * 5) + companyEmployees.length - 3,
-    terlambat: Math.floor(Math.random() * 3),
-  }));
+  // Real week data from attendance records
+  const now = new Date();
+  const weekDayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'];
+  const weekData = weekDayLabels.map((day, i) => {
+    // Find the date for this weekday in the current week
+    const date = new Date(now);
+    const currentDay = now.getDay(); // 0=Sun
+    const diff = (i + 1) - currentDay; // Mon=1
+    date.setDate(now.getDate() + diff);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayRecords = companyAttendance.filter(a => a.date === dateStr);
+    return {
+      day,
+      hadir: dayRecords.filter(a => a.status === 'HADIR').length,
+      terlambat: dayRecords.filter(a => a.status === 'TERLAMBAT').length,
+    };
+  });
 
   return (
     <div className="space-y-6">
