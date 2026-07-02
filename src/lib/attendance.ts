@@ -184,7 +184,7 @@ export function getWorkingDaysInMonth(
     if (dayOfWeek === 0) continue;
 
     // Check holidays for this date
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getDateStr(date);
     const holiday = activeHolidays.find((h) => h.date === dateStr);
     
     if (holiday) {
@@ -254,7 +254,14 @@ export function generateId(prefix: string = 'id'): string {
 // ============ DATE HELPERS ============
 
 export function getTodayStr(): string {
-  return new Date().toISOString().split('T')[0];
+  return getDateStr(new Date());
+}
+
+export function getDateStr(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function formatDateLong(date: string): string {

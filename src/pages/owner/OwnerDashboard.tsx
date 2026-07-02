@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { companies } from '@/lib/mock-data';
 import { generateCompanyPayroll } from '@/lib/payroll';
+import { getTodayStr } from '@/lib/attendance';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Building2, Users, DollarSign, ArrowRight, History, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -25,7 +26,7 @@ export default function OwnerDashboard() {
 
   const companyStats = companies.map(company => {
     const companyEmployees = employees.filter(e => e.company_id === company.id && e.is_active);
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayStr();
     const todayAttendance = attendances.filter(a => a.company_id === company.id && a.date === todayStr);
     const presentCount = todayAttendance.filter(a => ['HADIR', 'TERLAMBAT'].includes(a.status)).length;
 

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { companies } from '@/lib/mock-data';
 import { formatDate } from '@/lib/utils';
+import { getDateStr, getTodayStr } from '@/lib/attendance';
 import { History, Filter, Download, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 export default function OwnerAttendancePage() {
@@ -18,7 +19,7 @@ export default function OwnerAttendancePage() {
   const [selectedEmployee, setSelectedEmployee] = useState<string>('all');
   const [visibleCount, setVisibleCount] = useState(20);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayStr();
 
   const formatTime = (t: string | null | undefined) => {
     if (!t) return '-';
@@ -232,7 +233,7 @@ export default function OwnerAttendancePage() {
             <Button size="sm" variant="outline" onClick={() => {
               const yesterday = new Date();
               yesterday.setDate(yesterday.getDate() - 1);
-              setSelectedDate(yesterday.toISOString().split('T')[0]);
+              setSelectedDate(getDateStr(yesterday));
             }}>
               Kemarin
             </Button>

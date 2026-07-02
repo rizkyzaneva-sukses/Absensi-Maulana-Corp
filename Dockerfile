@@ -1,30 +1,25 @@
-# Build stage
-FROM node:18-alpine AS build
+# Build React frontend
+FROM node:20-alpine AS build
 
 WORKDIR /app
-
-# Copy package files
 COPY package.json package-lock.json ./
-
-# Install dependencies
 RUN npm ci
-
-# Copy source code
 COPY . .
-
-# Build the app
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine AS production
+# Run the API and serve the built frontend from one service
+FROM node:20-alpine AS production
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist ./dist
+COPY server ./server
 
-# Expose port 80
-EXPOSE 80
+USER node
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]

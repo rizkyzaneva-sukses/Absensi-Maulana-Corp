@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
-import { generateId } from '@/lib/attendance';
+import { generateId, getTodayStr } from '@/lib/attendance';
 import { AlertCircle, Clock, Calendar } from 'lucide-react';
 
 export default function CorrectionRequestForm() {
@@ -91,7 +91,7 @@ export default function CorrectionRequestForm() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
+              max={getTodayStr()}
               required
             />
 

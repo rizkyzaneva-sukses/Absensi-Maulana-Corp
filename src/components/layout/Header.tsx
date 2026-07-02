@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
-import { Bell, Moon, Sun, Building2, ChevronDown, User, Menu } from 'lucide-react';
+import { useAttendanceStore } from '@/stores/attendanceStore';
+import { Bell, Moon, Sun, Building2, ChevronDown, User, Menu, Cloud, CloudOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { notifications } from '@/lib/mock-data';
 import { useState, useMemo } from 'react';
@@ -9,6 +10,7 @@ import { useState, useMemo } from 'react';
 export function Header() {
   const { currentUser, activeCompany, userCompanies, switchCompany, logout } = useAuthStore();
   const { theme, toggleTheme, sidebarOpen, toggleSidebar } = useUIStore();
+  const { syncStatus, syncError, pendingMutations, refreshFromServer } = useAttendanceStore();
   const isDark = useMemo(() => {
     if (theme === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -59,6 +61,29 @@ export function Header() {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => void refreshFromServer().catch(() => {})}
+          className={cn(
+            'flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-accent',
+            syncStatus === 'offline' ? 'text-red-600' : 'text-emerald-600',
+          )}
+          title={syncError || (pendingMutations.length > 0
+            ? `${pendingMutations.length} perubahan menunggu sinkronisasi`
+            : 'Data tersinkron realtime')}
+        >
+          {syncStatus === 'offline' ? <CloudOff size={16} /> : <Cloud size={16} />}
+          <span className="hidden lg:inline">
+            {syncStatus === 'syncing'
+              ? 'Sinkronisasi...'
+              : syncStatus === 'offline'
+                ? 'Offline'
+                : pendingMutations.length > 0
+                  ? `Menunggu (${pendingMutations.length})`
+                  : 'Realtime'}
+          </span>
+        </button>
+
         {/* Company Switcher (if multi-company) */}
         {userCompanies.length > 1 && (
           <div className="relative">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Calendar, FileText, Bell, MapPin, CheckCircle2 } from 'lucide-react';
+import { getTodayStr } from '@/lib/attendance';
 
 export default function EmployeeDashboard() {
   const { currentUser, activeCompany } = useAuthStore();
@@ -15,7 +16,7 @@ export default function EmployeeDashboard() {
 
   if (!currentUser || !activeCompany) return null;
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayStr();
   const todayAttendance = attendances.find(
     a => a.employee_id === currentUser.id && a.company_id === activeCompany.id && a.date === todayStr
   );

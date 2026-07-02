@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { useAttendanceStore } from '@/stores/attendanceStore';
 import { AppLayout } from '@/components/layout/AppLayout';
 
 // Auth pages
@@ -57,6 +58,12 @@ function LazyFallback() {
 }
 
 function App() {
+  const initializeAttendanceSync = useAttendanceStore((state) => state.initializeSync);
+
+  useEffect(() => {
+    void initializeAttendanceSync();
+  }, [initializeAttendanceSync]);
+
   return (
     <BrowserRouter>
       <Suspense fallback={<LazyFallback />}>

@@ -3,6 +3,7 @@ import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, TrendingUp, Users, Clock } from 'lucide-react';
+import { getDateStr } from '@/lib/attendance';
 
 export default function AnalyticsPage() {
   const { activeCompany } = useAuthStore();
@@ -29,7 +30,7 @@ export default function AnalyticsPage() {
     const currentDay = now.getDay(); // 0=Sun
     const diff = (i + 1) - currentDay; // Mon=1
     date.setDate(now.getDate() + diff);
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getDateStr(date);
     const dayRecords = companyAttendance.filter(a => a.date === dateStr);
     return {
       day,
