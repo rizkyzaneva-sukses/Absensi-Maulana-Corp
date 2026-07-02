@@ -10,7 +10,7 @@ import { useState, useMemo } from 'react';
 export function Header() {
   const { currentUser, activeCompany, userCompanies, switchCompany, logout } = useAuthStore();
   const { theme, toggleTheme, sidebarOpen, toggleSidebar } = useUIStore();
-  const { syncStatus, syncError, pendingMutations, refreshFromServer } = useAttendanceStore();
+  const { syncStatus, syncError, pendingMutations, refreshFromServer, uploadDeviceData } = useAttendanceStore();
   const isDark = useMemo(() => {
     if (theme === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -21,6 +21,7 @@ export function Header() {
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
 
   if (!currentUser) return null;
 
@@ -197,6 +198,23 @@ export function Header() {
               >
                 Profil & Keamanan
               </button>
+              <button
+                onClick={async () => {
+                  setUploadMessage('Mengunggah...');
+                  try {
+                    const total = await uploadDeviceData();
+                    setUploadMessage(`${total} data HP sudah disinkronkan`);
+                  } catch {
+                    setUploadMessage('Upload gagal—cek koneksi');
+                  }
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm"
+              >
+                Upload data HP ini
+              </button>
+              {uploadMessage && (
+                <p className="px-3 pb-2 text-xs text-muted-foreground">{uploadMessage}</p>
+              )}
               <button
                 onClick={() => { logout(); navigate('/login'); setShowUserMenu(false); }}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm text-red-600"

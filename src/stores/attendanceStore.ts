@@ -37,6 +37,7 @@ interface AttendanceState extends AttendanceData {
 
   initializeSync: () => Promise<void>;
   refreshFromServer: () => Promise<void>;
+  uploadDeviceData: () => Promise<number>;
 
   addAttendance: (record: Attendance) => void;
   updateAttendance: (id: string, data: Partial<Attendance>) => void;
@@ -88,6 +89,63 @@ function asAttendanceData(state: AttendanceData): AttendanceData {
     overtimeRequests: state.overtimeRequests,
     corrections: state.corrections,
   };
+}
+
+function readStoredAttendanceData(key: string): Partial<AttendanceData> | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return (parsed?.state || parsed) as Partial<AttendanceData>;
+  } catch {
+    return null;
+  }
+}
+
+function mergeById<T extends { id: string }>(...collections: Array<T[] | undefined>): T[] {
+  const records = new Map<string, T>();
+  for (const collection of collections) {
+    for (const record of collection || []) {
+      if (record?.id) records.set(record.id, record);
+    }
+  }
+  return [...records.values()];
+}
+
+function collectDeviceData(fallback: AttendanceData): AttendanceData {
+  // `attendance-storage` dipakai versi awal aplikasi; v2 adalah key saat ini.
+  const legacy = readStoredAttendanceData('attendance-storage');
+  const current = readStoredAttendanceData('attendance-storage-v2');
+
+  return {
+    attendances: mergeById(
+      legacy?.attendances,
+      current?.attendances,
+      fallback.attendances,
+    ),
+    leaveRequests: mergeById(
+      legacy?.leaveRequests,
+      current?.leaveRequests,
+      fallback.leaveRequests,
+    ),
+    overtimeRequests: mergeById(
+      legacy?.overtimeRequests,
+      current?.overtimeRequests,
+      fallback.overtimeRequests,
+    ),
+    corrections: mergeById(
+      legacy?.corrections,
+      current?.corrections,
+      fallback.corrections,
+    ),
+  };
+}
+
+function countData(data: AttendanceData): number {
+  return data.attendances.length
+    + data.leaveRequests.length
+    + data.overtimeRequests.length
+    + data.corrections.length;
 }
 
 function applyMutation(data: AttendanceData, mutation: PendingMutation): AttendanceData {
@@ -154,6 +212,30 @@ async function refreshFromServer(): Promise<void> {
     store.setState({
       syncStatus: 'offline',
       syncError: error instanceof Error ? error.message : 'Tidak dapat tersambung ke server.',
+    });
+    throw error;
+  }
+}
+
+async function uploadDeviceData(): Promise<number> {
+  const store = useAttendanceStore;
+  store.setState({ syncStatus: 'syncing', syncError: null });
+  try {
+    const deviceData = collectDeviceData(asAttendanceData(store.getState()));
+    const total = countData(deviceData);
+    if (total > 0) {
+      await requestJson('/api/sync/import', {
+        method: 'POST',
+        body: JSON.stringify(deviceData),
+      });
+    }
+    await flushPendingMutations();
+    await refreshFromServer();
+    return total;
+  } catch (error) {
+    store.setState({
+      syncStatus: 'offline',
+      syncError: error instanceof Error ? error.message : 'Upload data perangkat gagal.',
     });
     throw error;
   }
@@ -234,13 +316,16 @@ async function initializeSync(): Promise<void> {
       const health = await requestJson<{ ok: boolean; instanceId: string }>('/api/health');
       const state = store.getState();
 
-      if (state.migrationInstanceId !== health.instanceId) {
+      // Selalu tawarkan cache perangkat ke server sebelum data server dibaca. Import bersifat
+      // idempotent (ON CONFLICT DO NOTHING), sehingga aman dijalankan ulang pada setiap HP.
+      const deviceData = collectDeviceData(asAttendanceData(state));
+      if (countData(deviceData) > 0) {
         await requestJson('/api/sync/import', {
           method: 'POST',
-          body: JSON.stringify(asAttendanceData(state)),
+          body: JSON.stringify(deviceData),
         });
-        store.setState({ migrationInstanceId: health.instanceId });
       }
+      store.setState({ migrationInstanceId: health.instanceId });
 
       await flushPendingMutations();
       await refreshFromServer();
@@ -274,6 +359,7 @@ export const useAttendanceStore = create<AttendanceState>()(
 
       initializeSync,
       refreshFromServer,
+      uploadDeviceData,
 
       addAttendance: (record) =>
         queueMutation('attendances', 'POST', record.id, record as unknown as Record<string, unknown>),
