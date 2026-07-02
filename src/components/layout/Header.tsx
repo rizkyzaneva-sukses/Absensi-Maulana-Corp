@@ -10,7 +10,7 @@ import { useState, useMemo } from 'react';
 export function Header() {
   const { currentUser, activeCompany, userCompanies, switchCompany, logout } = useAuthStore();
   const { theme, toggleTheme, sidebarOpen, toggleSidebar } = useUIStore();
-  const { syncStatus, syncError, pendingMutations, refreshFromServer, uploadDeviceData } = useAttendanceStore();
+  const { syncStatus, syncError, pendingMutations, lastSyncedAt, refreshFromServer, uploadDeviceData } = useAttendanceStore();
   const isDark = useMemo(() => {
     if (theme === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -71,7 +71,9 @@ export function Header() {
           )}
           title={syncError || (pendingMutations.length > 0
             ? `${pendingMutations.length} perubahan menunggu sinkronisasi`
-            : 'Data tersinkron realtime')}
+            : lastSyncedAt
+              ? `Tersinkron: ${new Date(lastSyncedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+              : 'Data tersinkron realtime')}
         >
           {syncStatus === 'offline' ? <CloudOff size={16} /> : <Cloud size={16} />}
           <span className="hidden lg:inline">
@@ -81,7 +83,9 @@ export function Header() {
                 ? 'Offline'
                 : pendingMutations.length > 0
                   ? `Menunggu (${pendingMutations.length})`
-                  : 'Realtime'}
+                  : lastSyncedAt
+                    ? `Sync ${new Date(lastSyncedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+                    : 'Realtime'}
           </span>
         </button>
 

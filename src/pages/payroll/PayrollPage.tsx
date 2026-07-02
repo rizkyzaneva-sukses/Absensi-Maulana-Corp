@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useDataStore } from '@/stores/dataStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
@@ -23,6 +24,7 @@ export default function PayrollPage() {
   const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, overtimeSettings } = useDataStore();
   const { attendances } = useAttendanceStore();
 
+  const { id: payslipId } = useParams();
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -31,6 +33,19 @@ export default function PayrollPage() {
   const [editForm, setEditForm] = useState({ bonus: '0', deductions: '0' });
 
   const companyId = activeCompany?.id || '';
+
+  // Handle payslip route: show individual payslip for current user
+  const isPayslipView = !!payslipId;
+  const payslipRecord = useMemo(() => {
+    if (!isPayslipView || !currentUser) return null;
+    if (payslipId === 'latest') {
+      // Find latest finalized or any payroll record for current user
+      return payrollRecords
+        .filter(p => p.employee_id === currentUser.id && p.company_id === companyId)
+        .sort((a, b) => b.period.localeCompare(a.period))[0] || null;
+    }
+    return payrollRecords.find(p => p.id === payslipId && p.employee_id === currentUser.id) || null;
+  }, [payslipId, payrollRecords, currentUser, companyId, isPayslipView]);
 
   // Filter payroll records for selected period
   const period = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
@@ -132,6 +147,55 @@ export default function PayrollPage() {
   const formatNum = (num: number) => {
     return num.toLocaleString('id-ID');
   };
+
+  // Payslip view for /payslip/:id route
+  if (isPayslipView) {
+    if (!payslipRecord) {
+      return (
+        <div className="max-w-lg mx-auto text-center py-12">
+          <h2 className="text-xl font-bold mb-2">Slip Gaji Tidak Ditemukan</h2>
+          <p className="text-muted-foreground mb-4">Belum ada data slip gaji untuk akun Anda.</p>
+        </div>
+      );
+    }
+    return (
+      <div className="max-w-lg mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Slip Gaji</h1>
+          <p className="text-muted-foreground">Periode {payslipRecord.period}</p>
+        </div>
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div><p className="text-muted-foreground">Nama</p><p className="font-medium">{payslipRecord.employee_name}</p></div>
+              <div><p className="text-muted-foreground">NIK</p><p className="font-medium">{payslipRecord.employee_nik}</p></div>
+              <div><p className="text-muted-foreground">Hari Kerja</p><p className="font-medium">{payslipRecord.working_days} hari</p></div>
+              <div><p className="text-muted-foreground">Hadir</p><p className="font-medium">{payslipRecord.days_present} hari</p></div>
+            </div>
+            <div className="border-t pt-4 space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Gaji Pokok</span><span>{formatCurrency(payslipRecord.base_salary)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Transport</span><span>{formatCurrency(payslipRecord.transport)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Uang Makan</span><span>{formatCurrency(payslipRecord.uang_makan)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Lembur</span><span>{formatCurrency(payslipRecord.overtime_pay)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Bonus</span><span>{formatCurrency(payslipRecord.bonus)}</span></div>
+              {payslipRecord.deductions > 0 && (
+                <div className="flex justify-between"><span className="text-muted-foreground">Potongan</span><span className="text-red-600">-{formatCurrency(payslipRecord.deductions)}</span></div>
+              )}
+            </div>
+            <div className="border-t pt-4 flex justify-between text-lg font-bold">
+              <span>Total Gaji</span>
+              <span className="text-primary">{formatCurrency(payslipRecord.total_pay)}</span>
+            </div>
+            <div className="text-center">
+              <span className={`text-xs px-2 py-1 rounded-full ${payslipRecord.status === 'FINALIZED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                {payslipRecord.status}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

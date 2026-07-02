@@ -10,6 +10,7 @@ service PostgreSQL saja:
 ```env
 DATABASE_URL=<Internal Connection URL dari service PostgreSQL>
 PORT=3000
+API_KEY=<random string untuk melindungi API endpoint>
 ```
 
 Gunakan internal URL karena kedua service berada dalam project/environment Easypanel yang

@@ -18,6 +18,8 @@ interface AttendanceData {
   corrections: AttendanceCorrection[];
 }
 
+const MAX_RETRY_COUNT = 5;
+
 interface PendingMutation {
   queueId: string;
   collection: CollectionName;
@@ -25,6 +27,8 @@ interface PendingMutation {
   recordId: string;
   body: Record<string, unknown>;
   createdAt: string;
+  retryCount?: number;
+  lastError?: string;
 }
 
 interface AttendanceState extends AttendanceData {
@@ -249,19 +253,44 @@ async function flushPendingMutations(): Promise<void> {
     try {
       while (store.getState().pendingMutations.length > 0) {
         const mutation = store.getState().pendingMutations[0];
+
+        // Drop mutations that exceeded max retries
+        if ((mutation.retryCount || 0) >= MAX_RETRY_COUNT) {
+          console.warn(`Dropping mutation ${mutation.queueId} after ${MAX_RETRY_COUNT} retries: ${mutation.lastError}`);
+          store.setState((state) => ({
+            pendingMutations: state.pendingMutations.filter(
+              (item) => item.queueId !== mutation.queueId,
+            ),
+          }));
+          continue;
+        }
+
         const basePath = `/api/${apiPaths[mutation.collection]}`;
         const url = mutation.method === 'PATCH' ? `${basePath}/${mutation.recordId}` : basePath;
 
-        await requestJson(url, {
-          method: mutation.method,
-          body: JSON.stringify(mutation.body),
-        });
+        try {
+          await requestJson(url, {
+            method: mutation.method,
+            body: JSON.stringify(mutation.body),
+          });
 
-        store.setState((state) => ({
-          pendingMutations: state.pendingMutations.filter(
-            (item) => item.queueId !== mutation.queueId,
-          ),
-        }));
+          store.setState((state) => ({
+            pendingMutations: state.pendingMutations.filter(
+              (item) => item.queueId !== mutation.queueId,
+            ),
+          }));
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+          // Increment retry count and move to end of queue
+          store.setState((state) => ({
+            pendingMutations: [
+              ...state.pendingMutations.filter((item) => item.queueId !== mutation.queueId),
+              { ...mutation, retryCount: (mutation.retryCount || 0) + 1, lastError: errorMsg },
+            ],
+          }));
+          // Break to avoid infinite loop on repeated failures
+          break;
+        }
       }
       await refreshFromServer();
     } catch (error) {

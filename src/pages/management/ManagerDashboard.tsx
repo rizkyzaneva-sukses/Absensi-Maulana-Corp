@@ -92,7 +92,7 @@ export default function ManagerDashboard() {
       <div>
         <h1 className="text-2xl font-bold">Dashboard Manager</h1>
         <p className="text-muted-foreground">
-          {getMonthName(now.getMonth())} {now.getFullYear()} • Hari ini: {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
+          {getMonthName(now.getMonth() + 1)} {now.getFullYear()} • Hari ini: {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
         {todayHoliday && (
           <Badge variant="secondary" className="mt-1">

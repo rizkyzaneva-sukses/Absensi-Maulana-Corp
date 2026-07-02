@@ -3,19 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
+import type { WorkSchedule } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StepIndicator } from '@/components/common/StepIndicator';
 import { SelfieCapture } from '@/components/attendance/SelfieCapture';
 import { Check, Clock, Camera, AlertTriangle } from 'lucide-react';
-import { calculateEarlyLeaveMinutes, calculateOvertimeMinutes, determineCheckOutStatus, getTodayStr, formatTimeFromISO } from '@/lib/attendance';
+import { calculateEarlyLeaveMinutes, calculateOvertimeMinutes, determineCheckOutStatus, getTodayStr, formatTimeFromISO, resolveSchedule } from '@/lib/attendance';
 import type { AttendanceStatus } from '@/types';
 
 export default function CheckOutPage() {
   const { currentUser } = useAuthStore();
   const { attendances, updateAttendance } = useAttendanceStore();
-  const { overtimeSettings } = useDataStore();
+  const { overtimeSettings, workSchedules } = useDataStore();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -47,9 +48,10 @@ export default function CheckOutPage() {
     );
   }
 
-  // Calculate scheduled end (simplified - using 17:00 default)
-  const scheduledEnd = '17:00';
+  // Resolve schedule from employee's assigned work schedule
   const now = new Date();
+  const schedule = currentUser ? resolveSchedule(currentUser, now, workSchedules as WorkSchedule[]) : { start: '08:00', end: '17:00', is_workday: true };
+  const scheduledEnd = schedule.end;
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const scheduledEndMinutes = parseInt(scheduledEnd.split(':')[0]) * 60 + parseInt(scheduledEnd.split(':')[1]);
   const isEarlyLeave = nowMinutes < scheduledEndMinutes;

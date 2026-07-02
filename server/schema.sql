@@ -20,6 +20,9 @@ CREATE INDEX IF NOT EXISTS app_sync_attendance_company_date_idx
 CREATE INDEX IF NOT EXISTS app_sync_attendance_employee_date_idx
   ON app_sync_attendance_records (employee_id, attendance_date DESC);
 
+CREATE INDEX IF NOT EXISTS app_sync_attendance_emp_company_date_idx
+  ON app_sync_attendance_records (employee_id, company_id, attendance_date DESC);
+
 CREATE TABLE IF NOT EXISTS app_sync_leave_requests (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL,

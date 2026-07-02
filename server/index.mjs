@@ -10,6 +10,7 @@ const rootDir = path.resolve(__dirname, '..');
 const distDir = path.join(rootDir, 'dist');
 const databaseUrl = process.env.DATABASE_URL;
 const port = Number(process.env.PORT || 3000);
+const allowedOrigin = process.env.ALLOWED_ORIGIN || null;
 
 if (!databaseUrl) {
   console.error('DATABASE_URL wajib diisi agar sinkronisasi PostgreSQL dapat berjalan.');
@@ -118,10 +119,21 @@ async function listCollection(table) {
 async function importCollection(client, table, records) {
   if (!Array.isArray(records) || records.length === 0) return;
 
-  const validRecords = records.filter((record) =>
-    record?.id && record?.company_id && record?.employee_id &&
-    (table !== 'app_sync_attendance_records' || record?.date),
-  );
+  const MAX_IMPORT_SIZE = 5000;
+  if (records.length > MAX_IMPORT_SIZE) {
+    const error = new Error(`Import terlalu besar. Maksimal ${MAX_IMPORT_SIZE} record per koleksi.`);
+    error.status = 400;
+    throw error;
+  }
+
+  const validRecords = records.filter((record) => {
+    if (!record?.id || !record?.company_id || !record?.employee_id) return false;
+    if (table === 'app_sync_attendance_records' && !record?.date) return false;
+    // Basic type validation
+    if (typeof record.id !== 'string' || typeof record.company_id !== 'string') return false;
+    if (record.id.length > 100 || record.company_id.length > 100) return false;
+    return true;
+  });
 
   for (let start = 0; start < validRecords.length; start += 500) {
     const batch = validRecords.slice(start, start + 500);
@@ -251,12 +263,57 @@ async function patchRecord(table, id, changes) {
 }
 
 app.disable('x-powered-by');
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '2mb' }));
 app.use((request, response, next) => {
   response.setHeader('X-Content-Type-Options', 'nosniff');
   response.setHeader('Referrer-Policy', 'same-origin');
+  // CORS
+  const origin = request.headers.origin;
+  if (origin) {
+    if (!allowedOrigin || origin === allowedOrigin) {
+      response.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+    response.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (request.method === 'OPTIONS') return response.sendStatus(204);
   next();
 });
+
+// Rate limiter (simple in-memory)
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 120;
+function rateLimit(request, response, next) {
+  const key = request.ip || request.socket.remoteAddress;
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+  if (!entry || now - entry.start > RATE_LIMIT_WINDOW_MS) {
+    rateLimitStore.set(key, { start: now, count: 1 });
+    return next();
+  }
+  entry.count += 1;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return response.status(429).json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' });
+  }
+  next();
+}
+app.use(rateLimit);
+
+// API Key auth (optional — skipped if API_KEY not set)
+const apiKey = process.env.API_KEY;
+if (apiKey) {
+  app.use('/api', (request, response, next) => {
+    // Skip auth for health check and SSE events
+    if (request.path === '/health' || request.path === '/events') return next();
+    const provided = request.headers['x-api-key'];
+    if (provided !== apiKey) {
+      return response.status(401).json({ error: 'API key tidak valid atau tidak diberikan.' });
+    }
+    next();
+  });
+}
 
 app.get('/api/health', async (_request, response, next) => {
   try {

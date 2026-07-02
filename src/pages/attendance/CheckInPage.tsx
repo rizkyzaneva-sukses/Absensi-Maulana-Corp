@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
+import type { WorkSchedule } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StepIndicator } from '@/components/common/StepIndicator';
 import { LocationValidator } from '@/components/attendance/LocationValidator';
 import { SelfieCapture } from '@/components/attendance/SelfieCapture';
-import { generateId, getTodayStr, determineCheckInStatus } from '@/lib/attendance';
+import { generateId, getTodayStr, determineCheckInStatus, resolveSchedule } from '@/lib/attendance';
 import type { GeoValidationResult } from '@/lib/geo';
 import { cn } from '@/lib/utils';
 import { MapPin, Camera, QrCode, Check, ChevronRight } from 'lucide-react';
@@ -17,7 +18,7 @@ import type { GeoPoint, CheckInMethod } from '@/types';
 export default function CheckInPage() {
   const { currentUser, activeCompany } = useAuthStore();
   const { attendances, addAttendance } = useAttendanceStore();
-  const { locations } = useDataStore();
+  const { locations, workSchedules } = useDataStore();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -65,10 +66,12 @@ export default function CheckInPage() {
     const now = new Date();
     const checkInTime = now.toISOString();
 
-    // Determine status based on schedule (default 08:00)
-    const status = determineCheckInStatus(checkInTime, '08:00', false);
+    // Determine status based on employee's resolved schedule
+    const schedule = currentUser ? resolveSchedule(currentUser, now, workSchedules as WorkSchedule[]) : { start: '08:00', end: '17:00', is_workday: true };
+    const status = determineCheckInStatus(checkInTime, schedule.start, false);
+    const scheduledStartMinutes = parseInt(schedule.start.split(':')[0]) * 60 + parseInt(schedule.start.split(':')[1]);
     const lateMinutes = status === 'TERLAMBAT'
-      ? Math.max(0, (now.getHours() * 60 + now.getMinutes()) - (8 * 60))
+      ? Math.max(0, (now.getHours() * 60 + now.getMinutes()) - scheduledStartMinutes)
       : 0;
 
     const record = {

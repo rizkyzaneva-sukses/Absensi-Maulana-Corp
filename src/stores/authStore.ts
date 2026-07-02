@@ -39,16 +39,10 @@ export const useAuthStore = create<AuthState>()(
         if (!employee) return false;
 
         const { customPasswords } = get();
-        const defaultPasswords: Record<string, string> = {
-          'asfizaneva@gmail.com': '100Jtperhari',
-          'financeelyasr@gmail.com': 'sukses123',
-          'creativeelyasrnew@gmail.com': 'suksesmudaaye',
-          'cselyasrsukses@gmail.com': 'suksesberlimpah1',
-          'annisanurafifahh@gmail.com': 'berkahsukses04',
-          'yasrikhaira1@gmail.com': '100Jtperhari',
-          'rizkyzaneva@gmail.com': 'admin123'
-        };
-        const validPassword = customPasswords[employee.id] || defaultPasswords[email] || 'admin123';
+        // Passwords are stored in localStorage via customPasswords (set by admin or profile page).
+        // Default password for new accounts is 'admin123' — users should change it after first login.
+        const DEFAULT_PASSWORD = 'admin123';
+        const validPassword = customPasswords[employee.id] || DEFAULT_PASSWORD;
         if (password !== validPassword) return false;
 
         let userCompanies: Company[];
