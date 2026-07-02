@@ -21,6 +21,9 @@ membuat tabel dan index. Saat browser pertama kali membuka versi baru, cache loc
 yang lama diimpor dengan `ON CONFLICT DO NOTHING`; sesudah itu semua perubahan dikirim ke
 PostgreSQL dan disebarkan ke perangkat aktif melalui Server-Sent Events.
 
+Tabel sinkronisasi memakai awalan `app_sync_` agar aman berdampingan dengan tabel lama yang
+mungkin sudah ada di database.
+
 Container aplikasi sekarang membuka port `3000`. Bila domain/proxy service sebelumnya diatur
 manual ke port Nginx `80`, ubah target port-nya menjadi `3000` sebelum redeploy.
 

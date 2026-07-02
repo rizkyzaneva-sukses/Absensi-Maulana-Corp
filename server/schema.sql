@@ -1,10 +1,10 @@
-CREATE TABLE IF NOT EXISTS app_metadata (
+CREATE TABLE IF NOT EXISTS app_sync_metadata (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS attendance_records (
+CREATE TABLE IF NOT EXISTS app_sync_attendance_records (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL,
   employee_id TEXT NOT NULL,
@@ -14,13 +14,13 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   UNIQUE (company_id, employee_id, attendance_date)
 );
 
-CREATE INDEX IF NOT EXISTS attendance_records_company_date_idx
-  ON attendance_records (company_id, attendance_date DESC);
+CREATE INDEX IF NOT EXISTS app_sync_attendance_company_date_idx
+  ON app_sync_attendance_records (company_id, attendance_date DESC);
 
-CREATE INDEX IF NOT EXISTS attendance_records_employee_date_idx
-  ON attendance_records (employee_id, attendance_date DESC);
+CREATE INDEX IF NOT EXISTS app_sync_attendance_employee_date_idx
+  ON app_sync_attendance_records (employee_id, attendance_date DESC);
 
-CREATE TABLE IF NOT EXISTS leave_requests (
+CREATE TABLE IF NOT EXISTS app_sync_leave_requests (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL,
   employee_id TEXT NOT NULL,
@@ -28,10 +28,10 @@ CREATE TABLE IF NOT EXISTS leave_requests (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS leave_requests_company_idx
-  ON leave_requests (company_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS app_sync_leave_company_idx
+  ON app_sync_leave_requests (company_id, updated_at DESC);
 
-CREATE TABLE IF NOT EXISTS overtime_requests (
+CREATE TABLE IF NOT EXISTS app_sync_overtime_requests (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL,
   employee_id TEXT NOT NULL,
@@ -39,10 +39,10 @@ CREATE TABLE IF NOT EXISTS overtime_requests (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS overtime_requests_company_idx
-  ON overtime_requests (company_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS app_sync_overtime_company_idx
+  ON app_sync_overtime_requests (company_id, updated_at DESC);
 
-CREATE TABLE IF NOT EXISTS attendance_corrections (
+CREATE TABLE IF NOT EXISTS app_sync_attendance_corrections (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL,
   employee_id TEXT NOT NULL,
@@ -50,5 +50,5 @@ CREATE TABLE IF NOT EXISTS attendance_corrections (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS attendance_corrections_company_idx
-  ON attendance_corrections (company_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS app_sync_corrections_company_idx
+  ON app_sync_attendance_corrections (company_id, updated_at DESC);

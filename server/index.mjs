@@ -44,10 +44,10 @@ let listenerClient;
 let listenerRetryTimer;
 
 const collections = {
-  attendances: { table: 'attendance_records', apiPath: 'attendances' },
-  leaveRequests: { table: 'leave_requests', apiPath: 'leave-requests' },
-  overtimeRequests: { table: 'overtime_requests', apiPath: 'overtime-requests' },
-  corrections: { table: 'attendance_corrections', apiPath: 'corrections' },
+  attendances: { table: 'app_sync_attendance_records', apiPath: 'attendances' },
+  leaveRequests: { table: 'app_sync_leave_requests', apiPath: 'leave-requests' },
+  overtimeRequests: { table: 'app_sync_overtime_requests', apiPath: 'overtime-requests' },
+  corrections: { table: 'app_sync_attendance_corrections', apiPath: 'corrections' },
 };
 
 function sendEvent(payload) {
@@ -94,7 +94,7 @@ async function initializeDatabase() {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   await pool.query(schema);
   await pool.query(
-    `INSERT INTO app_metadata (key, value)
+    `INSERT INTO app_sync_metadata (key, value)
      VALUES ('instance_id', $1)
      ON CONFLICT (key) DO NOTHING`,
     [crypto.randomUUID()],
@@ -102,7 +102,7 @@ async function initializeDatabase() {
 }
 
 async function getInstanceId() {
-  const result = await pool.query("SELECT value FROM app_metadata WHERE key = 'instance_id'");
+  const result = await pool.query("SELECT value FROM app_sync_metadata WHERE key = 'instance_id'");
   return result.rows[0]?.value;
 }
 
@@ -120,7 +120,7 @@ async function importCollection(client, table, records) {
 
   const validRecords = records.filter((record) =>
     record?.id && record?.company_id && record?.employee_id &&
-    (table !== 'attendance_records' || record?.date),
+    (table !== 'app_sync_attendance_records' || record?.date),
   );
 
   for (let start = 0; start < validRecords.length; start += 500) {
@@ -129,7 +129,7 @@ async function importCollection(client, table, records) {
     const parameters = [];
 
     for (const record of batch) {
-      if (table === 'attendance_records') {
+      if (table === 'app_sync_attendance_records') {
         const offset = parameters.length;
         parameters.push(
           record.id,
@@ -146,7 +146,7 @@ async function importCollection(client, table, records) {
       }
     }
 
-    const columns = table === 'attendance_records'
+    const columns = table === 'app_sync_attendance_records'
       ? '(id, company_id, employee_id, attendance_date, payload)'
       : '(id, company_id, employee_id, payload)';
     await client.query(
@@ -163,7 +163,7 @@ async function upsertRecord(table, record) {
     throw error;
   }
 
-  if (table === 'attendance_records') {
+  if (table === 'app_sync_attendance_records') {
     if (!record.date) {
       const error = new Error('Data absensi wajib memiliki tanggal.');
       error.status = 400;
@@ -173,7 +173,7 @@ async function upsertRecord(table, record) {
     try {
       await client.query('BEGIN');
       let result = await client.query(
-        `SELECT payload FROM attendance_records
+        `SELECT payload FROM app_sync_attendance_records
          WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date
          FOR UPDATE`,
         [record.company_id, record.employee_id, record.date],
@@ -181,7 +181,7 @@ async function upsertRecord(table, record) {
 
       if (result.rowCount === 0) {
         result = await client.query(
-          `INSERT INTO attendance_records (id, company_id, employee_id, attendance_date, payload)
+          `INSERT INTO app_sync_attendance_records (id, company_id, employee_id, attendance_date, payload)
            VALUES ($1, $2, $3, $4::date, $5::jsonb)
            ON CONFLICT DO NOTHING
            RETURNING payload`,
@@ -191,7 +191,7 @@ async function upsertRecord(table, record) {
 
       if (result.rowCount === 0) {
         result = await client.query(
-          `SELECT payload FROM attendance_records
+          `SELECT payload FROM app_sync_attendance_records
            WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date`,
           [record.company_id, record.employee_id, record.date],
         );
