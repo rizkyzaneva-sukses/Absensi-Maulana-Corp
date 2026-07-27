@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import pg from 'pg';
+import nodemailer from 'nodemailer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -11,6 +12,24 @@ const distDir = path.join(rootDir, 'dist');
 const databaseUrl = process.env.DATABASE_URL;
 const port = Number(process.env.PORT || 3000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || null;
+
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = Number(process.env.SMTP_PORT || 587);
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+const smtpFrom = process.env.SMTP_FROM || smtpUser;
+const mailTransporter = smtpHost && smtpUser && smtpPass
+  ? nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: { user: smtpUser, pass: smtpPass },
+    })
+  : null;
+
+if (!mailTransporter) {
+  console.warn('SMTP belum dikonfigurasi (SMTP_HOST/SMTP_USER/SMTP_PASS). Fitur reset password via email tidak akan berfungsi.');
+}
 
 if (!databaseUrl) {
   console.error('DATABASE_URL wajib diisi agar sinkronisasi PostgreSQL dapat berjalan.');
@@ -305,8 +324,10 @@ app.use(rateLimit);
 const apiKey = process.env.API_KEY;
 if (apiKey) {
   app.use('/api', (request, response, next) => {
-    // Skip auth for health check and SSE events
-    if (request.path === '/health' || request.path === '/events') return next();
+    // Skip auth for health check, SSE events, and (unauthenticated) password reset
+    if (request.path === '/health' || request.path === '/events' || request.path.startsWith('/auth/password-reset/')) {
+      return next();
+    }
     const provided = request.headers['x-api-key'];
     if (provided !== apiKey) {
       return response.status(401).json({ error: 'API key tidak valid atau tidak diberikan.' });
@@ -314,6 +335,86 @@ if (apiKey) {
     next();
   });
 }
+
+// Password reset via email code (in-memory, single-instance store)
+const passwordResetStore = new Map();
+const RESET_CODE_TTL_MS = 10 * 60 * 1000;
+const RESET_CODE_MAX_ATTEMPTS = 5;
+const RESET_REQUEST_COOLDOWN_MS = 60 * 1000;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function hashResetCode(code) {
+  return crypto.createHash('sha256').update(code).digest('hex');
+}
+
+function generateResetCode() {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+}
+
+app.post('/api/auth/password-reset/request', async (request, response, next) => {
+  try {
+    const email = String(request.body?.email || '').trim().toLowerCase();
+    if (!EMAIL_REGEX.test(email)) {
+      return response.status(400).json({ error: 'Format email tidak valid.' });
+    }
+
+    const now = Date.now();
+    const existing = passwordResetStore.get(email);
+    if (existing && now - existing.lastSentAt < RESET_REQUEST_COOLDOWN_MS) {
+      return response.status(429).json({ error: 'Tunggu sebentar sebelum meminta kode baru.' });
+    }
+
+    if (!mailTransporter) {
+      console.error('Permintaan reset password gagal: SMTP belum dikonfigurasi.');
+      return response.status(500).json({ error: 'Layanan email belum dikonfigurasi di server.' });
+    }
+
+    const code = generateResetCode();
+    passwordResetStore.set(email, {
+      codeHash: hashResetCode(code),
+      expiresAt: now + RESET_CODE_TTL_MS,
+      attempts: 0,
+      lastSentAt: now,
+    });
+
+    await mailTransporter.sendMail({
+      from: smtpFrom,
+      to: email,
+      subject: 'Kode Reset Password - Maulana Corp',
+      text: `Kode verifikasi reset password Anda: ${code}\n\nKode berlaku selama 10 menit. Abaikan email ini jika Anda tidak meminta reset password.`,
+      html: `<p>Kode verifikasi reset password Anda:</p><p style="font-size:24px;font-weight:bold;letter-spacing:4px;">${code}</p><p>Kode berlaku selama 10 menit. Abaikan email ini jika Anda tidak meminta reset password.</p>`,
+    });
+
+    response.json({ ok: true, message: 'Kode verifikasi telah dikirim ke email Anda.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/auth/password-reset/verify', (request, response) => {
+  const email = String(request.body?.email || '').trim().toLowerCase();
+  const code = String(request.body?.code || '').trim();
+
+  const entry = passwordResetStore.get(email);
+  if (!entry || Date.now() > entry.expiresAt) {
+    passwordResetStore.delete(email);
+    return response.status(400).json({ error: 'Kode tidak valid atau sudah kedaluwarsa.' });
+  }
+
+  if (entry.attempts >= RESET_CODE_MAX_ATTEMPTS) {
+    passwordResetStore.delete(email);
+    return response.status(429).json({ error: 'Terlalu banyak percobaan. Minta kode baru.' });
+  }
+
+  entry.attempts += 1;
+
+  if (hashResetCode(code) !== entry.codeHash) {
+    return response.status(400).json({ error: 'Kode salah.' });
+  }
+
+  passwordResetStore.delete(email);
+  response.json({ ok: true });
+});
 
 app.get('/api/health', async (_request, response, next) => {
   try {

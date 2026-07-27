@@ -11,6 +11,14 @@ service PostgreSQL saja:
 DATABASE_URL=<Internal Connection URL dari service PostgreSQL>
 PORT=3000
 API_KEY=<random string untuk melindungi API endpoint>
+
+# Wajib agar fitur "Lupa Password" (kode dikirim via email) berfungsi
+SMTP_HOST=<host SMTP, mis. smtp.gmail.com>
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=<user SMTP>
+SMTP_PASS=<password/App Password SMTP>
+SMTP_FROM=<alamat pengirim, opsional — default ke SMTP_USER>
 ```
 
 Gunakan internal URL karena kedua service berada dalam project/environment Easypanel yang

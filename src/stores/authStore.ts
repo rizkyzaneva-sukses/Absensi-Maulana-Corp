@@ -14,7 +14,17 @@ interface AuthState {
   switchCompany: (companyId: string) => void;
   updatePassword: (newPassword: string) => boolean;
   changeEmployeePassword: (employeeId: string, newPassword: string) => boolean;
+  resetPasswordWithEmail: (email: string, newPassword: string) => boolean;
   customPasswords: Record<string, string>;
+}
+
+function findEmployeeByEmail(email: string): Employee | undefined {
+  const dataStoreState = JSON.parse(localStorage.getItem('data-storage-v2') || '{}');
+  const dataStoreEmployees: Employee[] = dataStoreState?.state?.employees || [];
+  return (
+    dataStoreEmployees.find(e => e.user_email === email && e.is_active) ||
+    staticEmployees.find(e => e.user_email === email && e.is_active)
+  );
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -27,15 +37,8 @@ export const useAuthStore = create<AuthState>()(
       customPasswords: {} as Record<string, string>,
 
       login: (email: string, password: string) => {
-        // Try dataStore employees first (persisted, may have updated is_active)
-        const dataStoreState = JSON.parse(localStorage.getItem('data-storage') || '{}');
-        const dataStoreEmployees: Employee[] = dataStoreState?.state?.employees || [];
-        
         // Check dataStore first (has latest updates from owner), then fallback to static
-        let employee = dataStoreEmployees.find(e => e.user_email === email && e.is_active);
-        if (!employee) {
-          employee = staticEmployees.find(e => e.user_email === email && e.is_active);
-        }
+        const employee = findEmployeeByEmail(email);
         if (!employee) return false;
 
         const { customPasswords } = get();
@@ -104,6 +107,18 @@ export const useAuthStore = create<AuthState>()(
           customPasswords: {
             ...state.customPasswords,
             [employeeId]: newPassword
+          }
+        }));
+        return true;
+      },
+
+      resetPasswordWithEmail: (email: string, newPassword: string) => {
+        const employee = findEmployeeByEmail(email);
+        if (!employee) return false;
+        set((state) => ({
+          customPasswords: {
+            ...state.customPasswords,
+            [employee.id]: newPassword
           }
         }));
         return true;

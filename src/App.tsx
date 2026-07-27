@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 // Auth pages
 import LoginPage from '@/pages/auth/LoginPage';
 import CompanyPickerPage from '@/pages/auth/CompanyPickerPage';
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 
 // Core pages (eagerly loaded)
 import EmployeeDashboard from '@/pages/dashboard/EmployeeDashboard';
@@ -100,6 +101,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/pick-company" element={<CompanyPickerPage />} />
 
           {/* Protected Routes with Layout */}
