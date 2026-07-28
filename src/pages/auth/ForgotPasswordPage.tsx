@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore, findEmployeeByEmail } from '@/stores/authStore';
+import { apiHeaders } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +37,7 @@ export default function ForgotPasswordPage() {
 
       const response = await fetch('/api/auth/password-reset/request', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           telegram_chat_id: employee.telegram_chat_id,
@@ -72,7 +73,7 @@ export default function ForgotPasswordPage() {
     try {
       const response = await fetch('/api/auth/password-reset/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({ email: email.trim().toLowerCase(), code: code.trim() }),
       });
       const result = await response.json().catch(() => null);

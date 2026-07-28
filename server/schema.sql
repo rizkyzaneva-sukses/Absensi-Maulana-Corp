@@ -56,6 +56,17 @@ CREATE TABLE IF NOT EXISTS app_sync_attendance_corrections (
 CREATE INDEX IF NOT EXISTS app_sync_corrections_company_idx
   ON app_sync_attendance_corrections (company_id, updated_at DESC);
 
+CREATE TABLE IF NOT EXISTS app_sync_employees (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL,
+  employee_id TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS app_sync_employees_company_idx
+  ON app_sync_employees (company_id, updated_at DESC);
+
 CREATE TABLE IF NOT EXISTS telegram_connections (
   id SERIAL PRIMARY KEY,
   employee_id TEXT NOT NULL,

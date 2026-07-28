@@ -62,6 +62,10 @@ export interface Employee {
   uang_makan: number;
   telegram_chat_id: string;
   created_at: string;
+  // Login password (plaintext — this app has no server-side auth session; kept
+  // in sync via the employees collection so it works across devices). Empty
+  // means the account still uses the shared default password.
+  password?: string;
 }
 
 export interface GeoPoint {

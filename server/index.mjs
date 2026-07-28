@@ -72,7 +72,14 @@ const collections = {
   leaveRequests: { table: 'app_sync_leave_requests', apiPath: 'leave-requests' },
   overtimeRequests: { table: 'app_sync_overtime_requests', apiPath: 'overtime-requests' },
   corrections: { table: 'app_sync_attendance_corrections', apiPath: 'corrections' },
+  employees: { table: 'app_sync_employees', apiPath: 'employees' },
 };
+
+// app_sync_employees rows describe an employee itself rather than a record that
+// belongs to one, so there's no separate "owning employee" — use the row's own id.
+function resolveRecordEmployeeId(table, record) {
+  return table === 'app_sync_employees' ? record?.id : record?.employee_id;
+}
 
 function sendEvent(payload) {
   const message = `event: sync\ndata: ${JSON.stringify(payload)}\n\n`;
@@ -150,7 +157,7 @@ async function importCollection(client, table, records) {
   }
 
   const validRecords = records.filter((record) => {
-    if (!record?.id || !record?.company_id || !record?.employee_id) return false;
+    if (!record?.id || !record?.company_id || !resolveRecordEmployeeId(table, record)) return false;
     if (table === 'app_sync_attendance_records' && !record?.date) return false;
     // Basic type validation
     if (typeof record.id !== 'string' || typeof record.company_id !== 'string') return false;
@@ -176,7 +183,7 @@ async function importCollection(client, table, records) {
         values.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}::date, $${offset + 5}::jsonb)`);
       } else {
         const offset = parameters.length;
-        parameters.push(record.id, record.company_id, record.employee_id, JSON.stringify(record));
+        parameters.push(record.id, record.company_id, resolveRecordEmployeeId(table, record), JSON.stringify(record));
         values.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}::jsonb)`);
       }
     }
@@ -192,7 +199,8 @@ async function importCollection(client, table, records) {
 }
 
 async function upsertRecord(table, record) {
-  if (!record?.id || !record?.company_id || !record?.employee_id) {
+  const employeeId = resolveRecordEmployeeId(table, record);
+  if (!record?.id || !record?.company_id || !employeeId) {
     const error = new Error('Data wajib memiliki id, company_id, dan employee_id.');
     error.status = 400;
     throw error;
@@ -248,7 +256,7 @@ async function upsertRecord(table, record) {
      ON CONFLICT (id)
      DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()
      RETURNING payload`,
-    [record.id, record.company_id, record.employee_id, JSON.stringify(record)],
+    [record.id, record.company_id, employeeId, JSON.stringify(record)],
   );
   return result.rows[0].payload;
 }
@@ -427,6 +435,11 @@ app.post('/api/auth/password-reset/verify', (request, response) => {
 
 app.post('/api/telegram/connect', async (request, response, next) => {
   try {
+    if (!telegramBotToken) {
+      console.error('Connect Telegram gagal: TELEGRAM_BOT_TOKEN belum dikonfigurasi.');
+      return response.status(500).json({ error: 'Layanan Telegram belum dikonfigurasi di server. Hubungi admin untuk mengatur TELEGRAM_BOT_TOKEN.' });
+    }
+
     const employeeId = String(request.body?.employee_id || '').trim();
     if (!employeeId) {
       return response.status(400).json({ error: 'employee_id wajib diisi.' });
@@ -544,13 +557,14 @@ app.get('/api/health', async (_request, response, next) => {
 
 app.get('/api/sync', async (_request, response, next) => {
   try {
-    const [attendances, leaveRequests, overtimeRequests, corrections] = await Promise.all([
+    const [attendances, leaveRequests, overtimeRequests, corrections, employees] = await Promise.all([
       listCollection(collections.attendances.table),
       listCollection(collections.leaveRequests.table),
       listCollection(collections.overtimeRequests.table),
       listCollection(collections.corrections.table),
+      listCollection(collections.employees.table),
     ]);
-    response.json({ attendances, leaveRequests, overtimeRequests, corrections });
+    response.json({ attendances, leaveRequests, overtimeRequests, corrections, employees });
   } catch (error) {
     next(error);
   }
@@ -594,6 +608,16 @@ for (const [name, config] of Object.entries(collections)) {
       next(error);
     }
   });
+
+  app.delete(`/api/${config.apiPath}/:id`, async (request, response, next) => {
+    try {
+      await pool.query(`DELETE FROM ${config.table} WHERE id = $1`, [request.params.id]);
+      await publishChange(name, request.params.id);
+      response.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
 }
 
 app.get('/api/events', (request, response) => {
@@ -619,9 +643,24 @@ app.use(express.static(distDir, {
   },
 }));
 
+// Browser fetches can't read process.env, so the (already non-secret — it only
+// gates a public SPA's own API) API_KEY is inlined into the HTML shell it serves.
+let indexHtmlTemplate = null;
+function renderIndexHtml() {
+  if (indexHtmlTemplate === null) {
+    indexHtmlTemplate = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
+  }
+  if (!apiKey) return indexHtmlTemplate;
+  const inject = `<script>window.__API_KEY__=${JSON.stringify(apiKey)};</script>`;
+  return indexHtmlTemplate.includes('</head>')
+    ? indexHtmlTemplate.replace('</head>', `${inject}</head>`)
+    : inject + indexHtmlTemplate;
+}
+
 app.use((_request, response) => {
   response.setHeader('Cache-Control', 'no-cache');
-  response.sendFile(path.join(distDir, 'index.html'));
+  response.setHeader('Content-Type', 'text/html; charset=utf-8');
+  response.send(renderIndexHtml());
 });
 
 app.use((error, _request, response, _next) => {

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Attendance, LeaveRequest, OvertimeRequest, AttendanceCorrection } from '@/types';
+import { apiHeaders } from '@/lib/api';
 import {
   attendanceRecords as initialAttendance,
   leaveRequests as initialLeave,
@@ -74,7 +75,7 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...apiHeaders(),
       ...init?.headers,
     },
   });

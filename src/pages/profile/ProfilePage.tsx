@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuthStore, findEmployeeByEmail } from '@/stores/authStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useDataStore } from '@/stores/dataStore';
+import { apiHeaders } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +30,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/telegram/connect', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({ employee_id: currentUser.id }),
       });
       const data = await res.json();
@@ -47,29 +49,13 @@ export default function ProfilePage() {
   const pollStatus = useCallback(async () => {
     if (!tgToken || !currentUser) return;
     try {
-      const res = await fetch(`/api/telegram/connect-status?token=${tgToken}`);
+      const res = await fetch(`/api/telegram/connect-status?token=${tgToken}`, { headers: apiHeaders() });
       const data = await res.json();
       if (data.connected) {
         setTgConnected(true);
         setTgPolling(false);
-        // Save telegram_chat_id to employee data in localStorage
-        const employee = findEmployeeByEmail(currentUser.user_email);
-        if (employee) {
-          const dsKey = 'data-storage-v2';
-          const ds = JSON.parse(localStorage.getItem(dsKey) || '{}');
-          const employees = ds?.state?.employees || [];
-          const idx = employees.findIndex((e: any) => e.id === currentUser.id);
-          if (idx >= 0) {
-            employees[idx].telegram_chat_id = data.chat_id;
-          } else {
-            employees.push({ ...currentUser, telegram_chat_id: data.chat_id });
-          }
-          ds.state = ds.state || {};
-          ds.state.employees = employees;
-          localStorage.setItem(dsKey, JSON.stringify(ds));
-          // Also update auth store
-          useAuthStore.setState({ currentUser: { ...currentUser, telegram_chat_id: data.chat_id } });
-        }
+        useDataStore.getState().updateEmployee(currentUser.id, { telegram_chat_id: data.chat_id });
+        useAuthStore.setState({ currentUser: { ...currentUser, telegram_chat_id: data.chat_id } });
       }
     } catch {
       // ignore polling errors
