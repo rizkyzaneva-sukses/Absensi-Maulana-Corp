@@ -12,13 +12,15 @@ DATABASE_URL=<Internal Connection URL dari service PostgreSQL>
 PORT=3000
 API_KEY=<random string untuk melindungi API endpoint>
 
-# Wajib agar fitur "Lupa Password" (kode dikirim via email) berfungsi
-SMTP_HOST=<host SMTP, mis. smtp.gmail.com>
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=<user SMTP>
-SMTP_PASS=<password/App Password SMTP>
-SMTP_FROM=<alamat pengirim, opsional — default ke SMTP_USER>
+# Wajib agar fitur "Connect Telegram" & "Lupa Password" (kode dikirim via Telegram) berfungsi
+TELEGRAM_BOT_TOKEN=<token dari @BotFather>
+```
+
+Setelah `TELEGRAM_BOT_TOKEN` diisi dan service di-redeploy, daftarkan webhook sekali (ganti
+`<TOKEN>` dan `<DOMAIN>`):
+
+```
+curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<DOMAIN>/api/telegram/webhook"
 ```
 
 Gunakan internal URL karena kedua service berada dalam project/environment Easypanel yang
