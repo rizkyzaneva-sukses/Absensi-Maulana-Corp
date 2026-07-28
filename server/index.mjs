@@ -14,12 +14,12 @@ const databaseUrl = process.env.DATABASE_URL;
 const port = Number(process.env.PORT || 3000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || null;
 
-const smtpHost = process.env.SMTP_HOST;
+const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
 const smtpPort = Number(process.env.SMTP_PORT || 587);
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
-const smtpFrom = process.env.SMTP_FROM || smtpUser;
-const mailTransporter = smtpHost && smtpUser && smtpPass
+const smtpFrom = process.env.SMTP_FROM || smtpUser || 'noreply@maulanacorp.com';
+const mailTransporter = smtpUser && smtpPass
   ? nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
