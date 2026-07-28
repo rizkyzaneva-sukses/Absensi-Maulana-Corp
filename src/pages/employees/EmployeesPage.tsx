@@ -161,6 +161,7 @@ export default function EmployeesPage() {
         uang_kehadiran: parseInt(formData.uang_kehadiran) || 0,
         uang_transport: parseInt(formData.uang_transport) || 0,
         uang_makan: parseInt(formData.uang_makan) || 0,
+        telegram_chat_id: '',
         created_at: new Date().toISOString(),
       };
       addEmployee(newEmployee);
