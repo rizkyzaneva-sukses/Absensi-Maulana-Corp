@@ -18,7 +18,7 @@ interface AuthState {
   customPasswords: Record<string, string>;
 }
 
-function findEmployeeByEmail(email: string): Employee | undefined {
+export function findEmployeeByEmail(email: string): Employee | undefined {
   const dataStoreState = JSON.parse(localStorage.getItem('data-storage-v2') || '{}');
   const dataStoreEmployees: Employee[] = dataStoreState?.state?.employees || [];
   return (

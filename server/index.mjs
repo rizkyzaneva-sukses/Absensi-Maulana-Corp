@@ -5,7 +5,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import pg from 'pg';
-import nodemailer from 'nodemailer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -14,22 +13,26 @@ const databaseUrl = process.env.DATABASE_URL;
 const port = Number(process.env.PORT || 3000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || null;
 
-const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-const smtpPort = Number(process.env.SMTP_PORT || 587);
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const smtpFrom = process.env.SMTP_FROM || smtpUser || 'noreply@maulanacorp.com';
-const mailTransporter = smtpUser && smtpPass
-  ? nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: smtpUser, pass: smtpPass },
-    })
-  : null;
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 
-if (!mailTransporter) {
-  console.warn('SMTP belum dikonfigurasi (SMTP_HOST/SMTP_USER/SMTP_PASS). Fitur reset password via email tidak akan berfungsi.');
+if (!telegramBotToken) {
+  console.warn('TELEGRAM_BOT_TOKEN belum dikonfigurasi. Fitur reset password via Telegram tidak akan berfungsi.');
+}
+
+// Send message via Telegram Bot API
+async function sendTelegramMessage(chatId, text) {
+  if (!telegramBotToken) throw new Error('Telegram bot belum dikonfigurasi.');
+  const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+  });
+  const data = await res.json();
+  if (!data.ok) {
+    throw new Error(data.description || 'Gagal mengirim pesan Telegram.');
+  }
+  return data;
 }
 
 if (!databaseUrl) {
@@ -355,6 +358,7 @@ function generateResetCode() {
 app.post('/api/auth/password-reset/request', async (request, response, next) => {
   try {
     const email = String(request.body?.email || '').trim().toLowerCase();
+    const telegramChatId = String(request.body?.telegram_chat_id || '').trim();
     if (!EMAIL_REGEX.test(email)) {
       return response.status(400).json({ error: 'Format email tidak valid.' });
     }
@@ -365,9 +369,13 @@ app.post('/api/auth/password-reset/request', async (request, response, next) => 
       return response.status(429).json({ error: 'Tunggu sebentar sebelum meminta kode baru.' });
     }
 
-    if (!mailTransporter) {
-      console.error('Permintaan reset password gagal: SMTP belum dikonfigurasi.');
-      return response.status(500).json({ error: 'Layanan email belum dikonfigurasi di server.' });
+    if (!telegramBotToken) {
+      console.error('Permintaan reset password gagal: Telegram bot belum dikonfigurasi.');
+      return response.status(500).json({ error: 'Layanan Telegram belum dikonfigurasi di server.' });
+    }
+
+    if (!telegramChatId) {
+      return response.status(400).json({ error: 'Akun Anda belum terhubung dengan Telegram. Hubungi admin.' });
     }
 
     const code = generateResetCode();
@@ -378,15 +386,11 @@ app.post('/api/auth/password-reset/request', async (request, response, next) => 
       lastSentAt: now,
     });
 
-    await mailTransporter.sendMail({
-      from: smtpFrom,
-      to: email,
-      subject: 'Kode Reset Password - Maulana Corp',
-      text: `Kode verifikasi reset password Anda: ${code}\n\nKode berlaku selama 10 menit. Abaikan email ini jika Anda tidak meminta reset password.`,
-      html: `<p>Kode verifikasi reset password Anda:</p><p style="font-size:24px;font-weight:bold;letter-spacing:4px;">${code}</p><p>Kode berlaku selama 10 menit. Abaikan email ini jika Anda tidak meminta reset password.</p>`,
-    });
+    const message = `🔐 <b>Kode Reset Password</b>\n\nKode verifikasi Anda: <code>${code}</code>\n\nKode berlaku selama 10 menit.\nAbaikan pesan ini jika Anda tidak meminta reset password.`;
 
-    response.json({ ok: true, message: 'Kode verifikasi telah dikirim ke email Anda.' });
+    await sendTelegramMessage(telegramChatId, message);
+
+    response.json({ ok: true, message: 'Kode verifikasi telah dikirim ke Telegram Anda.' });
   } catch (error) {
     next(error);
   }

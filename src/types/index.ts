@@ -60,6 +60,7 @@ export interface Employee {
   uang_kehadiran: number;
   uang_transport: number;
   uang_makan: number;
+  telegram_chat_id: string;
   created_at: string;
 }
 

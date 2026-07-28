@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore, findEmployeeByEmail } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Building2, Eye, EyeOff, MailCheck } from 'lucide-react';
+import { ArrowLeft, Building2, Eye, EyeOff, Send } from 'lucide-react';
 
 type Step = 'email' | 'reset';
 
@@ -26,16 +26,27 @@ export default function ForgotPasswordPage() {
     setError('');
     setLoading(true);
     try {
+      const employee = findEmployeeByEmail(email.trim().toLowerCase());
+      if (!employee) {
+        throw new Error('Email tidak terdaftar di sistem.');
+      }
+      if (!employee.telegram_chat_id) {
+        throw new Error('Akun Anda belum terhubung dengan Telegram. Hubungi admin untuk menghubungkan.');
+      }
+
       const response = await fetch('/api/auth/password-reset/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          telegram_chat_id: employee.telegram_chat_id,
+        }),
       });
       const result = await response.json().catch(() => null);
       if (!response.ok) {
         throw new Error(result?.error || 'Gagal mengirim kode verifikasi.');
       }
-      setInfo(result?.message || 'Kode verifikasi telah dikirim ke email Anda.');
+      setInfo(result?.message || 'Kode verifikasi telah dikirim ke Telegram Anda.');
       setStep('reset');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal mengirim kode verifikasi.');
@@ -98,7 +109,7 @@ export default function ForgotPasswordPage() {
             <>
               <CardHeader>
                 <CardTitle className="text-xl">Lupa Password</CardTitle>
-                <CardDescription>Masukkan email akun Anda, kami akan mengirimkan kode verifikasi.</CardDescription>
+                <CardDescription>Masukkan email akun Anda, kami akan mengirimkan kode verifikasi via Telegram.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleRequestCode} className="space-y-4">
@@ -114,7 +125,12 @@ export default function ForgotPasswordPage() {
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Mengirim...' : 'Kirim Kode Verifikasi'}
+                    {loading ? 'Mengirim...' : (
+                      <span className="flex items-center gap-2">
+                        <Send size={16} />
+                        Kirim Kode via Telegram
+                      </span>
+                    )}
                   </Button>
                   <Link
                     to="/login"
@@ -131,8 +147,8 @@ export default function ForgotPasswordPage() {
               <CardHeader>
                 <CardTitle className="text-xl">Masukkan Kode & Password Baru</CardTitle>
                 <CardDescription className="flex items-start gap-1.5">
-                  <MailCheck size={16} className="mt-0.5 shrink-0 text-emerald-600" />
-                  <span>{info || `Kode verifikasi telah dikirim ke ${email}.`}</span>
+                  <Send size={16} className="mt-0.5 shrink-0 text-emerald-600" />
+                  <span>{info || `Kode verifikasi telah dikirim ke Telegram Anda.`}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
