@@ -55,3 +55,15 @@ CREATE TABLE IF NOT EXISTS app_sync_attendance_corrections (
 
 CREATE INDEX IF NOT EXISTS app_sync_corrections_company_idx
   ON app_sync_attendance_corrections (company_id, updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS telegram_connections (
+  id SERIAL PRIMARY KEY,
+  employee_id TEXT NOT NULL,
+  connect_token TEXT UNIQUE NOT NULL,
+  chat_id TEXT,
+  connected_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS telegram_connections_token_idx
+  ON telegram_connections (connect_token);

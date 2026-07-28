@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useAuthStore } from '@/stores/authStore';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuthStore, findEmployeeByEmail } from '@/stores/authStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { KeyRound, User } from 'lucide-react';
+import { KeyRound, User, Send, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { currentUser, updatePassword } = useAuthStore();
@@ -11,6 +11,76 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Telegram connect state
+  const [tgLoading, setTgLoading] = useState(false);
+  const [tgLink, setTgLink] = useState('');
+  const [tgToken, setTgToken] = useState('');
+  const [tgPolling, setTgPolling] = useState(false);
+  const [tgConnected, setTgConnected] = useState(false);
+
+  const isTelegramConnected = !!currentUser?.telegram_chat_id;
+
+  const handleConnectTelegram = async () => {
+    if (!currentUser) return;
+    setTgLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/telegram/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employee_id: currentUser.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal membuat link koneksi.');
+      setTgLink(data.telegram_link);
+      setTgToken(data.token);
+      setTgPolling(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menghubungkan Telegram.');
+    } finally {
+      setTgLoading(false);
+    }
+  };
+
+  // Poll connection status
+  const pollStatus = useCallback(async () => {
+    if (!tgToken || !currentUser) return;
+    try {
+      const res = await fetch(`/api/telegram/connect-status?token=${tgToken}`);
+      const data = await res.json();
+      if (data.connected) {
+        setTgConnected(true);
+        setTgPolling(false);
+        // Save telegram_chat_id to employee data in localStorage
+        const employee = findEmployeeByEmail(currentUser.user_email);
+        if (employee) {
+          const dsKey = 'data-storage-v2';
+          const ds = JSON.parse(localStorage.getItem(dsKey) || '{}');
+          const employees = ds?.state?.employees || [];
+          const idx = employees.findIndex((e: any) => e.id === currentUser.id);
+          if (idx >= 0) {
+            employees[idx].telegram_chat_id = data.chat_id;
+          } else {
+            employees.push({ ...currentUser, telegram_chat_id: data.chat_id });
+          }
+          ds.state = ds.state || {};
+          ds.state.employees = employees;
+          localStorage.setItem(dsKey, JSON.stringify(ds));
+          // Also update auth store
+          useAuthStore.setState({ currentUser: { ...currentUser, telegram_chat_id: data.chat_id } });
+        }
+      }
+    } catch {
+      // ignore polling errors
+    }
+  }, [tgToken, currentUser]);
+
+  useEffect(() => {
+    if (!tgPolling) return;
+    const interval = setInterval(pollStatus, 2000);
+    return () => clearInterval(interval);
+  }, [tgPolling, pollStatus]);
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +141,69 @@ export default function ProfilePage() {
               <Input value={currentUser.employee_id} disabled />
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Telegram Connect Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Send size={18} /> Telegram
+          </CardTitle>
+          <CardDescription>
+            {isTelegramConnected
+              ? 'Akun Anda sudah terhubung dengan Telegram. Kode reset password akan dikirim ke sini.'
+              : 'Hubungkan akun Anda dengan Telegram untuk menerima kode reset password.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isTelegramConnected ? (
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle2 size={18} />
+              <span className="font-medium">Terkoneksi</span>
+            </div>
+          ) : tgConnected ? (
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle2 size={18} />
+              <span className="font-medium">Berhasil terhubung!</span>
+            </div>
+          ) : tgLink ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Klik link di bawah ini, lalu tekan <strong>Start</strong> di Telegram:
+              </p>
+              <a
+                href={tgLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+              >
+                <Send size={14} />
+                Buka Telegram
+                <ExternalLink size={12} />
+              </a>
+              {tgPolling && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 size={14} className="animate-spin" />
+                  Menunggu konfirmasi dari Telegram...
+                </div>
+              )}
+            </div>
+          ) : (
+            <Button onClick={handleConnectTelegram} disabled={tgLoading}>
+              {tgLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin" />
+                  Memproses...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Send size={14} />
+                  Connect Telegram
+                </span>
+              )}
+            </Button>
+          )}
         </CardContent>
       </Card>
 

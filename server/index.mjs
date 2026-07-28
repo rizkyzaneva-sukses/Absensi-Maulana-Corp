@@ -329,7 +329,7 @@ const apiKey = process.env.API_KEY;
 if (apiKey) {
   app.use('/api', (request, response, next) => {
     // Skip auth for health check, SSE events, and (unauthenticated) password reset
-    if (request.path === '/health' || request.path === '/events' || request.path.startsWith('/auth/password-reset/')) {
+    if (request.path === '/health' || request.path === '/events' || request.path.startsWith('/auth/password-reset/') || request.path.startsWith('/telegram/')) {
       return next();
     }
     const provided = request.headers['x-api-key'];
@@ -420,6 +420,118 @@ app.post('/api/auth/password-reset/verify', (request, response) => {
   passwordResetStore.delete(email);
   response.json({ ok: true });
 });
+
+// ─── Telegram Connect Flow ───────────────────────────────────────────
+// Employee clicks "Connect Telegram" → gets a token → opens bot link →
+// bot receives /start TOKEN → saves chat_id → done.
+
+app.post('/api/telegram/connect', async (request, response, next) => {
+  try {
+    const employeeId = String(request.body?.employee_id || '').trim();
+    if (!employeeId) {
+      return response.status(400).json({ error: 'employee_id wajib diisi.' });
+    }
+
+    // Invalidate any old pending connections for this employee
+    await pool.query(
+      `DELETE FROM telegram_connections WHERE employee_id = $1 AND chat_id IS NULL`,
+      [employeeId],
+    );
+
+    const connectToken = crypto.randomBytes(16).toString('hex');
+    await pool.query(
+      `INSERT INTO telegram_connections (employee_id, connect_token) VALUES ($1, $2)`,
+      [employeeId, connectToken],
+    );
+
+    const botUsername = await getBotUsername();
+    const telegramLink = `https://t.me/${botUsername}?start=${connectToken}`;
+
+    response.json({ ok: true, token: connectToken, telegram_link: telegramLink });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/telegram/connect-status', async (request, response, next) => {
+  try {
+    const token = String(request.query?.token || '').trim();
+    if (!token) {
+      return response.status(400).json({ error: 'Token wajib diisi.' });
+    }
+
+    const result = await pool.query(
+      `SELECT chat_id, connected_at FROM telegram_connections WHERE connect_token = $1`,
+      [token],
+    );
+
+    if (result.rowCount === 0) {
+      return response.status(404).json({ error: 'Token tidak valid.' });
+    }
+
+    const row = result.rows[0];
+    if (row.chat_id) {
+      response.json({ ok: true, connected: true, chat_id: row.chat_id });
+    } else {
+      response.json({ ok: true, connected: false });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Telegram Bot Webhook — receives /start TOKEN from users
+app.post('/api/telegram/webhook', async (request, response) => {
+  try {
+    const update = request.body;
+    const message = update.message || update.my_chat_member;
+    if (!message) return response.json({ ok: true });
+
+    const chatId = String(message.chat?.id || '');
+    const text = String(message.text || '').trim();
+    const firstName = message.from?.first_name || 'User';
+
+    // Handle /start TOKEN
+    if (text.startsWith('/start ')) {
+      const token = text.slice(7).trim();
+      const result = await pool.query(
+        `UPDATE telegram_connections
+         SET chat_id = $1, connected_at = NOW()
+         WHERE connect_token = $2 AND chat_id IS NULL
+         RETURNING employee_id`,
+        [chatId, token],
+      );
+
+      if (result.rowCount > 0) {
+        await sendTelegramMessage(chatId, `✅ <b>Telegram berhasil terhubung!</b>\n\nHalo ${firstName}, akun Anda sudah terhubung dengan sistem absensi.\nSekarang Anda bisa mereset password via Telegram.`);
+      } else {
+        await sendTelegramMessage(chatId, `⚠️ Token tidak valid atau sudah digunakan.`);
+      }
+    } else if (text === '/start') {
+      await sendTelegramMessage(chatId, `👋 Halo ${firstName}!\n\nGunakan link dari aplikasi absensi untuk menghubungkan akun Anda.\n\nKetik /help untuk bantuan.`);
+    } else if (text === '/help') {
+      await sendTelegramMessage(chatId, `📖 <b>Bantuan</b>\n\nUntuk menghubungkan akun:\n1. Buka aplikasi absensi\n2. Klik "Connect Telegram"\n3. Klik link yang muncul\n4. Klik "Start" di sini\n\nUntuk reset password:\n1. Klik "Lupa Password" di login\n2. Masukkan email Anda\n3. Kode akan dikirim ke Telegram ini`);
+    }
+
+    response.json({ ok: true });
+  } catch (error) {
+    console.error('Telegram webhook error:', error);
+    response.json({ ok: true }); // Always return 200 to Telegram
+  }
+});
+
+// Helper: get bot username (cached)
+let cachedBotUsername = null;
+async function getBotUsername() {
+  if (cachedBotUsername) return cachedBotUsername;
+  const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/getMe`);
+  const data = await res.json();
+  if (data.ok) {
+    cachedBotUsername = data.result.username;
+    return cachedBotUsername;
+  }
+  throw new Error('Gagal mendapatkan info bot Telegram.');
+}
 
 app.get('/api/health', async (_request, response, next) => {
   try {
