@@ -19,8 +19,6 @@ interface AttendanceData {
   corrections: AttendanceCorrection[];
 }
 
-const MAX_RETRY_COUNT = 5;
-
 interface PendingMutation {
   queueId: string;
   collection: CollectionName;
@@ -66,6 +64,19 @@ let flushPromise: Promise<void> | null = null;
 let eventSource: EventSource | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let fallbackRefreshTimer: ReturnType<typeof setInterval> | null = null;
+let retryFlushTimer: ReturnType<typeof setTimeout> | null = null;
+let retryBackoffMs = 5_000;
+const MIN_BACKOFF_MS = 5_000;
+const MAX_BACKOFF_MS = 2 * 60_000;
+
+function scheduleRetryFlush() {
+  if (retryFlushTimer) return;
+  retryFlushTimer = setTimeout(() => {
+    retryFlushTimer = null;
+    void flushPendingMutations();
+  }, retryBackoffMs);
+  retryBackoffMs = Math.min(retryBackoffMs * 2, MAX_BACKOFF_MS);
+}
 
 function makeQueueId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -251,20 +262,15 @@ async function flushPendingMutations(): Promise<void> {
 
   flushPromise = (async () => {
     const store = useAttendanceStore;
+    let hadFailure = false;
     try {
-      while (store.getState().pendingMutations.length > 0) {
-        const mutation = store.getState().pendingMutations[0];
-
-        // Drop mutations that exceeded max retries
-        if ((mutation.retryCount || 0) >= MAX_RETRY_COUNT) {
-          console.warn(`Dropping mutation ${mutation.queueId} after ${MAX_RETRY_COUNT} retries: ${mutation.lastError}`);
-          store.setState((state) => ({
-            pendingMutations: state.pendingMutations.filter(
-              (item) => item.queueId !== mutation.queueId,
-            ),
-          }));
-          continue;
-        }
+      // Attempt every mutation currently queued exactly once per pass, keyed by id rather than
+      // position — a mutation that keeps failing must not block the ones behind it in the queue.
+      const attemptedIds = new Set<string>();
+      for (;;) {
+        const mutation = store.getState().pendingMutations.find((item) => !attemptedIds.has(item.queueId));
+        if (!mutation) break;
+        attemptedIds.add(mutation.queueId);
 
         const basePath = `/api/${apiPaths[mutation.collection]}`;
         const url = mutation.method === 'PATCH' ? `${basePath}/${mutation.recordId}` : basePath;
@@ -281,26 +287,37 @@ async function flushPendingMutations(): Promise<void> {
             ),
           }));
         } catch (err) {
+          hadFailure = true;
           const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-          // Increment retry count and move to end of queue
           store.setState((state) => ({
-            pendingMutations: [
-              ...state.pendingMutations.filter((item) => item.queueId !== mutation.queueId),
-              { ...mutation, retryCount: (mutation.retryCount || 0) + 1, lastError: errorMsg },
-            ],
+            pendingMutations: state.pendingMutations.map((item) =>
+              item.queueId === mutation.queueId
+                ? { ...item, retryCount: (item.retryCount || 0) + 1, lastError: errorMsg }
+                : item,
+            ),
           }));
-          // Break to avoid infinite loop on repeated failures
-          break;
         }
       }
       await refreshFromServer();
     } catch (error) {
+      hadFailure = true;
       store.setState({
         syncStatus: 'offline',
         syncError: error instanceof Error ? error.message : 'Perubahan belum dapat dikirim.',
       });
     } finally {
       flushPromise = null;
+      if (hadFailure) {
+        // Nothing external (next check-in, tab focus, online event) is guaranteed to happen soon,
+        // so keep nudging the queue on a growing backoff until it drains — never give up silently.
+        scheduleRetryFlush();
+      } else {
+        retryBackoffMs = MIN_BACKOFF_MS;
+        if (retryFlushTimer) {
+          clearTimeout(retryFlushTimer);
+          retryFlushTimer = null;
+        }
+      }
     }
   })();
 
@@ -329,9 +346,24 @@ function startRealtimeConnection() {
   };
 
   window.addEventListener('online', () => void flushPendingMutations());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    // Retry any queued mutations the moment the app is reopened/foregrounded, rather than
+    // waiting on the next check-in or a lucky 'online' event that may never fire on a flaky link.
+    if (useAttendanceStore.getState().pendingMutations.length > 0) {
+      void flushPendingMutations();
+    } else {
+      scheduleRefresh();
+    }
+  });
   if (!fallbackRefreshTimer) {
     fallbackRefreshTimer = setInterval(() => {
-      if (document.visibilityState === 'visible') scheduleRefresh();
+      if (document.visibilityState !== 'visible') return;
+      if (useAttendanceStore.getState().pendingMutations.length > 0) {
+        void flushPendingMutations();
+      } else {
+        scheduleRefresh();
+      }
     }, 60_000);
   }
 }
