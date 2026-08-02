@@ -8,7 +8,8 @@ import {
   CheckCircle, ArrowRight, ChevronDown, ChevronUp,
   LogIn, LogOut, Calendar, DollarSign, BarChart3,
   MapPin, AlertTriangle, Briefcase,
-  ScrollText, ListTodo, Printer, Info, Zap
+  ScrollText, ListTodo, Printer, Info, Zap,
+  Layers, Sparkles, GitBranch, CheckSquare
 } from 'lucide-react';
 
 function Accordion({ title, icon, children, defaultOpen = false, badge }: {
@@ -846,6 +847,196 @@ export default function UserGuidePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* ===================== VERSI & DAFTAR FITUR ===================== */}
+      <SectionLabel
+        badge={<Badge className="bg-emerald-100 text-emerald-700">v2.0 — 3 Agustus 2026</Badge>}
+        label="Daftar Lengkap Semua Fitur"
+      />
+
+      <Card className="border-emerald-200 dark:border-emerald-900">
+        <CardContent className="p-4 space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Berikut adalah seluruh fitur yang tersedia di aplikasi Absensi Maulana Corp,
+            dikelompokkan berdasarkan role pengguna.
+          </p>
+
+          {/* SEMUA FITUR */}
+          <div className="text-sm space-y-3">
+            {/* Karyawan */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-blue-100 text-blue-700 text-[10px]">Karyawan</Badge>
+                <span className="text-xs font-semibold text-muted-foreground">9 Fitur</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+                {[
+                  { icon: '✅', label: 'Check-in (Absen Masuk)', desc: 'Validasi GPS + QR/Selfie. Otomatis deteksi terlambat (08:00 = telat).' },
+                  { icon: '✅', label: 'Check-out (Absen Pulang)', desc: 'Jam pulang 17:00 (Sen–Jum), 15:00 (Sabtu). Lembur otomatis dihitung.' },
+                  { icon: '✅', label: 'Lembur Otomatis', desc: 'Jika checkout melewati jam pulang + 15 menit toleransi, lembur dihitung otomatis.' },
+                  { icon: '✅', label: 'Pengajuan Cuti / Izin / Sakit', desc: 'Pilih jenis, tanggal, alasan. Notifikasi dikirim ke atasan.' },
+                  { icon: '✅', label: 'Saldo Cuti', desc: 'Lihat sisa cuti tahunan & sakit saat mengajukan. Deduct otomatis saat disetujui.' },
+                  { icon: '✅', label: 'Riwayat Absensi Saya', desc: 'Histori harian + ringkasan bulanan. Bisa dicetak.' },
+                  { icon: '✅', label: 'Slip Gaji / Payslip', desc: 'Lihat rincian gaji per periode. Akses via dashboard atau /payslip/:id.' },
+                  { icon: '✅', label: 'Notifikasi Personal', desc: 'Pemberitahuan saat cuti/lembur/koreksi disetujui/ditolak, slip gaji tersedia.' },
+                  { icon: '✅', label: 'Dashboard Pribadi', desc: 'Salam, status hari ini, quick actions, absensi terakhir, pengajuan pending.' },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                    <span className="text-emerald-600 shrink-0 mt-0.5">{f.icon}</span>
+                    <div>
+                      <p className="font-medium text-xs">{f.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Manager */}
+            <div className="pt-2 border-t">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-purple-100 text-purple-700 text-[10px]">Manager</Badge>
+                <span className="text-xs font-semibold text-muted-foreground">6 Fitur</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+                {[
+                  { icon: '✅', label: 'Dashboard Manager', desc: 'Statistik tim hari ini: hadir, terlambat, belum absen, izin/cuti.' },
+                  { icon: '✅', label: 'Approval Cuti & Izin', desc: 'Setujui/tolak pengajuan. Saldo cuti otomatis berkurang saat disetujui.' },
+                  { icon: '✅', label: 'Approval Lembur', desc: 'Setujui/tolak lembur terencana. Notifikasi ke karyawan.' },
+                  { icon: '✅', label: 'Approval Koreksi Absensi', desc: 'Setujui/tolak koreksi jam check-in/out. Data otomatis terupdate.' },
+                  { icon: '✅', label: 'Analytics Tim', desc: 'Grafik tren mingguan, ranking kehadiran, leaderboard keterlambatan, lembur.' },
+                  { icon: '✅', label: 'Notifikasi Approval', desc: 'Notifikasi real-time saat ada pengajuan baru atau sudah diproses.' },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                    <span className="text-emerald-600 shrink-0 mt-0.5">{f.icon}</span>
+                    <div>
+                      <p className="font-medium text-xs">{f.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Admin */}
+            <div className="pt-2 border-t">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-amber-100 text-amber-700 text-[10px]">Admin Perusahaan</Badge>
+                <span className="text-xs font-semibold text-muted-foreground">11 Fitur</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+                {[
+                  { icon: '✅', label: 'Kelola Karyawan', desc: 'Tambah, edit, hapus, atur gaji & tunjangan per karyawan.' },
+                  { icon: '✅', label: 'Pengaturan Jadwal Kerja', desc: 'Buat template jadwal (jam masuk/pulang, hari kerja). Assign ke karyawan.' },
+                  { icon: '✅', label: 'Shift Management', desc: 'Dialog assign karyawan ke jadwal tertentu melalui tombol Users di WorkSchedule.' },
+                  { icon: '✅', label: 'Lokasi Kantor (GPS)', desc: 'Atur lokasi & radius untuk validasi check-in.' },
+                  { icon: '✅', label: 'Hari Libur', desc: 'Tambah libur nasional/Islam/Setengah Hari. Tidak dihitung sebagai hari kerja.' },
+                  { icon: '✅', label: 'Pengaturan Lembur', desc: 'Toleransi keterlambatan (default 15 menit), maks lembur/hari.' },
+                  { icon: '✅', label: 'Payroll (Penggajian)', desc: 'Generate gaji per periode. Edit bonus/potongan. Finalize slip gaji.' },
+                  { icon: '✅', label: 'Slip Gaji Otomatis', desc: 'Setiap karyawan bisa lihat slip sendiri. Notifikasi saat di-finalize.' },
+                  { icon: '✅', label: 'Cetak Kartu QR', desc: 'Cetak kartu absensi dengan QR code unik per karyawan.' },
+                  { icon: '✅', label: 'Audit Log', desc: 'Rekam jejak semua perubahan data (siapa, apa, sebelum/sesudah).' },
+                  { icon: '✅', label: 'Auto-mark TIDAK_HADIR', desc: 'Karyawan tanpa check-in di hari kerja otomatis dicatat sebagai Tidak Hadir.' },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                    <span className="text-emerald-600 shrink-0 mt-0.5">{f.icon}</span>
+                    <div>
+                      <p className="font-medium text-xs">{f.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Owner */}
+            <div className="pt-2 border-t">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-red-100 text-red-700 text-[10px]">Owner / Super Admin</Badge>
+                <span className="text-xs font-semibold text-muted-foreground">5 Fitur</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+                {[
+                  { icon: '✅', label: 'Owner Dashboard', desc: 'Ringkasan semua perusahaan: jumlah karyawan, kehadiran hari ini, payroll.' },
+                  { icon: '✅', label: 'Data Absensi Semua Perusahaan', desc: 'Filter tanggal, karyawan, status. Lihat detail check-in/out seluruh tim.' },
+                  { icon: '✅', label: 'Multi-Perusahaan', desc: 'Kelola banyak perusahaan dalam satu akun. Beralih perusahaan lewat header.' },
+                  { icon: '✅', label: 'Akses Penuh', desc: 'Semua fitur admin, manager, dan karyawan tersedia untuk semua perusahaan.' },
+                  { icon: '✅', label: 'Daftar Revisi', desc: 'Tracking perbaikan dan pengembangan sistem (Revision List).' },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                    <span className="text-emerald-600 shrink-0 mt-0.5">{f.icon}</span>
+                    <div>
+                      <p className="font-medium text-xs">{f.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Fitur Teknis */}
+            <div className="pt-2 border-t">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline" className="text-[10px]">Sistem & Teknis</Badge>
+                <span className="text-xs font-semibold text-muted-foreground">7 Fitur</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+                {[
+                  { icon: '⚙️', label: 'Sinkronisasi Server', desc: 'Data tersimpan di PostgreSQL via API. Realtime sync via SSE events.' },
+                  { icon: '⚙️', label: 'Cache Offline', desc: 'Data disimpan di localStorage. Upload otomatis saat online kembali.' },
+                  { icon: '⚙️', label: 'Perhitungan Lembur WIB', desc: 'Semua patokan waktu WIB (Asia/Jakarta). Termasuk Sabtu 15:00, weekday 17:00.' },
+                  { icon: '⚙️', label: 'Rate Lembur per Karyawan', desc: 'Rate = gaji_pokok / (hari_kerja × 8) per jam. Default toleransi 15 menit.' },
+                  { icon: '⚙️', label: 'Cetak (Print-friendly)', desc: 'Slip gaji, riwayat absensi, kartu QR — semua bisa dicetak langsung.' },
+                  { icon: '⚙️', label: 'Dark Mode', desc: 'Tampilan otomatis mengikuti tema sistem (light/dark).' },
+                  { icon: '⚙️', label: 'Role-based Access', desc: 'Karyawan, Manager, Admin, COO, Owner — akses fitur sesuai level.' },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                    <span className="text-amber-600 shrink-0 mt-0.5">{f.icon}</span>
+                    <div>
+                      <p className="font-medium text-xs">{f.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Changelog */}
+            <div className="pt-2 border-t">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span className="text-xs font-semibold">Yang Baru di Versi Ini (v2.0 — 3 Agustus 2026)</span>
+              </div>
+              <div className="space-y-1 text-xs">
+                {[
+                  '✨ Saldo Cuti — tracking sisa dan deduksi otomatis saat disetujui',
+                  '✨ Slip Gaji — tampilan lengkap + riwayat semua periode + tombol cetak',
+                  '✨ Auto-mark TIDAK_HADIR — otomatis mencatat karyawan yang tidak absen',
+                  '✨ Dashboard Performa — grafik tren mingguan, leaderboard terlambat, ranking lembur',
+                  '✨ Shift Management — assign karyawan ke jadwal kerja lewat dialog',
+                  '✨ Notifikasi Approval — pemberitahuan ke karyawan saat cuti/lembur/koreksi diproses',
+                  '✨ Notifikasi Payroll — karyawan mendapat notifikasi saat slip gaji tersedia',
+                  '✨ Export Cetak — semua halaman bisa dicetak dengan tampilan bersih (print-friendly)',
+                  '🐛 Perbaikan bug: toleransi lembur dobel di payroll',
+                  '🐛 Perbaikan bug: jadwal Sabtu 15:00 (sebelumnya hardcode 17:00)',
+                  '🐛 Perbaikan bug: deteksi 08:00 = telat (sekarang sesuai aturan)',
+                  '🐛 Perbaikan bug: parsing tanggal WIB (safe dari zona waktu)',
+                  '🐛 Perbaikan bug: chart analytics include Sabtu',
+                ].map((item, i) => (
+                  <p key={i}>{item}</p>
+                ))}
+              </div>
+            </div>
+
+            {/* Total hitungan */}
+            <div className="pt-2 border-t">
+              <p className="text-xs text-muted-foreground">
+                <strong>Total fitur:</strong> 31 fitur di semua role + 7 fitur sistem = <strong>38 fitur</strong> yang siap digunakan.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
