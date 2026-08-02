@@ -9,6 +9,85 @@ import {
   notifications as initialNotifications,
   employees as initialEmployees,
 } from '@/lib/mock-data';
+import { apiHeaders } from '@/lib/api';
+
+async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: { ...apiHeaders(), ...init?.headers },
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => null);
+    throw new Error(result?.error || `Server mengembalikan status ${response.status}.`);
+  }
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
+
+function mergeEmployeesById(...lists: Array<Employee[] | undefined>): Employee[] {
+  const map = new Map<string, Employee>();
+  for (const list of lists) {
+    for (const employee of list || []) {
+      if (employee?.id) map.set(employee.id, employee);
+    }
+  }
+  return [...map.values()];
+}
+
+// Older builds stored passwords set by the owner panel only in this browser's
+// auth-storage-v2 (customPasswords), never on the server — carry those over
+// onto the employee record itself so they survive the move to server sync.
+function migrateLegacyPasswords(employees: Employee[]): Employee[] {
+  try {
+    const raw = localStorage.getItem('auth-storage-v2');
+    if (!raw) return employees;
+    const customPasswords = JSON.parse(raw)?.state?.customPasswords as Record<string, string> | undefined;
+    if (!customPasswords || Object.keys(customPasswords).length === 0) return employees;
+    return employees.map((e) =>
+      !e.password && customPasswords[e.id] ? { ...e, password: customPasswords[e.id] } : e,
+    );
+  } catch {
+    return employees;
+  }
+}
+
+async function pushEmployee(method: 'POST' | 'PATCH', employee: Employee) {
+  const url = method === 'POST' ? '/api/employees' : `/api/employees/${employee.id}`;
+  try {
+    await requestJson(url, { method, body: JSON.stringify(employee) });
+  } catch (error) {
+    console.error(`Gagal menyinkronkan data karyawan ke server (${method}):`, error);
+  }
+}
+
+async function deleteEmployeeRemote(id: string) {
+  try {
+    await requestJson(`/api/employees/${id}`, { method: 'DELETE' });
+  } catch (error) {
+    console.error('Gagal menghapus data karyawan di server:', error);
+  }
+}
+
+let employeesInitPromise: Promise<void> | null = null;
+async function initializeEmployeesSync(): Promise<void> {
+  if (employeesInitPromise) return employeesInitPromise;
+  employeesInitPromise = (async () => {
+    try {
+      const local = migrateLegacyPasswords(useDataStore.getState().employees);
+      if (local.length > 0) {
+        await requestJson('/api/sync/import', {
+          method: 'POST',
+          body: JSON.stringify({ employees: local }),
+        });
+      }
+      const remote = await requestJson<{ employees: Employee[] }>('/api/sync');
+      useDataStore.setState({ employees: mergeEmployeesById(local, remote.employees) });
+    } catch (error) {
+      console.error('Sinkronisasi data karyawan gagal, memakai data lokal perangkat ini:', error);
+    }
+  })();
+  return employeesInitPromise;
+}
 
 export interface WorkSchedule {
   id: string;
@@ -72,6 +151,7 @@ interface DataState {
   payrollRates: PayrollRates;
 
   // Employee actions
+  initializeEmployeesSync: () => Promise<void>;
   addEmployee: (e: Employee) => void;
   updateEmployee: (id: string, data: Partial<Employee>) => void;
   deleteEmployee: (id: string) => void;
@@ -122,7 +202,7 @@ interface DataState {
 
 export const useDataStore = create<DataState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       holidays: initialHolidays,
       locations: initialLocations,
       teams: initialTeams,
@@ -136,10 +216,20 @@ export const useDataStore = create<DataState>()(
       payrollRates: { lembur_rate_per_jam: 25000 },
 
       // Employee
-      addEmployee: (e) => set((s) => ({ employees: [...s.employees, e] })),
-      updateEmployee: (id, data) =>
-        set((s) => ({ employees: s.employees.map((e) => (e.id === id ? { ...e, ...data } : e)) })),
-      deleteEmployee: (id) => set((s) => ({ employees: s.employees.filter((e) => e.id !== id) })),
+      initializeEmployeesSync,
+      addEmployee: (e) => {
+        set((s) => ({ employees: [...s.employees, e] }));
+        void pushEmployee('POST', e);
+      },
+      updateEmployee: (id, data) => {
+        set((s) => ({ employees: s.employees.map((e) => (e.id === id ? { ...e, ...data } : e)) }));
+        const updated = get().employees.find((e) => e.id === id);
+        if (updated) void pushEmployee('PATCH', updated);
+      },
+      deleteEmployee: (id) => {
+        set((s) => ({ employees: s.employees.filter((e) => e.id !== id) }));
+        void deleteEmployeeRemote(id);
+      },
 
       // Holiday
       addHoliday: (h) => set((s) => ({ holidays: [...s.holidays, h] })),

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Employee, Company } from '@/types';
 import { employees as staticEmployees, companies } from '@/lib/mock-data';
+import { useDataStore } from '@/stores/dataStore';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -14,7 +15,15 @@ interface AuthState {
   switchCompany: (companyId: string) => void;
   updatePassword: (newPassword: string) => boolean;
   changeEmployeePassword: (employeeId: string, newPassword: string) => boolean;
-  customPasswords: Record<string, string>;
+  resetPasswordWithEmail: (email: string, newPassword: string) => boolean;
+}
+
+export function findEmployeeByEmail(email: string): Employee | undefined {
+  const dataStoreEmployees = useDataStore.getState().employees;
+  return (
+    dataStoreEmployees.find(e => e.user_email === email && e.is_active) ||
+    staticEmployees.find(e => e.user_email === email && e.is_active)
+  );
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -24,31 +33,15 @@ export const useAuthStore = create<AuthState>()(
       currentUser: null,
       userCompanies: [],
       activeCompany: null,
-      customPasswords: {} as Record<string, string>,
 
       login: (email: string, password: string) => {
-        // Try dataStore employees first (persisted, may have updated is_active)
-        const dataStoreState = JSON.parse(localStorage.getItem('data-storage') || '{}');
-        const dataStoreEmployees: Employee[] = dataStoreState?.state?.employees || [];
-        
         // Check dataStore first (has latest updates from owner), then fallback to static
-        let employee = dataStoreEmployees.find(e => e.user_email === email && e.is_active);
-        if (!employee) {
-          employee = staticEmployees.find(e => e.user_email === email && e.is_active);
-        }
+        const employee = findEmployeeByEmail(email);
         if (!employee) return false;
 
-        const { customPasswords } = get();
-        const defaultPasswords: Record<string, string> = {
-          'asfizaneva@gmail.com': '100Jtperhari',
-          'financeelyasr@gmail.com': 'sukses123',
-          'creativeelyasrnew@gmail.com': 'suksesmudaaye',
-          'cselyasrsukses@gmail.com': 'suksesberlimpah1',
-          'annisanurafifahh@gmail.com': 'berkahsukses04',
-          'yasrikhaira1@gmail.com': '100Jtperhari',
-          'rizkyzaneva@gmail.com': 'admin123'
-        };
-        const validPassword = customPasswords[employee.id] || defaultPasswords[email] || 'admin123';
+        // Default password for new accounts is 'admin123' — users should change it after first login.
+        const DEFAULT_PASSWORD = 'admin123';
+        const validPassword = employee.password || DEFAULT_PASSWORD;
         if (password !== validPassword) return false;
 
         let userCompanies: Company[];
@@ -93,12 +86,8 @@ export const useAuthStore = create<AuthState>()(
       updatePassword: (newPassword: string) => {
         const { currentUser } = get();
         if (!currentUser) return false;
-        set((state) => ({
-          customPasswords: {
-            ...state.customPasswords,
-            [currentUser.id]: newPassword
-          }
-        }));
+        useDataStore.getState().updateEmployee(currentUser.id, { password: newPassword });
+        set({ currentUser: { ...currentUser, password: newPassword } });
         return true;
       },
 
@@ -106,12 +95,14 @@ export const useAuthStore = create<AuthState>()(
         const { currentUser } = get();
         // Only owner (SUPER_ADMIN, COMPANY_ADMIN, or COO) can change employee passwords
         if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'COMPANY_ADMIN' && currentUser.role !== 'COO')) return false;
-        set((state) => ({
-          customPasswords: {
-            ...state.customPasswords,
-            [employeeId]: newPassword
-          }
-        }));
+        useDataStore.getState().updateEmployee(employeeId, { password: newPassword });
+        return true;
+      },
+
+      resetPasswordWithEmail: (email: string, newPassword: string) => {
+        const employee = findEmployeeByEmail(email);
+        if (!employee) return false;
+        useDataStore.getState().updateEmployee(employee.id, { password: newPassword });
         return true;
       },
     }),

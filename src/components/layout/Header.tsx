@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
-import { Bell, Moon, Sun, Building2, ChevronDown, User, Menu, Cloud, CloudOff } from 'lucide-react';
+import { Bell, Moon, Sun, Building2, ChevronDown, User, Menu, Cloud, CloudOff, Upload, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { notifications } from '@/lib/mock-data';
 import { useState, useMemo } from 'react';
@@ -10,7 +10,7 @@ import { useState, useMemo } from 'react';
 export function Header() {
   const { currentUser, activeCompany, userCompanies, switchCompany, logout } = useAuthStore();
   const { theme, toggleTheme, sidebarOpen, toggleSidebar } = useUIStore();
-  const { syncStatus, syncError, pendingMutations, refreshFromServer, uploadDeviceData } = useAttendanceStore();
+  const { syncStatus, syncError, pendingMutations, lastSyncedAt, refreshFromServer, uploadDeviceData } = useAttendanceStore();
   const isDark = useMemo(() => {
     if (theme === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -22,6 +22,8 @@ export function Header() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [uploadMessage, setUploadMessage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   if (!currentUser) return null;
 
@@ -62,6 +64,48 @@ export function Header() {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {/* Upload Data HP - Prominent button */}
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={async () => {
+            setIsUploading(true);
+            setUploadSuccess(false);
+            setUploadMessage('');
+            try {
+              const total = await uploadDeviceData();
+              setUploadMessage(`${total} data HP sudah disinkronkan ke server`);
+              setUploadSuccess(true);
+              setTimeout(() => setUploadSuccess(false), 3000);
+            } catch {
+              setUploadMessage('Upload gagal—cek koneksi');
+              setUploadSuccess(false);
+            } finally {
+              setIsUploading(false);
+            }
+          }}
+          className={cn(
+            'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all',
+            uploadSuccess
+              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+              : 'bg-primary/10 text-primary hover:bg-primary/20',
+            isUploading && 'opacity-70 cursor-wait'
+          )}
+          title="Upload data absensi dari HP ini ke server"
+        >
+          {isUploading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : uploadSuccess ? (
+            <Check size={14} />
+          ) : (
+            <Upload size={14} />
+          )}
+          <span className="hidden lg:inline">
+            {isUploading ? 'Mengunggah...' : uploadSuccess ? 'Tersinkron!' : 'Sinkron HP'}
+          </span>
+        </button>
+
+        {/* Sync Status */}
         <button
           type="button"
           onClick={() => void refreshFromServer().catch(() => {})}
@@ -71,7 +115,9 @@ export function Header() {
           )}
           title={syncError || (pendingMutations.length > 0
             ? `${pendingMutations.length} perubahan menunggu sinkronisasi`
-            : 'Data tersinkron realtime')}
+            : lastSyncedAt
+              ? `Tersinkron: ${new Date(lastSyncedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+              : 'Data tersinkron realtime')}
         >
           {syncStatus === 'offline' ? <CloudOff size={16} /> : <Cloud size={16} />}
           <span className="hidden lg:inline">
@@ -81,7 +127,9 @@ export function Header() {
                 ? 'Offline'
                 : pendingMutations.length > 0
                   ? `Menunggu (${pendingMutations.length})`
-                  : 'Realtime'}
+                  : lastSyncedAt
+                    ? `Sync ${new Date(lastSyncedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+                    : 'Realtime'}
           </span>
         </button>
 
@@ -201,16 +249,22 @@ export function Header() {
               <button
                 onClick={async () => {
                   setUploadMessage('Mengunggah...');
+                  setIsUploading(true);
                   try {
                     const total = await uploadDeviceData();
                     setUploadMessage(`${total} data HP sudah disinkronkan`);
+                    setUploadSuccess(true);
                   } catch {
                     setUploadMessage('Upload gagal—cek koneksi');
+                    setUploadSuccess(false);
+                  } finally {
+                    setIsUploading(false);
                   }
                 }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm flex items-center gap-2"
               >
-                Upload data HP ini
+                <Upload size={14} />
+                Sinkron data HP ini ke server
               </button>
               {uploadMessage && (
                 <p className="px-3 pb-2 text-xs text-muted-foreground">{uploadMessage}</p>

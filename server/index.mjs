@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,6 +11,29 @@ const rootDir = path.resolve(__dirname, '..');
 const distDir = path.join(rootDir, 'dist');
 const databaseUrl = process.env.DATABASE_URL;
 const port = Number(process.env.PORT || 3000);
+const allowedOrigin = process.env.ALLOWED_ORIGIN || null;
+
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+
+if (!telegramBotToken) {
+  console.warn('TELEGRAM_BOT_TOKEN belum dikonfigurasi. Fitur reset password via Telegram tidak akan berfungsi.');
+}
+
+// Send message via Telegram Bot API
+async function sendTelegramMessage(chatId, text) {
+  if (!telegramBotToken) throw new Error('Telegram bot belum dikonfigurasi.');
+  const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+  });
+  const data = await res.json();
+  if (!data.ok) {
+    throw new Error(data.description || 'Gagal mengirim pesan Telegram.');
+  }
+  return data;
+}
 
 if (!databaseUrl) {
   console.error('DATABASE_URL wajib diisi agar sinkronisasi PostgreSQL dapat berjalan.');
@@ -48,7 +72,14 @@ const collections = {
   leaveRequests: { table: 'app_sync_leave_requests', apiPath: 'leave-requests' },
   overtimeRequests: { table: 'app_sync_overtime_requests', apiPath: 'overtime-requests' },
   corrections: { table: 'app_sync_attendance_corrections', apiPath: 'corrections' },
+  employees: { table: 'app_sync_employees', apiPath: 'employees' },
 };
+
+// app_sync_employees rows describe an employee itself rather than a record that
+// belongs to one, so there's no separate "owning employee" — use the row's own id.
+function resolveRecordEmployeeId(table, record) {
+  return table === 'app_sync_employees' ? record?.id : record?.employee_id;
+}
 
 function sendEvent(payload) {
   const message = `event: sync\ndata: ${JSON.stringify(payload)}\n\n`;
@@ -118,10 +149,21 @@ async function listCollection(table) {
 async function importCollection(client, table, records) {
   if (!Array.isArray(records) || records.length === 0) return;
 
-  const validRecords = records.filter((record) =>
-    record?.id && record?.company_id && record?.employee_id &&
-    (table !== 'app_sync_attendance_records' || record?.date),
-  );
+  const MAX_IMPORT_SIZE = 5000;
+  if (records.length > MAX_IMPORT_SIZE) {
+    const error = new Error(`Import terlalu besar. Maksimal ${MAX_IMPORT_SIZE} record per koleksi.`);
+    error.status = 400;
+    throw error;
+  }
+
+  const validRecords = records.filter((record) => {
+    if (!record?.id || !record?.company_id || !resolveRecordEmployeeId(table, record)) return false;
+    if (table === 'app_sync_attendance_records' && !record?.date) return false;
+    // Basic type validation
+    if (typeof record.id !== 'string' || typeof record.company_id !== 'string') return false;
+    if (record.id.length > 100 || record.company_id.length > 100) return false;
+    return true;
+  });
 
   for (let start = 0; start < validRecords.length; start += 500) {
     const batch = validRecords.slice(start, start + 500);
@@ -141,7 +183,7 @@ async function importCollection(client, table, records) {
         values.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}::date, $${offset + 5}::jsonb)`);
       } else {
         const offset = parameters.length;
-        parameters.push(record.id, record.company_id, record.employee_id, JSON.stringify(record));
+        parameters.push(record.id, record.company_id, resolveRecordEmployeeId(table, record), JSON.stringify(record));
         values.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}::jsonb)`);
       }
     }
@@ -157,7 +199,8 @@ async function importCollection(client, table, records) {
 }
 
 async function upsertRecord(table, record) {
-  if (!record?.id || !record?.company_id || !record?.employee_id) {
+  const employeeId = resolveRecordEmployeeId(table, record);
+  if (!record?.id || !record?.company_id || !employeeId) {
     const error = new Error('Data wajib memiliki id, company_id, dan employee_id.');
     error.status = 400;
     throw error;
@@ -213,7 +256,7 @@ async function upsertRecord(table, record) {
      ON CONFLICT (id)
      DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()
      RETURNING payload`,
-    [record.id, record.company_id, record.employee_id, JSON.stringify(record)],
+    [record.id, record.company_id, employeeId, JSON.stringify(record)],
   );
   return result.rows[0].payload;
 }
@@ -251,12 +294,257 @@ async function patchRecord(table, id, changes) {
 }
 
 app.disable('x-powered-by');
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use((request, response, next) => {
   response.setHeader('X-Content-Type-Options', 'nosniff');
   response.setHeader('Referrer-Policy', 'same-origin');
+  // CORS
+  const origin = request.headers.origin;
+  if (origin) {
+    if (!allowedOrigin || origin === allowedOrigin) {
+      response.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+    response.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (request.method === 'OPTIONS') return response.sendStatus(204);
   next();
 });
+
+// Rate limiter (simple in-memory)
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 120;
+function rateLimit(request, response, next) {
+  const key = request.ip || request.socket.remoteAddress;
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+  if (!entry || now - entry.start > RATE_LIMIT_WINDOW_MS) {
+    rateLimitStore.set(key, { start: now, count: 1 });
+    return next();
+  }
+  entry.count += 1;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return response.status(429).json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' });
+  }
+  next();
+}
+app.use(rateLimit);
+
+// API Key auth (optional — skipped if API_KEY not set)
+const apiKey = process.env.API_KEY;
+if (apiKey) {
+  app.use('/api', (request, response, next) => {
+    // Skip auth for health check, SSE events, and (unauthenticated) password reset
+    if (request.path === '/health' || request.path === '/events' || request.path.startsWith('/auth/password-reset/') || request.path.startsWith('/telegram/')) {
+      return next();
+    }
+    const provided = request.headers['x-api-key'];
+    if (provided !== apiKey) {
+      return response.status(401).json({ error: 'API key tidak valid atau tidak diberikan.' });
+    }
+    next();
+  });
+}
+
+// Password reset via email code (in-memory, single-instance store)
+const passwordResetStore = new Map();
+const RESET_CODE_TTL_MS = 10 * 60 * 1000;
+const RESET_CODE_MAX_ATTEMPTS = 5;
+const RESET_REQUEST_COOLDOWN_MS = 60 * 1000;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function hashResetCode(code) {
+  return crypto.createHash('sha256').update(code).digest('hex');
+}
+
+function generateResetCode() {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+}
+
+app.post('/api/auth/password-reset/request', async (request, response, next) => {
+  try {
+    const email = String(request.body?.email || '').trim().toLowerCase();
+    const telegramChatId = String(request.body?.telegram_chat_id || '').trim();
+    if (!EMAIL_REGEX.test(email)) {
+      return response.status(400).json({ error: 'Format email tidak valid.' });
+    }
+
+    const now = Date.now();
+    const existing = passwordResetStore.get(email);
+    if (existing && now - existing.lastSentAt < RESET_REQUEST_COOLDOWN_MS) {
+      return response.status(429).json({ error: 'Tunggu sebentar sebelum meminta kode baru.' });
+    }
+
+    if (!telegramBotToken) {
+      console.error('Permintaan reset password gagal: Telegram bot belum dikonfigurasi.');
+      return response.status(500).json({ error: 'Layanan Telegram belum dikonfigurasi di server.' });
+    }
+
+    if (!telegramChatId) {
+      return response.status(400).json({ error: 'Akun Anda belum terhubung dengan Telegram. Hubungi admin.' });
+    }
+
+    const code = generateResetCode();
+    passwordResetStore.set(email, {
+      codeHash: hashResetCode(code),
+      expiresAt: now + RESET_CODE_TTL_MS,
+      attempts: 0,
+      lastSentAt: now,
+    });
+
+    const message = `🔐 <b>Kode Reset Password</b>\n\nKode verifikasi Anda: <code>${code}</code>\n\nKode berlaku selama 10 menit.\nAbaikan pesan ini jika Anda tidak meminta reset password.`;
+
+    await sendTelegramMessage(telegramChatId, message);
+
+    response.json({ ok: true, message: 'Kode verifikasi telah dikirim ke Telegram Anda.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/auth/password-reset/verify', (request, response) => {
+  const email = String(request.body?.email || '').trim().toLowerCase();
+  const code = String(request.body?.code || '').trim();
+
+  const entry = passwordResetStore.get(email);
+  if (!entry || Date.now() > entry.expiresAt) {
+    passwordResetStore.delete(email);
+    return response.status(400).json({ error: 'Kode tidak valid atau sudah kedaluwarsa.' });
+  }
+
+  if (entry.attempts >= RESET_CODE_MAX_ATTEMPTS) {
+    passwordResetStore.delete(email);
+    return response.status(429).json({ error: 'Terlalu banyak percobaan. Minta kode baru.' });
+  }
+
+  entry.attempts += 1;
+
+  if (hashResetCode(code) !== entry.codeHash) {
+    return response.status(400).json({ error: 'Kode salah.' });
+  }
+
+  passwordResetStore.delete(email);
+  response.json({ ok: true });
+});
+
+// ─── Telegram Connect Flow ───────────────────────────────────────────
+// Employee clicks "Connect Telegram" → gets a token → opens bot link →
+// bot receives /start TOKEN → saves chat_id → done.
+
+app.post('/api/telegram/connect', async (request, response, next) => {
+  try {
+    if (!telegramBotToken) {
+      console.error('Connect Telegram gagal: TELEGRAM_BOT_TOKEN belum dikonfigurasi.');
+      return response.status(500).json({ error: 'Layanan Telegram belum dikonfigurasi di server. Hubungi admin untuk mengatur TELEGRAM_BOT_TOKEN.' });
+    }
+
+    const employeeId = String(request.body?.employee_id || '').trim();
+    if (!employeeId) {
+      return response.status(400).json({ error: 'employee_id wajib diisi.' });
+    }
+
+    // Invalidate any old pending connections for this employee
+    await pool.query(
+      `DELETE FROM telegram_connections WHERE employee_id = $1 AND chat_id IS NULL`,
+      [employeeId],
+    );
+
+    const connectToken = crypto.randomBytes(16).toString('hex');
+    await pool.query(
+      `INSERT INTO telegram_connections (employee_id, connect_token) VALUES ($1, $2)`,
+      [employeeId, connectToken],
+    );
+
+    const botUsername = await getBotUsername();
+    const telegramLink = `https://t.me/${botUsername}?start=${connectToken}`;
+
+    response.json({ ok: true, token: connectToken, telegram_link: telegramLink });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/telegram/connect-status', async (request, response, next) => {
+  try {
+    const token = String(request.query?.token || '').trim();
+    if (!token) {
+      return response.status(400).json({ error: 'Token wajib diisi.' });
+    }
+
+    const result = await pool.query(
+      `SELECT chat_id, connected_at FROM telegram_connections WHERE connect_token = $1`,
+      [token],
+    );
+
+    if (result.rowCount === 0) {
+      return response.status(404).json({ error: 'Token tidak valid.' });
+    }
+
+    const row = result.rows[0];
+    if (row.chat_id) {
+      response.json({ ok: true, connected: true, chat_id: row.chat_id });
+    } else {
+      response.json({ ok: true, connected: false });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Telegram Bot Webhook — receives /start TOKEN from users
+app.post('/api/telegram/webhook', async (request, response) => {
+  try {
+    const update = request.body;
+    const message = update.message || update.my_chat_member;
+    if (!message) return response.json({ ok: true });
+
+    const chatId = String(message.chat?.id || '');
+    const text = String(message.text || '').trim();
+    const firstName = message.from?.first_name || 'User';
+
+    // Handle /start TOKEN
+    if (text.startsWith('/start ')) {
+      const token = text.slice(7).trim();
+      const result = await pool.query(
+        `UPDATE telegram_connections
+         SET chat_id = $1, connected_at = NOW()
+         WHERE connect_token = $2 AND chat_id IS NULL
+         RETURNING employee_id`,
+        [chatId, token],
+      );
+
+      if (result.rowCount > 0) {
+        await sendTelegramMessage(chatId, `✅ <b>Telegram berhasil terhubung!</b>\n\nHalo ${firstName}, akun Anda sudah terhubung dengan sistem absensi.\nSekarang Anda bisa mereset password via Telegram.`);
+      } else {
+        await sendTelegramMessage(chatId, `⚠️ Token tidak valid atau sudah digunakan.`);
+      }
+    } else if (text === '/start') {
+      await sendTelegramMessage(chatId, `👋 Halo ${firstName}!\n\nGunakan link dari aplikasi absensi untuk menghubungkan akun Anda.\n\nKetik /help untuk bantuan.`);
+    } else if (text === '/help') {
+      await sendTelegramMessage(chatId, `📖 <b>Bantuan</b>\n\nUntuk menghubungkan akun:\n1. Buka aplikasi absensi\n2. Klik "Connect Telegram"\n3. Klik link yang muncul\n4. Klik "Start" di sini\n\nUntuk reset password:\n1. Klik "Lupa Password" di login\n2. Masukkan email Anda\n3. Kode akan dikirim ke Telegram ini`);
+    }
+
+    response.json({ ok: true });
+  } catch (error) {
+    console.error('Telegram webhook error:', error);
+    response.json({ ok: true }); // Always return 200 to Telegram
+  }
+});
+
+// Helper: get bot username (cached)
+let cachedBotUsername = null;
+async function getBotUsername() {
+  if (cachedBotUsername) return cachedBotUsername;
+  const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/getMe`);
+  const data = await res.json();
+  if (data.ok) {
+    cachedBotUsername = data.result.username;
+    return cachedBotUsername;
+  }
+  throw new Error('Gagal mendapatkan info bot Telegram.');
+}
 
 app.get('/api/health', async (_request, response, next) => {
   try {
@@ -269,13 +557,14 @@ app.get('/api/health', async (_request, response, next) => {
 
 app.get('/api/sync', async (_request, response, next) => {
   try {
-    const [attendances, leaveRequests, overtimeRequests, corrections] = await Promise.all([
+    const [attendances, leaveRequests, overtimeRequests, corrections, employees] = await Promise.all([
       listCollection(collections.attendances.table),
       listCollection(collections.leaveRequests.table),
       listCollection(collections.overtimeRequests.table),
       listCollection(collections.corrections.table),
+      listCollection(collections.employees.table),
     ]);
-    response.json({ attendances, leaveRequests, overtimeRequests, corrections });
+    response.json({ attendances, leaveRequests, overtimeRequests, corrections, employees });
   } catch (error) {
     next(error);
   }
@@ -319,6 +608,16 @@ for (const [name, config] of Object.entries(collections)) {
       next(error);
     }
   });
+
+  app.delete(`/api/${config.apiPath}/:id`, async (request, response, next) => {
+    try {
+      await pool.query(`DELETE FROM ${config.table} WHERE id = $1`, [request.params.id]);
+      await publishChange(name, request.params.id);
+      response.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
 }
 
 app.get('/api/events', (request, response) => {
@@ -344,9 +643,24 @@ app.use(express.static(distDir, {
   },
 }));
 
+// Browser fetches can't read process.env, so the (already non-secret — it only
+// gates a public SPA's own API) API_KEY is inlined into the HTML shell it serves.
+let indexHtmlTemplate = null;
+function renderIndexHtml() {
+  if (indexHtmlTemplate === null) {
+    indexHtmlTemplate = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
+  }
+  if (!apiKey) return indexHtmlTemplate;
+  const inject = `<script>window.__API_KEY__=${JSON.stringify(apiKey)};</script>`;
+  return indexHtmlTemplate.includes('</head>')
+    ? indexHtmlTemplate.replace('</head>', `${inject}</head>`)
+    : inject + indexHtmlTemplate;
+}
+
 app.use((_request, response) => {
   response.setHeader('Cache-Control', 'no-cache');
-  response.sendFile(path.join(distDir, 'index.html'));
+  response.setHeader('Content-Type', 'text/html; charset=utf-8');
+  response.send(renderIndexHtml());
 });
 
 app.use((error, _request, response, _next) => {

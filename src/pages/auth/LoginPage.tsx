@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ export default function LoginPage() {
   const { login, userCompanies } = useAuthStore();
   const { theme, toggleTheme } = useUIStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passwordResetSuccess = Boolean((location.state as { passwordResetSuccess?: boolean } | null)?.passwordResetSuccess);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,12 +94,21 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
+              {passwordResetSuccess && !error && (
+                <p className="text-sm text-emerald-600">Password berhasil direset. Silakan masuk dengan password baru Anda.</p>
+              )}
               {error && (
                 <p className="text-sm text-red-500">{error}</p>
               )}
               <Button type="submit" className="w-full">
                 Masuk
               </Button>
+              <Link
+                to="/forgot-password"
+                className="block text-center text-sm text-muted-foreground hover:text-foreground"
+              >
+                Lupa password?
+              </Link>
             </form>
           </CardContent>
         </Card>

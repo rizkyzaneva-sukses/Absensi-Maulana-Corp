@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
+import type { WorkSchedule } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,15 +48,10 @@ export default function CheckOutPage() {
     );
   }
 
-  // Resolve the real schedule for today (handles Saturday 15:00, etc.)
-  const today = new Date();
-  const schedule = resolveSchedule(
-    currentUser,
-    today,
-    workSchedules,
-  );
-  const scheduledEnd = schedule.end;
+  // Resolve schedule from employee's assigned work schedule
   const now = new Date();
+  const schedule = currentUser ? resolveSchedule(currentUser, now, workSchedules as WorkSchedule[]) : { start: '08:00', end: '17:00', is_workday: true };
+  const scheduledEnd = schedule.end;
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const scheduledEndMinutes = parseInt(scheduledEnd.split(':')[0]) * 60 + parseInt(scheduledEnd.split(':')[1]);
   const isEarlyLeave = nowMinutes < scheduledEndMinutes;

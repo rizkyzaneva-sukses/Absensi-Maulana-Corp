@@ -43,7 +43,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 0,
     "uang_transport": 0,
     "uang_makan": 0,
-    "created_at": "2026-04-01"
+    "telegram_chat_id": "",
+      "created_at": "2026-04-01"
   },
   {
     "id": "69a168535c11687be484d192",
@@ -66,7 +67,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 0,
     "uang_transport": 0,
     "uang_makan": 0,
-    "created_at": "2026-02-27"
+    "telegram_chat_id": "",
+      "created_at": "2026-02-27"
   },
   {
     "id": "69705cec51ca2bef9c5ccdd7",
@@ -89,7 +91,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 40000,
     "uang_transport": 10000,
     "uang_makan": 0,
-    "created_at": "2026-01-21"
+    "telegram_chat_id": "",
+      "created_at": "2026-01-21"
   },
   {
     "id": "69705ccf821338a5238bf548",
@@ -112,7 +115,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 30000,
     "uang_transport": 15000,
     "uang_makan": 0,
-    "created_at": "2026-01-21"
+    "telegram_chat_id": "",
+      "created_at": "2026-01-21"
   },
   {
     "id": "69705cb9c87c315049a3d86a",
@@ -135,7 +139,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 0,
     "uang_transport": 0,
     "uang_makan": 0,
-    "created_at": "2026-01-21"
+    "telegram_chat_id": "",
+      "created_at": "2026-01-21"
   },
   {
     "id": "69705c978aaecd6d1b6098dd",
@@ -158,7 +163,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 35000,
     "uang_transport": 10000,
     "uang_makan": 0,
-    "created_at": "2026-01-21"
+    "telegram_chat_id": "",
+      "created_at": "2026-01-21"
   },
   {
     "id": "69703ee3cdb0341809bba875",
@@ -181,7 +187,8 @@ export const employees: Employee[] = [
     "uang_kehadiran": 0,
     "uang_transport": 0,
     "uang_makan": 0,
-    "created_at": "2026-01-21"
+    "telegram_chat_id": "",
+      "created_at": "2026-01-21"
   }
 ];
 
