@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
-import { getTodayStr, getMonthName } from '@/lib/attendance';
+import { getTodayStr, getMonthName, autoMarkAbsent } from '@/lib/attendance';
 import { getStatusColor, getStatusLabel } from '@/lib/utils';
 import {
   Users,
@@ -21,12 +21,15 @@ import {
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const { currentUser, activeCompany } = useAuthStore();
-  const { attendances, leaveRequests, overtimeRequests, corrections } = useAttendanceStore();
-  const { holidays, employees } = useDataStore();
+  const { attendances, leaveRequests, overtimeRequests, corrections, addAttendance } = useAttendanceStore();
+  const { holidays, employees, addNotification, workSchedules } = useDataStore();
 
   const companyId = activeCompany?.id || currentUser?.company_id || '';
   const today = getTodayStr();
   const now = new Date();
+
+  autoMarkAbsent(employees, attendances, addAttendance, companyId, today, addNotification, workSchedules);
+
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   const companyEmployees = employees.filter(

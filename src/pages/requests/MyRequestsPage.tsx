@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useDataStore } from '@/stores/dataStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
@@ -11,9 +12,12 @@ import { Plus, Calendar, Clock, FileEdit } from 'lucide-react';
 export default function MyRequestsPage() {
   const { currentUser, activeCompany } = useAuthStore();
   const { leaveRequests, overtimeRequests, corrections } = useAttendanceStore();
+  const { employees } = useDataStore();
   const navigate = useNavigate();
 
   if (!currentUser || !activeCompany) return null;
+
+  const employee = employees.find(e => e.id === currentUser.id);
 
   const myLeaves = leaveRequests
     .filter(l => l.employee_id === currentUser.id)
@@ -33,6 +37,24 @@ export default function MyRequestsPage() {
         <h1 className="text-2xl font-bold">Pengajuan Saya</h1>
         <p className="text-muted-foreground">Kelola semua pengajuan cuti, lembur, dan koreksi</p>
       </div>
+
+      {/* Leave Balance Summary */}
+      {employee && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+                <p className="text-2xl font-bold text-blue-600">{employee.cuti_tahunan ?? 0}</p>
+                <p className="text-xs text-muted-foreground">Sisa Cuti Tahunan</p>
+              </div>
+              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
+                <p className="text-2xl font-bold text-green-600">{employee.cuti_sakit ?? 0}</p>
+                <p className="text-xs text-muted-foreground">Sisa Cuti Sakit</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick action buttons */}
       <div className="grid grid-cols-3 gap-3">

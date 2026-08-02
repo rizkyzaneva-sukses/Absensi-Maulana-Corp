@@ -8,14 +8,14 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { companies } from '@/lib/mock-data';
 import { generateCompanyPayroll } from '@/lib/payroll';
-import { getTodayStr } from '@/lib/attendance';
+import { getTodayStr, autoMarkAbsent } from '@/lib/attendance';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Building2, Users, DollarSign, ArrowRight, History, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function OwnerDashboard() {
   const { switchCompany } = useAuthStore();
-  const { attendances } = useAttendanceStore();
-  const { employees, holidays, overtimeSettings } = useDataStore();
+  const { attendances, addAttendance } = useAttendanceStore();
+  const { employees, holidays, overtimeSettings, addNotification, workSchedules } = useDataStore();
   const navigate = useNavigate();
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null);
   const [historyPage, setHistoryPage] = useState<Record<string, number>>({});
@@ -23,6 +23,12 @@ export default function OwnerDashboard() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
+
+  const todayStr = getTodayStr();
+  const uniqueCompanyIds = [...new Set(employees.map(e => e.company_id))];
+  uniqueCompanyIds.forEach(id => {
+    autoMarkAbsent(employees, attendances, addAttendance, id, todayStr, addNotification, workSchedules);
+  });
 
   const companyStats = companies.map(company => {
     const companyEmployees = employees.filter(e => e.company_id === company.id && e.is_active);

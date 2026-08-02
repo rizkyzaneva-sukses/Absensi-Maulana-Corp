@@ -1,14 +1,17 @@
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useDataStore } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { formatDate } from '@/lib/utils';
+import { generateId } from '@/lib/attendance';
 import { Check, X, Calendar } from 'lucide-react';
 
 export default function LeaveApprovalPage() {
   const { activeCompany, currentUser } = useAuthStore();
   const { leaveRequests, updateLeaveRequest } = useAttendanceStore();
+  const { employees, updateEmployee, addNotification } = useDataStore();
 
   const companyRequests = leaveRequests.filter(l => l.company_id === activeCompany?.id);
   const pending = companyRequests.filter(r => r.status === 'PENDING')
@@ -16,12 +19,59 @@ export default function LeaveApprovalPage() {
   const processed = companyRequests.filter(r => r.status !== 'PENDING')
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
+  const calculateDays = (start: string, end: string): number => {
+    const s = new Date(start);
+    const e = new Date(end);
+    return Math.max(1, Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+  };
+
   const handleApprove = (id: string) => {
+    const req = leaveRequests.find(r => r.id === id);
+    if (!req) return;
+
     updateLeaveRequest(id, { status: 'APPROVED', approved_by: currentUser?.id || 'manager' });
+
+    // Deduct leave balance
+    const employee = employees.find(e => e.id === req.employee_id);
+    if (employee) {
+      const days = calculateDays(req.start_date, req.end_date);
+      if (req.type === 'CUTI') {
+        updateEmployee(req.employee_id, { cuti_tahunan: Math.max(0, employee.cuti_tahunan - days) });
+      } else if (req.type === 'SAKIT') {
+        updateEmployee(req.employee_id, { cuti_sakit: Math.max(0, employee.cuti_sakit - days) });
+      }
+    }
+
+    // Notify employee
+    addNotification({
+      id: generateId('notif'),
+      company_id: req.company_id,
+      user_id: req.employee_id,
+      type: 'LEAVE',
+      title: 'Cuti Disetujui',
+      message: `Pengajuan ${req.type} Anda pada ${formatDate(req.start_date)}${req.end_date !== req.start_date ? ` s/d ${formatDate(req.end_date)}` : ''} telah disetujui.`,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    });
   };
 
   const handleReject = (id: string) => {
+    const req = leaveRequests.find(r => r.id === id);
+    if (!req) return;
+
     updateLeaveRequest(id, { status: 'REJECTED', approved_by: currentUser?.id || 'manager' });
+
+    // Notify employee
+    addNotification({
+      id: generateId('notif'),
+      company_id: req.company_id,
+      user_id: req.employee_id,
+      type: 'LEAVE',
+      title: 'Cuti Ditolak',
+      message: `Pengajuan ${req.type} Anda pada ${formatDate(req.start_date)}${req.end_date !== req.start_date ? ` s/d ${formatDate(req.end_date)}` : ''} telah ditolak.`,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    });
   };
 
   return (

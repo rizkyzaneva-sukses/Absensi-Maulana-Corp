@@ -1,14 +1,17 @@
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useDataStore } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { formatDate } from '@/lib/utils';
+import { generateId } from '@/lib/attendance';
 import { Check, X, Clock } from 'lucide-react';
 
 export default function OvertimeApprovalPage() {
   const { activeCompany, currentUser } = useAuthStore();
   const { overtimeRequests, updateOvertimeRequest } = useAttendanceStore();
+  const { addNotification, employees } = useDataStore();
 
   const companyRequests = overtimeRequests.filter(o => o.company_id === activeCompany?.id);
   const pending = companyRequests.filter(r => r.status === 'PENDING')
@@ -17,11 +20,39 @@ export default function OvertimeApprovalPage() {
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   const handleApprove = (id: string) => {
+    const req = overtimeRequests.find(r => r.id === id);
     updateOvertimeRequest(id, { status: 'APPROVED', approved_by: currentUser?.id || 'manager' });
+
+    if (req && activeCompany) {
+      addNotification({
+        id: generateId('notif'),
+        company_id: activeCompany.id,
+        user_id: req.employee_id,
+        type: 'OVERTIME',
+        title: 'Lembur Disetujui',
+        message: `Pengajuan lembur Anda pada ${formatDate(req.date)} (${req.duration_hours} jam) telah disetujui.`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    }
   };
 
   const handleReject = (id: string) => {
+    const req = overtimeRequests.find(r => r.id === id);
     updateOvertimeRequest(id, { status: 'REJECTED', approved_by: currentUser?.id || 'manager' });
+
+    if (req && activeCompany) {
+      addNotification({
+        id: generateId('notif'),
+        company_id: activeCompany.id,
+        user_id: req.employee_id,
+        type: 'OVERTIME',
+        title: 'Lembur Ditolak',
+        message: `Pengajuan lembur Anda pada ${formatDate(req.date)} (${req.duration_hours} jam) telah ditolak.`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    }
   };
 
   return (

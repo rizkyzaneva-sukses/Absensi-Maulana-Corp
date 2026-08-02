@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/common/PageHeader';
 import { generateId } from '@/lib/attendance';
-import { Calendar, FileText, Check } from 'lucide-react';
+import { Calendar, FileText, Check, AlertTriangle } from 'lucide-react';
 import type { LeaveRequest } from '@/types';
 
 export default function LeaveRequestForm() {
@@ -24,6 +24,18 @@ export default function LeaveRequestForm() {
   const [submitted, setSubmitted] = useState(false);
 
   if (!currentUser || !activeCompany) return null;
+
+  // Calculate requested days
+  const requestedDays = useMemo(() => {
+    if (!startDate) return 0;
+    const end = endDate || startDate;
+    const start = new Date(startDate);
+    const e = new Date(end);
+    return Math.max(1, Math.floor((e.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+  }, [startDate, endDate]);
+
+  const isOverBalance =
+    type === 'CUTI' && requestedDays > (currentUser.cuti_tahunan || 0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +89,32 @@ export default function LeaveRequestForm() {
   return (
     <div className="max-w-lg mx-auto">
       <PageHeader title="Ajukan Cuti/Izin" subtitle="Isi form pengajuan cuti atau izin" backTo="/my-requests" />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Calendar size={18} /> Sisa Cuti
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+              <p className="text-2xl font-bold text-blue-600">{currentUser.cuti_tahunan ?? 0}</p>
+              <p className="text-xs text-muted-foreground">Cuti Tahunan</p>
+            </div>
+            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
+              <p className="text-2xl font-bold text-green-600">{currentUser.cuti_sakit ?? 0}</p>
+              <p className="text-xs text-muted-foreground">Cuti Sakit</p>
+            </div>
+          </div>
+          {isOverBalance && (
+            <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-sm">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <span>Sisa cuti tahunan tidak mencukupi ({requestedDays} hari diajukan, sisa {currentUser.cuti_tahunan ?? 0} hari).</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

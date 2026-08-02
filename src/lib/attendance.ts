@@ -1,4 +1,4 @@
-import type { Employee, Attendance, Holiday } from '@/types';
+import type { Employee, Attendance, Holiday, Notification } from '@/types';
 import type { WorkSchedule, OvertimeSettings } from '@/stores/dataStore';
 
 // ============ SCHEDULE RESOLUTION ============
@@ -303,4 +303,85 @@ export function getMonthName(month: number): string {
 
 export function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
+}
+
+// ============ AUTO-MARK TIDAK_HADIR ============
+
+export function autoMarkAbsent(
+  employees: Employee[],
+  attendances: Attendance[],
+  addAttendance: (r: Attendance) => void,
+  companyId: string,
+  today: string,
+  addNotification: (n: Notification) => void,
+  workSchedules: WorkSchedule[],
+): void {
+  const todayDate = parseDateStr(today);
+
+  const activeEmployees = employees.filter(
+    (e) => e.company_id === companyId && e.is_active
+  );
+
+  for (const emp of activeEmployees) {
+    const hasAttendance = attendances.some(
+      (a) => a.employee_id === emp.id && a.company_id === companyId && a.date === today
+    );
+    if (hasAttendance) continue;
+
+    const schedule = resolveSchedule(emp, todayDate, workSchedules);
+    if (!schedule.is_workday) continue;
+
+    const attendanceId = generateId('att');
+    const absentRecord: Attendance = {
+      id: attendanceId,
+      company_id: companyId,
+      employee_id: emp.id,
+      date: today,
+      check_in_time: null,
+      check_out_time: null,
+      status: 'TIDAK_HADIR',
+      check_in_method: null,
+      check_in_location: null,
+      check_out_location: null,
+      check_in_photo_url: '',
+      notes: 'Auto-mark: tidak hadir',
+      is_auto_checkout: false,
+      overtime_minutes: 0,
+      late_minutes: 0,
+      early_leave_minutes: 0,
+    };
+    addAttendance(absentRecord);
+
+    // Notify the employee
+    addNotification({
+      id: generateId('notif'),
+      company_id: companyId,
+      user_id: emp.id,
+      type: 'SYSTEM',
+      title: 'Tidak Hadir',
+      message: `Anda tercatat tidak hadir pada ${formatDateLong(today)}.`,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    // Notify managers in the same company
+    const managers = employees.filter(
+      (e) =>
+        e.company_id === companyId &&
+        e.is_active &&
+        ['MANAGER', 'COO', 'COMPANY_ADMIN'].includes(e.role)
+    );
+    for (const mgr of managers) {
+      addNotification({
+        id: generateId('notif'),
+        company_id: companyId,
+        user_id: mgr.id,
+        type: 'SYSTEM',
+        title: 'Karyawan Tidak Hadir',
+        message: `${emp.full_name} (${emp.position}) tercatat tidak hadir pada ${formatDateLong(today)}.`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    }
+  }
 }

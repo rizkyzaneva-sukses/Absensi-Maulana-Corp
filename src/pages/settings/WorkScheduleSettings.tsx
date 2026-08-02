@@ -33,7 +33,7 @@ const DEFAULT_HOURS: Record<string, { start: string; end: string; is_workday: bo
 
 export default function WorkScheduleSettings() {
   const { currentUser, activeCompany } = useAuthStore();
-  const { workSchedules, addWorkSchedule, updateWorkSchedule, deleteWorkSchedule } = useDataStore();
+  const { workSchedules, employees, addWorkSchedule, updateWorkSchedule, deleteWorkSchedule } = useDataStore();
   const companyId = activeCompany?.id || currentUser?.company_id || '';
 
   const companySchedules = workSchedules.filter((ws) => ws.company_id === companyId);
@@ -41,6 +41,8 @@ export default function WorkScheduleSettings() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<WorkSchedule | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<WorkSchedule | null>(null);
+  const [assignTarget, setAssignTarget] = useState<WorkSchedule | null>(null);
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
 
   // Form state
   const [name, setName] = useState('');
@@ -161,6 +163,12 @@ export default function WorkScheduleSettings() {
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    setAssignTarget(ws);
+                    setSelectedEmails([...ws.employee_emails]);
+                  }}>
+                    <Users className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => openEdit(ws)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -238,6 +246,54 @@ export default function WorkScheduleSettings() {
               <Button type="submit">{editing ? 'Simpan' : 'Buat'}</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Employees Dialog */}
+      <Dialog open={!!assignTarget} onOpenChange={(open) => !open && setAssignTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assign Karyawan - {assignTarget?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {employees
+              .filter((e) => e.company_id === companyId && e.is_active)
+              .map((emp) => (
+                <label
+                  key={emp.id}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedEmails.includes(emp.user_email)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedEmails((prev) => [...prev, emp.user_email]);
+                      } else {
+                        setSelectedEmails((prev) => prev.filter((em) => em !== emp.user_email));
+                      }
+                    }}
+                    className="rounded border-border"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">{emp.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{emp.position || emp.user_email}</p>
+                  </div>
+                </label>
+              ))}
+            {employees.filter((e) => e.company_id === companyId && e.is_active).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Tidak ada karyawan aktif</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignTarget(null)}>Batal</Button>
+            <Button onClick={() => {
+              if (assignTarget) {
+                updateWorkSchedule(assignTarget.id, { employee_emails: selectedEmails });
+                setAssignTarget(null);
+              }
+            }}>Simpan</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

@@ -8,13 +8,16 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useDataStore } from '@/stores/dataStore';
 import { getStatusColor } from '@/lib/utils';
+import { generateId } from '@/lib/attendance';
 import { FileEdit, Check, X, Eye } from 'lucide-react';
 import type { AttendanceCorrection } from '@/types';
 
 export default function CorrectionApprovalPage() {
   const { currentUser, activeCompany } = useAuthStore();
   const { corrections, updateCorrection, updateAttendance } = useAttendanceStore();
+  const { addNotification } = useDataStore();
   const companyId = activeCompany?.id || currentUser?.company_id || '';
 
   const companyCorrections = corrections.filter((c) => c.company_id === companyId);
@@ -43,6 +46,19 @@ export default function CorrectionApprovalPage() {
       check_out_time: correction.corrected_check_out,
       notes: `Dikoreksi: ${correction.reason}`,
     });
+
+    if (activeCompany) {
+      addNotification({
+        id: generateId('notif'),
+        company_id: activeCompany.id,
+        user_id: correction.employee_id,
+        type: 'SYSTEM',
+        title: 'Koreksi Disetujui',
+        message: `Koreksi absensi Anda pada ${new Date(correction.date).toLocaleDateString('id-ID')} telah disetujui.`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    }
   };
 
   const handleReject = () => {
@@ -51,6 +67,20 @@ export default function CorrectionApprovalPage() {
       status: 'REJECTED',
       approved_by: currentUser?.user_email || '',
     });
+
+    if (activeCompany) {
+      addNotification({
+        id: generateId('notif'),
+        company_id: activeCompany.id,
+        user_id: showReject.employee_id,
+        type: 'SYSTEM',
+        title: 'Koreksi Ditolak',
+        message: `Koreksi absensi Anda pada ${new Date(showReject.date).toLocaleDateString('id-ID')} telah ditolak.${rejectReason ? ` Alasan: ${rejectReason}` : ''}`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    }
+
     setShowReject(null);
     setRejectReason('');
   };

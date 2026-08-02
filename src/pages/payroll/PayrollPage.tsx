@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useDataStore } from '@/stores/dataStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { generateCompanyPayroll, exportPayrollToCSV, downloadCSV } from '@/lib/payroll';
-import { getWorkingDaysInMonth } from '@/lib/attendance';
+import { getWorkingDaysInMonth, generateId } from '@/lib/attendance';
 import { formatCurrency } from '@/lib/utils';
 import { Settings, Download, RefreshCw, Pencil, Check, Trash2 } from 'lucide-react';
 import type { PayrollRecord } from '@/types';
@@ -21,10 +21,11 @@ const MONTHS = [
 
 export default function PayrollPage() {
   const { currentUser, activeCompany } = useAuthStore();
-  const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, overtimeSettings } = useDataStore();
+  const { employees, holidays, payrollRecords, setPayrollRecords, updatePayrollRecord, deletePayrollRecord, overtimeSettings, addNotification } = useDataStore();
   const { attendances } = useAttendanceStore();
 
   const { id: payslipId } = useParams();
+  const navigate = useNavigate();
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -112,6 +113,20 @@ export default function PayrollPage() {
       status: 'FINALIZED',
       finalized_at: new Date().toISOString(),
     });
+
+    const emp = employees.find(e => e.id === record.employee_id);
+    if (emp) {
+      addNotification({
+        id: generateId('notif'),
+        company_id: record.company_id,
+        user_id: record.employee_id,
+        type: 'PAYROLL',
+        title: 'Slip Gaji Tersedia',
+        message: `Slip gaji periode ${record.period} sudah tersedia. Total: ${formatCurrency(record.total_pay)}`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    }
   };
 
   // Delete a record
@@ -160,11 +175,16 @@ export default function PayrollPage() {
     }
     return (
       <div className="max-w-lg mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Slip Gaji</h1>
-          <p className="text-muted-foreground">Periode {payslipRecord.period}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Slip Gaji</h1>
+            <p className="text-muted-foreground">Periode {payslipRecord.period}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1 print:hidden">
+            <Download size={14} /> Cetak
+          </Button>
         </div>
-        <Card>
+        <Card className="print:shadow-none print:border">
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><p className="text-muted-foreground">Nama</p><p className="font-medium">{payslipRecord.employee_name}</p></div>
@@ -193,6 +213,33 @@ export default function PayrollPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Payslip History */}
+        <div className="print:hidden">
+          <h2 className="text-lg font-semibold mb-3">Riwayat Slip Gaji</h2>
+          <Card>
+            <CardContent className="p-0 divide-y">
+              {payrollRecords
+                .filter(p => p.employee_id === currentUser?.id && p.company_id === companyId)
+                .sort((a, b) => b.period.localeCompare(a.period))
+                .map((record) => (
+                  <div
+                    key={record.id}
+                    className="flex items-center justify-between p-3 hover:bg-muted/50 cursor-pointer"
+                    onClick={() => navigate(`/payslip/${record.id}`)}
+                  >
+                    <div>
+                      <p className="font-medium text-sm">Periode {record.period}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${record.status === 'FINALIZED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {record.status}
+                      </span>
+                    </div>
+                    <p className="font-bold text-sm">{formatCurrency(record.total_pay)}</p>
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -200,7 +247,7 @@ export default function PayrollPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <div>
           <h1 className="text-2xl font-bold">Data Payroll</h1>
           <p className="text-muted-foreground">Kelola data gaji karyawan</p>

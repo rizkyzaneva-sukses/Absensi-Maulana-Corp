@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDate } from '@/lib/utils';
+import { Download } from 'lucide-react';
 
 export default function MyHistoryPage() {
   const { currentUser, activeCompany } = useAuthStore();
@@ -35,13 +36,18 @@ export default function MyHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Riwayat Saya</h1>
-        <p className="text-muted-foreground">Lihat semua riwayat absensi, cuti, lembur, dan koreksi</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Riwayat Saya</h1>
+          <p className="text-muted-foreground">Lihat semua riwayat absensi, cuti, lembur, dan koreksi</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1 print:hidden">
+          <Download size={14} /> Cetak
+        </Button>
       </div>
 
       <Tabs defaultValue="attendance">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 print:hidden">
           <TabsTrigger value="attendance">Absensi ({myAttendance.length})</TabsTrigger>
           <TabsTrigger value="leave">Cuti ({myLeaves.length})</TabsTrigger>
           <TabsTrigger value="overtime">Lembur ({myOvertime.length})</TabsTrigger>
@@ -49,7 +55,7 @@ export default function MyHistoryPage() {
         </TabsList>
 
         <TabsContent value="attendance">
-          <Card>
+          <Card className="print:shadow-none print:border">
             <CardContent className="p-0">
               <div className="divide-y">
                 {myAttendance.length === 0 ? (
@@ -78,7 +84,7 @@ export default function MyHistoryPage() {
                 )}
               </div>
               {visibleAtt < myAttendance.length && (
-                <div className="p-4 flex justify-center border-t">
+                <div className="p-4 flex justify-center border-t print:hidden">
                   <Button variant="outline" size="sm" onClick={() => setVisibleAtt(p => p + 10)}>Tampilkan Lebih Banyak</Button>
                 </div>
               )}
@@ -87,7 +93,7 @@ export default function MyHistoryPage() {
         </TabsContent>
 
         <TabsContent value="leave">
-          <Card>
+          <Card className="print:shadow-none print:border">
             <CardContent className="p-0">
               <div className="divide-y">
                 {myLeaves.length === 0 ? (
@@ -105,7 +111,7 @@ export default function MyHistoryPage() {
                 )}
               </div>
               {visibleLeave < myLeaves.length && (
-                <div className="p-4 flex justify-center border-t">
+                <div className="p-4 flex justify-center border-t print:hidden">
                   <Button variant="outline" size="sm" onClick={() => setVisibleLeave(p => p + 10)}>Tampilkan Lebih Banyak</Button>
                 </div>
               )}
@@ -114,7 +120,7 @@ export default function MyHistoryPage() {
         </TabsContent>
 
         <TabsContent value="overtime">
-          <Card>
+          <Card className="print:shadow-none print:border">
             <CardContent className="p-0">
               <div className="divide-y">
                 {myOvertime.length === 0 ? (
@@ -132,7 +138,7 @@ export default function MyHistoryPage() {
                 )}
               </div>
               {visibleOt < myOvertime.length && (
-                <div className="p-4 flex justify-center border-t">
+                <div className="p-4 flex justify-center border-t print:hidden">
                   <Button variant="outline" size="sm" onClick={() => setVisibleOt(p => p + 10)}>Tampilkan Lebih Banyak</Button>
                 </div>
               )}
@@ -141,7 +147,7 @@ export default function MyHistoryPage() {
         </TabsContent>
 
         <TabsContent value="correction">
-          <Card>
+          <Card className="print:shadow-none print:border">
             <CardContent className="p-0">
               <div className="divide-y">
                 {myCorrections.length === 0 ? (
@@ -162,7 +168,7 @@ export default function MyHistoryPage() {
                 )}
               </div>
               {visibleCorr < myCorrections.length && (
-                <div className="p-4 flex justify-center border-t">
+                <div className="p-4 flex justify-center border-t print:hidden">
                   <Button variant="outline" size="sm" onClick={() => setVisibleCorr(p => p + 10)}>Tampilkan Lebih Banyak</Button>
                 </div>
               )}
