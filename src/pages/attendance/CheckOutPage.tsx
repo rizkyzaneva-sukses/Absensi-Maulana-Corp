@@ -9,13 +9,13 @@ import { Input } from '@/components/ui/input';
 import { StepIndicator } from '@/components/common/StepIndicator';
 import { SelfieCapture } from '@/components/attendance/SelfieCapture';
 import { Check, Clock, Camera, AlertTriangle } from 'lucide-react';
-import { calculateEarlyLeaveMinutes, calculateOvertimeMinutes, determineCheckOutStatus, getTodayStr, formatTimeFromISO } from '@/lib/attendance';
+import { calculateEarlyLeaveMinutes, calculateOvertimeMinutes, determineCheckOutStatus, getTodayStr, formatTimeFromISO, resolveSchedule } from '@/lib/attendance';
 import type { AttendanceStatus } from '@/types';
 
 export default function CheckOutPage() {
   const { currentUser } = useAuthStore();
   const { attendances, updateAttendance } = useAttendanceStore();
-  const { overtimeSettings } = useDataStore();
+  const { overtimeSettings, workSchedules } = useDataStore();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -47,8 +47,14 @@ export default function CheckOutPage() {
     );
   }
 
-  // Calculate scheduled end (simplified - using 17:00 default)
-  const scheduledEnd = '17:00';
+  // Resolve the real schedule for today (handles Saturday 15:00, etc.)
+  const today = new Date();
+  const schedule = resolveSchedule(
+    currentUser,
+    today,
+    workSchedules,
+  );
+  const scheduledEnd = schedule.end;
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const scheduledEndMinutes = parseInt(scheduledEnd.split(':')[0]) * 60 + parseInt(scheduledEnd.split(':')[1]);

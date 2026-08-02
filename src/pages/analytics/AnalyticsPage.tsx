@@ -21,14 +21,14 @@ export default function AnalyticsPage() {
   const hadirRate = totalRecords > 0 ? Math.round((hadirCount / totalRecords) * 100) : 0;
   const terlambatRate = totalRecords > 0 ? Math.round((terlambatCount / totalRecords) * 100) : 0;
 
-  // Real week data from attendance records
+  // Real week data from attendance records (Senin–Sabtu, Minggu libur)
   const now = new Date();
-  const weekDayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'];
+  const weekDayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
   const weekData = weekDayLabels.map((day, i) => {
     // Find the date for this weekday in the current week
     const date = new Date(now);
     const currentDay = now.getDay(); // 0=Sun
-    const diff = (i + 1) - currentDay; // Mon=1
+    const diff = (i + 1) - currentDay; // Mon=1 ... Sat=6
     date.setDate(now.getDate() + diff);
     const dateStr = getDateStr(date);
     const dayRecords = companyAttendance.filter(a => a.date === dateStr);

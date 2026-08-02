@@ -1,5 +1,5 @@
 import type { Employee, Attendance, PayrollRecord, Holiday } from '@/types';
-import { getWorkingDaysInMonth, countAttendanceDays, generateId } from './attendance';
+import { getWorkingDaysInMonth, countAttendanceDays, generateId, parseDateStr } from './attendance';
 
 export interface OvertimeConfig {
   tolerance_minutes: number;
@@ -18,21 +18,20 @@ export interface PayrollInput {
 }
 
 /**
- * Calculate overtime minutes for a single attendance record
- * Based on: extra_minutes = checkout_time - scheduled_end
- * lembur_minutes = min(extra_minutes - tolerance_minutes, lembur_max_minutes)
- * Only counted if extra_minutes > tolerance_minutes
+ * Get the overtime minutes that count toward payroll for a single attendance record.
+ *
+ * `attendance.overtime_minutes` is ALREADY the final lembur value: it was computed
+ * at checkout by `calculateOvertimeMinutes` (extra minutes beyond scheduled end,
+ * minus tolerance, then capped at lembur_max_minutes). Re-applying tolerance/max
+ * here would double-count, so we only re-clamp the cap in case settings changed.
  */
 function calculateOvertimeMinutesFromRecord(
   attendance: Attendance,
-  toleranceMinutes: number,
+  _toleranceMinutes: number,
   maxMinutes: number
 ): number {
-  // Use overtime_minutes from attendance record (already calculated at checkout)
-  const extraMinutes = attendance.overtime_minutes || 0;
-  if (extraMinutes <= toleranceMinutes) return 0;
-  const lemburMinutes = extraMinutes - toleranceMinutes;
-  return Math.min(lemburMinutes, maxMinutes);
+  const lemburMinutes = attendance.overtime_minutes || 0;
+  return Math.max(0, Math.min(lemburMinutes, maxMinutes));
 }
 
 /**
@@ -59,7 +58,7 @@ export function generateEmployeePayroll(input: PayrollInput): PayrollRecord {
 
   // Get all attendance records for this employee in this month
   const monthAttendances = attendances.filter((a) => {
-    const d = new Date(a.date);
+    const d = parseDateStr(a.date);
     return a.employee_id === employee.id && d.getFullYear() === year && d.getMonth() + 1 === month;
   });
 

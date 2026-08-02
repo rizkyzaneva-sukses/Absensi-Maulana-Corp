@@ -128,7 +128,8 @@ export function calculateOvertimeMinutes(
 }
 
 /**
- * Determine attendance status based on check-in time and schedule
+ * Determine attendance status based on check-in time and schedule.
+ * Latest on-time check-in is 07:59; 08:00 (scheduled start) onwards counts as TERLAMBAT.
  */
 export function determineCheckInStatus(
   checkInTime: string,
@@ -136,8 +137,10 @@ export function determineCheckInStatus(
   isDinasLuar: boolean
 ): 'HADIR' | 'TERLAMBAT' | 'DINAS_LUAR' {
   if (isDinasLuar) return 'DINAS_LUAR';
-  const lateMinutes = calculateLateMinutes(checkInTime, scheduledStart);
-  return lateMinutes > 0 ? 'TERLAMBAT' : 'HADIR';
+  const checkInDate = new Date(checkInTime);
+  const checkInMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+  const scheduledMinutes = timeToMinutes(scheduledStart);
+  return checkInMinutes >= scheduledMinutes ? 'TERLAMBAT' : 'HADIR';
 }
 
 /**
@@ -214,7 +217,7 @@ export function countAttendanceDays(
   validStatuses: string[] = ['HADIR', 'TERLAMBAT', 'PULANG_CEPAT', 'DINAS_LUAR']
 ): number {
   return attendances.filter((a) => {
-    const d = new Date(a.date);
+    const d = parseDateStr(a.date);
     return (
       a.employee_id === employeeId &&
       d.getFullYear() === year &&
@@ -235,7 +238,7 @@ export function sumOvertimeMinutes(
 ): number {
   return attendances
     .filter((a) => {
-      const d = new Date(a.date);
+      const d = parseDateStr(a.date);
       return (
         a.employee_id === employeeId &&
         d.getFullYear() === year &&
@@ -262,6 +265,16 @@ export function getDateStr(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+/**
+ * Parse a "YYYY-MM-DD" date string as a WIB (Asia/Jakarta, UTC+7) calendar date.
+ * Using `new Date("YYYY-MM-DD")` would interpret it as UTC midnight and could
+ * shift the day in non-WIB contexts, so we build the date from the parts.
+ */
+export function parseDateStr(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
 }
 
 export function formatDateLong(date: string): string {
