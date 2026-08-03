@@ -317,6 +317,7 @@ export function autoMarkAbsent(
   workSchedules: WorkSchedule[],
 ): void {
   const todayDate = parseDateStr(today);
+  const now = new Date();
 
   const activeEmployees = employees.filter(
     (e) => e.company_id === companyId && e.is_active
@@ -330,6 +331,11 @@ export function autoMarkAbsent(
 
     const schedule = resolveSchedule(emp, todayDate, workSchedules);
     if (!schedule.is_workday) continue;
+
+    // Only auto-mark after scheduled end + 30 min so morning check-in is not blocked
+    const endMinutes = timeToMinutes(schedule.end);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    if (nowMinutes < endMinutes + 30) continue;
 
     const attendanceId = generateId('att');
     const absentRecord: Attendance = {

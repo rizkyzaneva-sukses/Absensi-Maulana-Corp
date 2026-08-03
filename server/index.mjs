@@ -191,10 +191,33 @@ async function importCollection(client, table, records) {
     const columns = table === 'app_sync_attendance_records'
       ? '(id, company_id, employee_id, attendance_date, payload)'
       : '(id, company_id, employee_id, payload)';
-    await client.query(
-      `INSERT INTO ${table} ${columns} VALUES ${values.join(', ')} ON CONFLICT DO NOTHING`,
-      parameters,
-    );
+      if (table === 'app_sync_attendance_records') {
+        // Upgrade TIDAK_HADIR / empty check-in when importing real check-ins
+        await client.query(
+          `INSERT INTO ${table} ${columns} VALUES ${values.join(', ')}
+           ON CONFLICT (company_id, employee_id, attendance_date) DO UPDATE SET
+             payload = CASE
+               WHEN (app_sync_attendance_records.payload->>'check_in_time') IS NULL
+                 OR (app_sync_attendance_records.payload->>'check_in_time') = ''
+                 OR (app_sync_attendance_records.payload->>'status') = 'TIDAK_HADIR'
+               THEN EXCLUDED.payload
+               ELSE app_sync_attendance_records.payload
+             END,
+             updated_at = CASE
+               WHEN (app_sync_attendance_records.payload->>'check_in_time') IS NULL
+                 OR (app_sync_attendance_records.payload->>'check_in_time') = ''
+                 OR (app_sync_attendance_records.payload->>'status') = 'TIDAK_HADIR'
+               THEN NOW()
+               ELSE app_sync_attendance_records.updated_at
+             END`,
+          parameters,
+        );
+      } else {
+        await client.query(
+          `INSERT INTO ${table} ${columns} VALUES ${values.join(', ')} ON CONFLICT DO NOTHING`,
+          parameters,
+        );
+      }
   }
 }
 
@@ -216,13 +239,37 @@ async function upsertRecord(table, record) {
     try {
       await client.query('BEGIN');
       let result = await client.query(
-        `SELECT payload FROM app_sync_attendance_records
+        `SELECT id, payload FROM app_sync_attendance_records
          WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date
          FOR UPDATE`,
         [record.company_id, record.employee_id, record.date],
       );
 
-      if (result.rowCount === 0) {
+      if (result.rowCount > 0) {
+        const existing = result.rows[0].payload || {};
+        const canUpgrade =
+          !existing.check_in_time ||
+          existing.status === 'TIDAK_HADIR' ||
+          (record.check_in_time && !existing.check_in_time);
+
+        if (canUpgrade && record.check_in_time) {
+          const merged = {
+            ...existing,
+            ...record,
+            id: existing.id || result.rows[0].id,
+            check_out_time: record.check_out_time ?? existing.check_out_time ?? null,
+          };
+          result = await client.query(
+            `UPDATE app_sync_attendance_records
+             SET payload = $2::jsonb, updated_at = NOW()
+             WHERE id = $1
+             RETURNING payload`,
+            [result.rows[0].id, JSON.stringify(merged)],
+          );
+        } else {
+          result = { rowCount: 1, rows: [{ payload: existing }] };
+        }
+      } else {
         result = await client.query(
           `INSERT INTO app_sync_attendance_records (id, company_id, employee_id, attendance_date, payload)
            VALUES ($1, $2, $3, $4::date, $5::jsonb)
@@ -230,14 +277,14 @@ async function upsertRecord(table, record) {
            RETURNING payload`,
           [record.id, record.company_id, record.employee_id, record.date, JSON.stringify(record)],
         );
-      }
 
-      if (result.rowCount === 0) {
-        result = await client.query(
-          `SELECT payload FROM app_sync_attendance_records
-           WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date`,
-          [record.company_id, record.employee_id, record.date],
-        );
+        if (result.rowCount === 0) {
+          result = await client.query(
+            `SELECT payload FROM app_sync_attendance_records
+             WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date`,
+            [record.company_id, record.employee_id, record.date],
+          );
+        }
       }
 
       await client.query('COMMIT');

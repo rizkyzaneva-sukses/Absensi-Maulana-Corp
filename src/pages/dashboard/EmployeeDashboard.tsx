@@ -20,6 +20,13 @@ export default function EmployeeDashboard() {
 
   autoMarkAbsent(employees, attendances, addAttendance, activeCompany.id, todayStr, addNotification, workSchedules);
   const todayAttendance = attendances.find(
+    a =>
+      a.employee_id === currentUser.id &&
+      a.company_id === activeCompany.id &&
+      a.date === todayStr &&
+      a.check_in_time
+  );
+  const todayAnyRecord = attendances.find(
     a => a.employee_id === currentUser.id && a.company_id === activeCompany.id && a.date === todayStr
   );
 
@@ -75,6 +82,11 @@ export default function EmployeeDashboard() {
                           : todayAttendance.check_out_time)
                       : '-'}
                   </span>
+                </div>
+              ) : todayAnyRecord?.status === 'TIDAK_HADIR' ? (
+                <div className="flex items-center gap-3 mt-1">
+                  <StatusBadge status="TIDAK_HADIR" />
+                  <span className="text-sm text-muted-foreground">Belum check-in — masih bisa absen</span>
                 </div>
               ) : (
                 <p className="text-lg font-semibold mt-1">Belum Check In</p>

@@ -17,7 +17,7 @@ import type { GeoPoint, CheckInMethod } from '@/types';
 
 export default function CheckInPage() {
   const { currentUser, activeCompany } = useAuthStore();
-  const { attendances, addAttendance } = useAttendanceStore();
+  const { attendances, addAttendance, updateAttendance } = useAttendanceStore();
   const { locations, workSchedules } = useDataStore();
   const navigate = useNavigate();
 
@@ -33,9 +33,20 @@ export default function CheckInPage() {
   const employeeId = currentUser?.id || '';
   const today = getTodayStr();
 
-  // Check if already checked in today
+  // Only block if already has a real check-in (not auto-marked TIDAK_HADIR)
   const todayRecord = attendances.find(
-    (a) => a.employee_id === employeeId && a.company_id === companyId && a.date === today
+    (a) =>
+      a.employee_id === employeeId &&
+      a.company_id === companyId &&
+      a.date === today &&
+      a.check_in_time
+  );
+  const absentRecord = attendances.find(
+    (a) =>
+      a.employee_id === employeeId &&
+      a.company_id === companyId &&
+      a.date === today &&
+      !a.check_in_time
   );
 
   const companyLocations = locations.filter((l) => l.company_id === companyId);
@@ -75,7 +86,7 @@ export default function CheckInPage() {
       : 0;
 
     const record = {
-      id: generateId('ATT'),
+      id: absentRecord?.id || generateId('ATT'),
       company_id: companyId,
       employee_id: employeeId,
       date: today,
@@ -93,7 +104,19 @@ export default function CheckInPage() {
       early_leave_minutes: 0,
     };
 
-    addAttendance(record);
+    if (absentRecord) {
+      updateAttendance(absentRecord.id, {
+        check_in_time: checkInTime,
+        status,
+        check_in_method: method,
+        check_in_location: userLocation,
+        check_in_photo_url: selfieData || '',
+        notes: '',
+        late_minutes: lateMinutes,
+      });
+    } else {
+      addAttendance(record);
+    }
     setCheckInStatus(status);
     setCompleted(true);
 
