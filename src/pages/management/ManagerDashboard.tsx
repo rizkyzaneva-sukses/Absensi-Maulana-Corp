@@ -16,6 +16,7 @@ import {
   FileText,
   TrendingUp,
   Calendar,
+  UserCog,
 } from 'lucide-react';
 
 export default function ManagerDashboard() {
@@ -159,7 +160,7 @@ export default function ManagerDashboard() {
           <CardTitle className="text-base">Menunggu Persetujuan</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <Button
               variant="outline"
               className="justify-between h-auto py-3"
@@ -189,6 +190,14 @@ export default function ManagerDashboard() {
               <Badge variant={stats.pendingCorr > 0 ? 'destructive' : 'secondary'}>
                 {stats.pendingCorr}
               </Badge>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-between h-auto py-3"
+              onClick={() => navigate('/manager/edit-attendance')}
+            >
+              <span className="text-sm">Edit Absensi</span>
+              <UserCog className="w-4 h-4" />
             </Button>
           </div>
         </CardContent>

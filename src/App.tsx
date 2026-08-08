@@ -26,6 +26,7 @@ const CorrectionRequestForm = lazy(() => import('@/pages/requests/CorrectionRequ
 const LeaveApprovalPage = lazy(() => import('@/pages/management/LeaveApprovalPage'));
 const OvertimeApprovalPage = lazy(() => import('@/pages/management/OvertimeApprovalPage'));
 const CorrectionApprovalPage = lazy(() => import('@/pages/management/CorrectionApprovalPage'));
+const EditAttendancePage = lazy(() => import('@/pages/management/EditAttendancePage'));
 const ManagerDashboard = lazy(() => import('@/pages/management/ManagerDashboard'));
 const AuditLogPage = lazy(() => import('@/pages/management/AuditLogPage'));
 const PrintQRCardsPage = lazy(() => import('@/pages/management/PrintQRCardsPage'));
@@ -55,6 +56,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
   '/approvals/leave': ['MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
   '/approvals/overtime': ['MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
   '/approvals/correction': ['MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
+  '/manager/edit-attendance': ['MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
   '/audit-log': ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
   '/print-qr': ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
   '/revisions': ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'],
@@ -136,6 +138,7 @@ function App() {
             <Route path="/approvals/leave" element={<RoleRoute path="/approvals/leave"><LeaveApprovalPage /></RoleRoute>} />
             <Route path="/approvals/overtime" element={<RoleRoute path="/approvals/overtime"><OvertimeApprovalPage /></RoleRoute>} />
             <Route path="/approvals/correction" element={<RoleRoute path="/approvals/correction"><CorrectionApprovalPage /></RoleRoute>} />
+            <Route path="/manager/edit-attendance" element={<RoleRoute path="/manager/edit-attendance"><EditAttendancePage /></RoleRoute>} />
             <Route path="/audit-log" element={<RoleRoute path="/audit-log"><AuditLogPage /></RoleRoute>} />
             <Route path="/print-qr" element={<RoleRoute path="/print-qr"><PrintQRCardsPage /></RoleRoute>} />
             <Route path="/revisions" element={<RoleRoute path="/revisions"><RevisionListPage /></RoleRoute>} />

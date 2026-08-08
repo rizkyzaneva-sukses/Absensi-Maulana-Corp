@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Clock, History, FileText, Users, DollarSign,
   BarChart3, Settings, Building2, LogOut,
   CheckCircle, ClipboardList, FileEdit, ScrollText, QrCode, ListTodo,
-  LogIn, LogOut as LogOutIcon, BookOpen, X
+  LogIn, LogOut as LogOutIcon, BookOpen, X, UserCog
 } from 'lucide-react';
 
 interface NavItem {
@@ -26,6 +26,7 @@ const navItems: NavItem[] = [
   { label: 'Approval Cuti', path: '/approvals/leave', icon: <CheckCircle size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
   { label: 'Approval Lembur', path: '/approvals/overtime', icon: <ClipboardList size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
   { label: 'Approval Koreksi', path: '/approvals/correction', icon: <FileEdit size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
+  { label: 'Edit Absensi', path: '/manager/edit-attendance', icon: <UserCog size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
   { label: 'Audit Log', path: '/audit-log', icon: <ScrollText size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
   { label: 'Cetak QR', path: '/print-qr', icon: <QrCode size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
   { label: 'Revisi', path: '/revisions', icon: <ListTodo size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
