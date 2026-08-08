@@ -1,23 +1,62 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 import { useAttendanceStore } from '@/stores/attendanceStore';
 import { useDataStore } from '@/stores/dataStore';
+import type { WorkSchedule } from '@/stores/dataStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { ConfirmModal } from '@/components/common/ConfirmModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { companies } from '@/lib/mock-data';
-import { formatDate } from '@/lib/utils';
-import { getDateStr, getTodayStr } from '@/lib/attendance';
-import { History, Filter, Download, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { formatDate, getStatusLabel, cn } from '@/lib/utils';
+import {
+  getDateStr,
+  getTodayStr,
+  parseDateStr,
+  resolveSchedule,
+  calculateLateMinutes,
+  calculateEarlyLeaveMinutes,
+  calculateOvertimeMinutes,
+  isoToTimeInput,
+  timeInputToIso,
+  ATTENDANCE_STATUS_OPTIONS,
+} from '@/lib/attendance';
+import type { Attendance, AttendanceStatus } from '@/types';
+import { History, Filter, Download, Users, CheckCircle, Clock, AlertTriangle, Pencil, X } from 'lucide-react';
+
+const FALLBACK_SCHEDULE = { start: '08:00', end: '17:00', is_workday: true };
 
 export default function OwnerAttendancePage() {
-  const { attendances } = useAttendanceStore();
-  const { employees } = useDataStore();
+  const { currentUser } = useAuthStore();
+  const { attendances, updateAttendance } = useAttendanceStore();
+  const { employees, workSchedules, overtimeSettings } = useDataStore();
 
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedEmployee, setSelectedEmployee] = useState<string>('all');
   const [visibleCount, setVisibleCount] = useState(20);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Single-record edit dialog
+  const [editingRecord, setEditingRecord] = useState<Attendance | null>(null);
+  const [editCheckIn, setEditCheckIn] = useState('');
+  const [editCheckOut, setEditCheckOut] = useState('');
+  const [editStatus, setEditStatus] = useState<AttendanceStatus>('HADIR');
+  const [editNotes, setEditNotes] = useState('');
+
+  // Bulk edit dialog
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkCheckInOn, setBulkCheckInOn] = useState(false);
+  const [bulkCheckIn, setBulkCheckIn] = useState('');
+  const [bulkCheckOutOn, setBulkCheckOutOn] = useState(false);
+  const [bulkCheckOut, setBulkCheckOut] = useState('');
+  const [bulkStatusOn, setBulkStatusOn] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState<AttendanceStatus>('HADIR');
+  const [bulkNotes, setBulkNotes] = useState('');
+  const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
 
   const todayStr = getTodayStr();
 
@@ -39,6 +78,119 @@ export default function OwnerAttendancePage() {
       })
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [attendances, selectedCompany, selectedDate, selectedStatus, selectedEmployee]);
+
+  // Selection should not survive across a filter change — the rows it pointed at may no
+  // longer be visible, and silently editing hidden rows later would be confusing.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [selectedCompany, selectedDate, selectedStatus, selectedEmployee]);
+
+  const visibleRows = filtered.slice(0, visibleCount);
+  const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((a) => selectedIds.has(a.id));
+  const selectedRecords = useMemo(
+    () => filtered.filter((a) => selectedIds.has(a.id)),
+    [filtered, selectedIds]
+  );
+
+  function toggleSelectAllVisible() {
+    setSelectedIds((prev) => {
+      if (allVisibleSelected) {
+        const next = new Set(prev);
+        visibleRows.forEach((a) => next.delete(a.id));
+        return next;
+      }
+      const next = new Set(prev);
+      visibleRows.forEach((a) => next.add(a.id));
+      return next;
+    });
+  }
+
+  function toggleSelectOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function scheduleFor(employeeId: string, date: string) {
+    const emp = employees.find((e) => e.id === employeeId);
+    return emp ? resolveSchedule(emp, parseDateStr(date), workSchedules as WorkSchedule[]) : FALLBACK_SCHEDULE;
+  }
+
+  function openEditDialog(record: Attendance) {
+    setEditingRecord(record);
+    setEditCheckIn(isoToTimeInput(record.check_in_time));
+    setEditCheckOut(isoToTimeInput(record.check_out_time));
+    setEditStatus(record.status);
+    setEditNotes(record.notes || '');
+  }
+
+  function saveEditDialog() {
+    if (!editingRecord) return;
+    const schedule = scheduleFor(editingRecord.employee_id, editingRecord.date);
+    const checkInIso = timeInputToIso(editingRecord.date, editCheckIn);
+    const checkOutIso = timeInputToIso(editingRecord.date, editCheckOut);
+    const lateMinutes = checkInIso ? calculateLateMinutes(checkInIso, schedule.start) : 0;
+    const earlyLeaveMinutes = checkOutIso ? calculateEarlyLeaveMinutes(checkOutIso, schedule.end) : 0;
+    const overtimeMinutes = checkOutIso ? calculateOvertimeMinutes(checkOutIso, schedule.end, overtimeSettings) : 0;
+
+    const auditLine = `Diedit manual oleh ${currentUser?.full_name || 'admin'} pada ${new Date().toLocaleString('id-ID')}`;
+    const combinedNotes = editNotes.trim() ? `${editNotes.trim()}\n${auditLine}` : auditLine;
+
+    updateAttendance(editingRecord.id, {
+      check_in_time: checkInIso,
+      check_out_time: checkOutIso,
+      status: editStatus,
+      notes: combinedNotes,
+      late_minutes: lateMinutes,
+      early_leave_minutes: earlyLeaveMinutes,
+      overtime_minutes: overtimeMinutes,
+    });
+    setEditingRecord(null);
+  }
+
+  const bulkChangeSummary = [
+    bulkCheckInOn && `Jam Masuk → ${bulkCheckIn || '(kosong)'}`,
+    bulkCheckOutOn && `Jam Pulang → ${bulkCheckOut || '(kosong)'}`,
+    bulkStatusOn && `Status → ${getStatusLabel(bulkStatus)}`,
+  ].filter(Boolean).join(', ');
+
+  function applyBulkEdit() {
+    const auditLine = `Diedit massal oleh ${currentUser?.full_name || 'admin'} pada ${new Date().toLocaleString('id-ID')}`;
+    const noteAddition = bulkNotes.trim() ? `${bulkNotes.trim()}\n${auditLine}` : auditLine;
+
+    for (const record of selectedRecords) {
+      const schedule = scheduleFor(record.employee_id, record.date);
+      const checkInIso = bulkCheckInOn ? timeInputToIso(record.date, bulkCheckIn) : record.check_in_time;
+      const checkOutIso = bulkCheckOutOn ? timeInputToIso(record.date, bulkCheckOut) : record.check_out_time;
+      const status = bulkStatusOn ? bulkStatus : record.status;
+
+      const lateMinutes = checkInIso ? calculateLateMinutes(checkInIso, schedule.start) : 0;
+      const earlyLeaveMinutes = checkOutIso ? calculateEarlyLeaveMinutes(checkOutIso, schedule.end) : 0;
+      const overtimeMinutes = checkOutIso ? calculateOvertimeMinutes(checkOutIso, schedule.end, overtimeSettings) : 0;
+      const combinedNotes = record.notes ? `${record.notes}\n${noteAddition}` : noteAddition;
+
+      updateAttendance(record.id, {
+        check_in_time: checkInIso,
+        check_out_time: checkOutIso,
+        status,
+        notes: combinedNotes,
+        late_minutes: lateMinutes,
+        early_leave_minutes: earlyLeaveMinutes,
+        overtime_minutes: overtimeMinutes,
+      });
+    }
+
+    setConfirmBulkOpen(false);
+    setBulkOpen(false);
+    setSelectedIds(new Set());
+    setBulkCheckInOn(false);
+    setBulkCheckOutOn(false);
+    setBulkStatusOn(false);
+    setBulkNotes('');
+  }
 
   // Summary stats
   const summary = useMemo(() => {
@@ -247,11 +399,23 @@ export default function OwnerAttendancePage() {
       {/* Attendance Table */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-base">
               Data Absensi
             </CardTitle>
-            <span className="text-xs text-muted-foreground">{filtered.length} record ditemukan</span>
+            {selectedIds.size > 0 ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{selectedIds.size} dipilih</span>
+                <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())} className="gap-1">
+                  <X className="w-3 h-3" /> Batal Pilih
+                </Button>
+                <Button size="sm" onClick={() => setBulkOpen(true)} className="gap-1">
+                  <Pencil className="w-3 h-3" /> Edit {selectedIds.size} Terpilih
+                </Button>
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground">{filtered.length} record ditemukan</span>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -259,6 +423,14 @@ export default function OwnerAttendancePage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 sticky top-0">
                 <tr>
+                  <th className="p-3 text-center font-medium w-10">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={toggleSelectAllVisible}
+                      aria-label="Pilih semua yang ditampilkan"
+                    />
+                  </th>
                   <th className="p-3 text-left font-medium">Tanggal</th>
                   <th className="p-3 text-left font-medium">Perusahaan</th>
                   <th className="p-3 text-left font-medium">Karyawan</th>
@@ -266,22 +438,31 @@ export default function OwnerAttendancePage() {
                   <th className="p-3 text-center font-medium">Check-out</th>
                   <th className="p-3 text-center font-medium">Terlambat</th>
                   <th className="p-3 text-center font-medium">Status</th>
+                  <th className="p-3 text-center font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-10 text-center text-muted-foreground">
+                    <td colSpan={9} className="p-10 text-center text-muted-foreground">
                       <History className="w-8 h-8 mx-auto mb-2 opacity-30" />
                       <p>Tidak ada data absensi ditemukan</p>
                     </td>
                   </tr>
                 ) : (
-                  filtered.slice(0, visibleCount).map(att => {
+                  visibleRows.map(att => {
                     const emp = employees.find(e => e.id === att.employee_id);
                     const company = companies.find(c => c.id === att.company_id);
                     return (
-                      <tr key={att.id} className="hover:bg-muted/30 transition-colors">
+                      <tr key={att.id} className={cn('hover:bg-muted/30 transition-colors', selectedIds.has(att.id) && 'bg-primary/5')}>
+                        <td className="p-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(att.id)}
+                            onChange={() => toggleSelectOne(att.id)}
+                            aria-label={`Pilih record ${emp?.full_name || att.employee_id}`}
+                          />
+                        </td>
                         <td className="p-3 text-xs font-medium">{formatDate(att.date)}</td>
                         <td className="p-3">
                           <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
@@ -306,6 +487,11 @@ export default function OwnerAttendancePage() {
                         <td className="p-3 text-center">
                           <StatusBadge status={att.status} />
                         </td>
+                        <td className="p-3 text-center">
+                          <Button size="sm" variant="ghost" onClick={() => openEditDialog(att)} className="h-7 w-7 p-0">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
                       </tr>
                     );
                   })
@@ -324,6 +510,154 @@ export default function OwnerAttendancePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Single-record edit dialog */}
+      <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Edit Absensi — {employees.find(e => e.id === editingRecord?.employee_id)?.full_name || '-'}
+            </DialogTitle>
+          </DialogHeader>
+          {editingRecord && (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">{formatDate(editingRecord.date)}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Jam Masuk</label>
+                  <input
+                    type="time"
+                    className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                    value={editCheckIn}
+                    onChange={(e) => setEditCheckIn(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Jam Pulang</label>
+                  <input
+                    type="time"
+                    className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                    value={editCheckOut}
+                    onChange={(e) => setEditCheckOut(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1">Status</label>
+                <select
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as AttendanceStatus)}
+                >
+                  {ATTENDANCE_STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>{getStatusLabel(s)}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1">Catatan (opsional)</label>
+                <textarea
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                  rows={2}
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingRecord(null)}>Batal</Button>
+            <Button onClick={saveEditDialog}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk edit dialog */}
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit {selectedRecords.length} Record Sekaligus</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">
+              Aktifkan field yang mau diubah. Field yang tidak diaktifkan tidak akan disentuh pada record-record terpilih.
+            </p>
+
+            <div className="flex items-center gap-3">
+              <input type="checkbox" id="bulk-checkin-on" checked={bulkCheckInOn} onChange={(e) => setBulkCheckInOn(e.target.checked)} />
+              <label htmlFor="bulk-checkin-on" className="text-sm w-28">Jam Masuk</label>
+              <input
+                type="time"
+                className="flex-1 border rounded-md px-3 py-2 text-sm bg-background disabled:opacity-50"
+                value={bulkCheckIn}
+                disabled={!bulkCheckInOn}
+                onChange={(e) => setBulkCheckIn(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input type="checkbox" id="bulk-checkout-on" checked={bulkCheckOutOn} onChange={(e) => setBulkCheckOutOn(e.target.checked)} />
+              <label htmlFor="bulk-checkout-on" className="text-sm w-28">Jam Pulang</label>
+              <input
+                type="time"
+                className="flex-1 border rounded-md px-3 py-2 text-sm bg-background disabled:opacity-50"
+                value={bulkCheckOut}
+                disabled={!bulkCheckOutOn}
+                onChange={(e) => setBulkCheckOut(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input type="checkbox" id="bulk-status-on" checked={bulkStatusOn} onChange={(e) => setBulkStatusOn(e.target.checked)} />
+              <label htmlFor="bulk-status-on" className="text-sm w-28">Status</label>
+              <select
+                className="flex-1 border rounded-md px-3 py-2 text-sm bg-background disabled:opacity-50"
+                value={bulkStatus}
+                disabled={!bulkStatusOn}
+                onChange={(e) => setBulkStatus(e.target.value as AttendanceStatus)}
+              >
+                {ATTENDANCE_STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{getStatusLabel(s)}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Catatan (opsional, ditambahkan ke semua record terpilih)</label>
+              <textarea
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                rows={2}
+                value={bulkNotes}
+                onChange={(e) => setBulkNotes(e.target.value)}
+              />
+            </div>
+
+            <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
+              {selectedRecords.length} record dari karyawan:{' '}
+              {[...new Set(selectedRecords.map(r => employees.find(e => e.id === r.employee_id)?.full_name || r.employee_id))].join(', ')}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkOpen(false)}>Batal</Button>
+            <Button
+              disabled={!bulkCheckInOn && !bulkCheckOutOn && !bulkStatusOn}
+              onClick={() => setConfirmBulkOpen(true)}
+            >
+              Terapkan ke {selectedRecords.length} Record
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmModal
+        open={confirmBulkOpen}
+        onOpenChange={setConfirmBulkOpen}
+        title="Terapkan perubahan massal?"
+        description={`${selectedRecords.length} record akan diubah: ${bulkChangeSummary || '-'}. Perubahan ini langsung tersimpan dan tidak bisa di-undo otomatis.`}
+        confirmLabel="Ya, Terapkan"
+        variant="destructive"
+        onConfirm={applyBulkEdit}
+      />
     </div>
   );
 }

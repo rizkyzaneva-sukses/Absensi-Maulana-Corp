@@ -1,5 +1,25 @@
-import type { Employee, Attendance, Holiday, Notification } from '@/types';
+import type { Employee, Attendance, Holiday, Notification, AttendanceStatus } from '@/types';
 import type { WorkSchedule, OvertimeSettings } from '@/stores/dataStore';
+
+// ============ MANUAL EDIT (ADMIN/MANAGER) HELPERS ============
+
+export const ATTENDANCE_STATUS_OPTIONS: AttendanceStatus[] = [
+  'HADIR', 'TERLAMBAT', 'PULANG_CEPAT', 'IZIN', 'IZIN_SEPARUH',
+  'SAKIT', 'CUTI', 'DINAS_LUAR', 'TIDAK_HADIR', 'AUTO_CHECKOUT', 'LIBUR',
+];
+
+/** Format an ISO timestamp as a local "HH:mm" string for a <input type="time"> field. */
+export function isoToTimeInput(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/** Combine a "YYYY-MM-DD" date with a "HH:mm" <input type="time"> value into an ISO timestamp. */
+export function timeInputToIso(dateStr: string, time: string): string | null {
+  if (!time) return null;
+  return new Date(`${dateStr}T${time}:00`).toISOString();
+}
 
 // ============ SCHEDULE RESOLUTION ============
 

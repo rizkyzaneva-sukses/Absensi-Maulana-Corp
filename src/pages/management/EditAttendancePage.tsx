@@ -15,26 +15,13 @@ import {
   calculateEarlyLeaveMinutes,
   calculateOvertimeMinutes,
   formatDateLong,
+  isoToTimeInput,
+  timeInputToIso,
+  ATTENDANCE_STATUS_OPTIONS,
 } from '@/lib/attendance';
 import { getStatusLabel } from '@/lib/utils';
 import type { AttendanceStatus } from '@/types';
 import { UserCog, Save, History } from 'lucide-react';
-
-const STATUS_OPTIONS: AttendanceStatus[] = [
-  'HADIR', 'TERLAMBAT', 'PULANG_CEPAT', 'IZIN', 'IZIN_SEPARUH',
-  'SAKIT', 'CUTI', 'DINAS_LUAR', 'TIDAK_HADIR', 'AUTO_CHECKOUT', 'LIBUR',
-];
-
-function isoToTimeInput(iso: string | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function timeInputToIso(dateStr: string, time: string): string | null {
-  if (!time) return null;
-  return new Date(`${dateStr}T${time}:00`).toISOString();
-}
 
 export default function EditAttendancePage() {
   const { currentUser, activeCompany } = useAuthStore();
@@ -224,7 +211,7 @@ export default function EditAttendancePage() {
                 value={status}
                 onChange={(e) => setStatus(e.target.value as AttendanceStatus)}
               >
-                {STATUS_OPTIONS.map((s) => (
+                {ATTENDANCE_STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>{getStatusLabel(s)}</option>
                 ))}
               </select>
