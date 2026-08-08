@@ -25,3 +25,6 @@ npm-debug.log*
 
 # TypeScript
 tsconfig.tsbuildinfo
+
+# Local scratch files (screenshots/videos for bug reports, not project assets)
+/FILE/

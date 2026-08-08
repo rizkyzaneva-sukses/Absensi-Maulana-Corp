@@ -125,6 +125,29 @@ export default function CheckInPage() {
     }, 2500);
   };
 
+  // Success state (must be checked before todayRecord: a successful check-in
+  // immediately makes todayRecord truthy too, since addAttendance/updateAttendance
+  // write to the store synchronously in the same event handler)
+  if (completed) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
+            <Check className="w-10 h-10 text-emerald-600" />
+          </div>
+          <h2 className="text-2xl font-bold">Check-in Berhasil! ✅</h2>
+          <p className="text-muted-foreground">
+            Tercatat pukul {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          {checkInStatus === 'TERLAMBAT' && (
+            <p className="text-sm text-amber-600">⚠️ Status: Terlambat</p>
+          )}
+          <p className="text-sm text-muted-foreground">Mengalihkan ke dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Already checked in
   if (todayRecord) {
     return (
@@ -151,27 +174,6 @@ export default function CheckInPage() {
           <Button variant="outline" onClick={() => navigate('/dashboard')}>
             Kembali ke Dashboard
           </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Success state
-  if (completed) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-4 animate-fade-in">
-          <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
-            <Check className="w-10 h-10 text-emerald-600" />
-          </div>
-          <h2 className="text-2xl font-bold">Check-in Berhasil! ✅</h2>
-          <p className="text-muted-foreground">
-            Tercatat pukul {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-          {checkInStatus === 'TERLAMBAT' && (
-            <p className="text-sm text-amber-600">⚠️ Status: Terlambat</p>
-          )}
-          <p className="text-sm text-muted-foreground">Mengalihkan ke dashboard...</p>
         </div>
       </div>
     );

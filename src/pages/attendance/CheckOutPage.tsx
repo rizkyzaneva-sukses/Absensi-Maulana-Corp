@@ -31,23 +31,6 @@ export default function CheckOutPage() {
     (a) => a.employee_id === currentUser.id && a.date === todayStr
   );
 
-  if (!todayAttendance || todayAttendance.check_out_time) {
-    return (
-      <div className="max-w-lg mx-auto text-center py-12">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">
-          {!todayAttendance ? 'Belum Check In' : 'Sudah Check Out'}
-        </h2>
-        <p className="text-muted-foreground mb-4">
-          {!todayAttendance
-            ? 'Anda belum melakukan check-in hari ini.'
-            : `Anda sudah check-out pada ${formatTimeFromISO(todayAttendance.check_out_time!)}`}
-        </p>
-        <Button onClick={() => navigate('/dashboard')}>Kembali ke Dashboard</Button>
-      </div>
-    );
-  }
-
   // Resolve schedule from employee's assigned work schedule
   const now = new Date();
   const schedule = currentUser ? resolveSchedule(currentUser, now, workSchedules as WorkSchedule[]) : { start: '08:00', end: '17:00', is_workday: true };
@@ -61,24 +44,10 @@ export default function CheckOutPage() {
     ? calculateOvertimeMinutes(now.toISOString(), scheduledEnd, overtimeSettings)
     : 0;
 
-  const handleConfirm = () => {
-    const checkOutTime = new Date().toISOString();
-    const earlyLeaveMin = calculateEarlyLeaveMinutes(checkOutTime, scheduledEnd);
-    const otMinutes = calculateOvertimeMinutes(checkOutTime, scheduledEnd, overtimeSettings);
-    const newStatus = determineCheckOutStatus(todayAttendance.status, earlyLeaveMin, otMinutes);
-
-    updateAttendance(todayAttendance.id, {
-      check_out_time: checkOutTime,
-      status: newStatus as AttendanceStatus,
-      early_leave_minutes: earlyLeaveMin,
-      overtime_minutes: otMinutes,
-      notes: earlyReason ? `Pulang cepat: ${earlyReason}` : todayAttendance.notes,
-    });
-
-    setCompleted(true);
-    setTimeout(() => navigate('/dashboard'), 2000);
-  };
-
+  // Must be checked before the "already checked out" guard below: a successful
+  // check-out makes todayAttendance.check_out_time truthy immediately (updateAttendance
+  // writes to the store synchronously in the same event handler), which would otherwise
+  // match that guard instead of showing the success screen.
   if (completed) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -98,6 +67,41 @@ export default function CheckOutPage() {
       </div>
     );
   }
+
+  if (!todayAttendance || todayAttendance.check_out_time) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-12">
+        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold mb-2">
+          {!todayAttendance ? 'Belum Check In' : 'Sudah Check Out'}
+        </h2>
+        <p className="text-muted-foreground mb-4">
+          {!todayAttendance
+            ? 'Anda belum melakukan check-in hari ini.'
+            : `Anda sudah check-out pada ${formatTimeFromISO(todayAttendance.check_out_time!)}`}
+        </p>
+        <Button onClick={() => navigate('/dashboard')}>Kembali ke Dashboard</Button>
+      </div>
+    );
+  }
+
+  const handleConfirm = () => {
+    const checkOutTime = new Date().toISOString();
+    const earlyLeaveMin = calculateEarlyLeaveMinutes(checkOutTime, scheduledEnd);
+    const otMinutes = calculateOvertimeMinutes(checkOutTime, scheduledEnd, overtimeSettings);
+    const newStatus = determineCheckOutStatus(todayAttendance.status, earlyLeaveMin, otMinutes);
+
+    updateAttendance(todayAttendance.id, {
+      check_out_time: checkOutTime,
+      status: newStatus as AttendanceStatus,
+      early_leave_minutes: earlyLeaveMin,
+      overtime_minutes: otMinutes,
+      notes: earlyReason ? `Pulang cepat: ${earlyReason}` : todayAttendance.notes,
+    });
+
+    setCompleted(true);
+    setTimeout(() => navigate('/dashboard'), 2000);
+  };
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
