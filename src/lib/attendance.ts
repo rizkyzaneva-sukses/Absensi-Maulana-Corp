@@ -21,6 +21,19 @@ export function timeInputToIso(dateStr: string, time: string): string | null {
   return new Date(`${dateStr}T${time}:00`).toISOString();
 }
 
+/** Inclusive list of "YYYY-MM-DD" date strings from start to end. */
+export function enumerateDateRange(startStr: string, endStr: string): string[] {
+  const start = parseDateStr(startStr);
+  const end = parseDateStr(endStr);
+  const dates: string[] = [];
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    dates.push(getDateStr(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return dates;
+}
+
 // ============ SCHEDULE RESOLUTION ============
 
 export interface DaySchedule {

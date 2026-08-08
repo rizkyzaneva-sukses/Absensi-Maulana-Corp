@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { companies } from '@/lib/mock-data';
 import { formatDate, getStatusLabel, cn } from '@/lib/utils';
 import {
+  generateId,
   getDateStr,
   getTodayStr,
   parseDateStr,
@@ -20,16 +21,17 @@ import {
   calculateOvertimeMinutes,
   isoToTimeInput,
   timeInputToIso,
+  enumerateDateRange,
   ATTENDANCE_STATUS_OPTIONS,
 } from '@/lib/attendance';
 import type { Attendance, AttendanceStatus } from '@/types';
-import { History, Filter, Download, Users, CheckCircle, Clock, AlertTriangle, Pencil, X } from 'lucide-react';
+import { History, Filter, Download, Users, CheckCircle, Clock, AlertTriangle, Pencil, X, PlusCircle } from 'lucide-react';
 
 const FALLBACK_SCHEDULE = { start: '08:00', end: '17:00', is_workday: true };
 
 export default function OwnerAttendancePage() {
   const { currentUser } = useAuthStore();
-  const { attendances, updateAttendance } = useAttendanceStore();
+  const { attendances, addAttendance, updateAttendance } = useAttendanceStore();
   const { employees, workSchedules, overtimeSettings } = useDataStore();
 
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
@@ -57,6 +59,17 @@ export default function OwnerAttendancePage() {
   const [bulkStatus, setBulkStatus] = useState<AttendanceStatus>('HADIR');
   const [bulkNotes, setBulkNotes] = useState('');
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
+
+  // Fill-missing-dates dialog (for employees who have no record at all on some dates)
+  const [fillOpen, setFillOpen] = useState(false);
+  const [fillEmployeeId, setFillEmployeeId] = useState('');
+  const [fillStartDate, setFillStartDate] = useState('');
+  const [fillEndDate, setFillEndDate] = useState('');
+  const [fillCheckIn, setFillCheckIn] = useState('');
+  const [fillCheckOut, setFillCheckOut] = useState('');
+  const [fillStatus, setFillStatus] = useState<AttendanceStatus>('HADIR');
+  const [fillNotes, setFillNotes] = useState('');
+  const [confirmFillOpen, setConfirmFillOpen] = useState(false);
 
   const todayStr = getTodayStr();
 
@@ -192,6 +205,60 @@ export default function OwnerAttendancePage() {
     setBulkNotes('');
   }
 
+  const fillEmployee = employees.find((e) => e.id === fillEmployeeId) || null;
+
+  const missingDates = useMemo(() => {
+    if (!fillEmployee || !fillStartDate || !fillEndDate || fillStartDate > fillEndDate) return [];
+    return enumerateDateRange(fillStartDate, fillEndDate).filter(
+      (date) => !attendances.some(
+        (a) => a.employee_id === fillEmployee.id && a.company_id === fillEmployee.company_id && a.date === date
+      )
+    );
+  }, [fillEmployee, fillStartDate, fillEndDate, attendances]);
+
+  function applyFill() {
+    if (!fillEmployee) return;
+    const auditLine = `Dibuat manual oleh ${currentUser?.full_name || 'admin'} pada ${new Date().toLocaleString('id-ID')}`;
+    const notes = fillNotes.trim() ? `${fillNotes.trim()}\n${auditLine}` : auditLine;
+
+    for (const date of missingDates) {
+      const schedule = scheduleFor(fillEmployee.id, date);
+      const checkInIso = timeInputToIso(date, fillCheckIn);
+      const checkOutIso = timeInputToIso(date, fillCheckOut);
+      const lateMinutes = checkInIso ? calculateLateMinutes(checkInIso, schedule.start) : 0;
+      const earlyLeaveMinutes = checkOutIso ? calculateEarlyLeaveMinutes(checkOutIso, schedule.end) : 0;
+      const overtimeMinutes = checkOutIso ? calculateOvertimeMinutes(checkOutIso, schedule.end, overtimeSettings) : 0;
+
+      addAttendance({
+        id: generateId('att'),
+        company_id: fillEmployee.company_id,
+        employee_id: fillEmployee.id,
+        date,
+        check_in_time: checkInIso,
+        check_out_time: checkOutIso,
+        status: fillStatus,
+        check_in_method: 'MANUAL',
+        check_in_location: null,
+        check_out_location: null,
+        check_in_photo_url: '',
+        notes,
+        is_auto_checkout: false,
+        overtime_minutes: overtimeMinutes,
+        late_minutes: lateMinutes,
+        early_leave_minutes: earlyLeaveMinutes,
+      });
+    }
+
+    setConfirmFillOpen(false);
+    setFillOpen(false);
+    setFillEmployeeId('');
+    setFillStartDate('');
+    setFillEndDate('');
+    setFillCheckIn('');
+    setFillCheckOut('');
+    setFillNotes('');
+  }
+
   // Summary stats
   const summary = useMemo(() => {
     const base = selectedCompany === 'all'
@@ -253,10 +320,16 @@ export default function OwnerAttendancePage() {
           </h1>
           <p className="text-muted-foreground">Pantau kehadiran seluruh karyawan di semua perusahaan</p>
         </div>
-        <Button variant="outline" onClick={handleExport} className="gap-2">
-          <Download className="w-4 h-4" />
-          Export CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setFillOpen(true)} className="gap-2">
+            <PlusCircle className="w-4 h-4" />
+            Isi Tanggal Kosong
+          </Button>
+          <Button variant="outline" onClick={handleExport} className="gap-2">
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -657,6 +730,132 @@ export default function OwnerAttendancePage() {
         confirmLabel="Ya, Terapkan"
         variant="destructive"
         onConfirm={applyBulkEdit}
+      />
+
+      {/* Fill missing dates dialog — for an employee who has NO record at all on some dates
+          (those dates never show up as rows in the table above, so there's nothing to check). */}
+      <Dialog open={fillOpen} onOpenChange={setFillOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Isi Tanggal yang Belum Ada Record</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">
+              Untuk karyawan yang sebenarnya hadir tapi tanggalnya sama sekali tidak muncul di tabel (belum pernah tersimpan).
+              Tanggal yang sudah punya record akan dilewati otomatis — tidak akan ditimpa di sini.
+            </p>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Karyawan</label>
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                value={fillEmployeeId}
+                onChange={(e) => setFillEmployeeId(e.target.value)}
+              >
+                <option value="">Pilih karyawan...</option>
+                {employees.filter((e) => e.is_active).map((e) => (
+                  <option key={e.id} value={e.id}>{e.full_name} — {companies.find(c => c.id === e.company_id)?.name || e.company_id}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1">Dari Tanggal</label>
+                <input
+                  type="date"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                  value={fillStartDate}
+                  onChange={(e) => setFillStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1">Sampai Tanggal</label>
+                <input
+                  type="date"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                  value={fillEndDate}
+                  onChange={(e) => setFillEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1">Jam Masuk</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                  value={fillCheckIn}
+                  onChange={(e) => setFillCheckIn(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1">Jam Pulang</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                  value={fillCheckOut}
+                  onChange={(e) => setFillCheckOut(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Status</label>
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                value={fillStatus}
+                onChange={(e) => setFillStatus(e.target.value as AttendanceStatus)}
+              >
+                {ATTENDANCE_STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{getStatusLabel(s)}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Catatan (opsional)</label>
+              <textarea
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                rows={2}
+                value={fillNotes}
+                onChange={(e) => setFillNotes(e.target.value)}
+              />
+            </div>
+
+            {fillEmployee && fillStartDate && fillEndDate && (
+              <div className="text-xs bg-muted/50 rounded-md p-2">
+                {missingDates.length === 0 ? (
+                  <span className="text-muted-foreground">Semua tanggal di rentang ini sudah punya record — tidak ada yang perlu diisi.</span>
+                ) : (
+                  <>
+                    <span className="text-muted-foreground">{missingDates.length} tanggal belum ada record, akan dibuat:</span>{' '}
+                    <span className="font-medium">{missingDates.map(formatDate).join(', ')}</span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFillOpen(false)}>Batal</Button>
+            <Button
+              disabled={missingDates.length === 0}
+              onClick={() => setConfirmFillOpen(true)}
+            >
+              Buat {missingDates.length} Record
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmModal
+        open={confirmFillOpen}
+        onOpenChange={setConfirmFillOpen}
+        title="Buat record absensi baru?"
+        description={`${missingDates.length} record baru akan dibuat untuk ${fillEmployee?.full_name || '-'} (${missingDates.map(formatDate).join(', ')}), dengan jam masuk ${fillCheckIn || '(kosong)'} dan jam pulang ${fillCheckOut || '(kosong)'}, status ${getStatusLabel(fillStatus)}.`}
+        confirmLabel="Ya, Buat"
+        onConfirm={applyFill}
       />
     </div>
   );
