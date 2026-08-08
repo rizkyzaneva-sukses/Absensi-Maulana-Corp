@@ -391,7 +391,6 @@ async function initializeSync(): Promise<void> {
 
       await flushPendingMutations();
       await refreshFromServer();
-      startRealtimeConnection();
     } catch (error) {
       store.setState({
         syncStatus: 'offline',
@@ -399,6 +398,12 @@ async function initializeSync(): Promise<void> {
       });
     } finally {
       store.setState({ initialized: true });
+      // Must run even when the block above failed (e.g. the device was offline on first
+      // load) — this is what wires up the SSE channel, the `online` listener, and the
+      // fallback poll that let the app notice reconnection later. Without it, a session
+      // that starts offline stays deaf to connectivity returning until some unrelated
+      // mutation happens to trigger a flush.
+      startRealtimeConnection();
     }
   })();
 
