@@ -5,6 +5,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import pg from 'pg';
+import {
+  buildMorningReport,
+  createChannelBindToken,
+  escapeHtml,
+  extractChannelToken,
+  formatLeaveNotification,
+  getJakartaParts,
+  isMorningReportWindow,
+} from './telegram-notify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -26,7 +35,12 @@ async function sendTelegramMessage(chatId, text) {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    }),
   });
   const data = await res.json();
   if (!data.ok) {
@@ -384,7 +398,12 @@ const apiKey = process.env.API_KEY;
 if (apiKey) {
   app.use('/api', (request, response, next) => {
     // Skip auth for health check, SSE events, and (unauthenticated) password reset
-    if (request.path === '/health' || request.path === '/events' || request.path.startsWith('/auth/password-reset/') || request.path.startsWith('/telegram/')) {
+    if (
+      request.path === '/health'
+      || request.path === '/events'
+      || request.path.startsWith('/auth/password-reset/')
+      || request.path === '/telegram/webhook'
+    ) {
       return next();
     }
     const provided = request.headers['x-api-key'];
@@ -540,20 +559,51 @@ app.get('/api/telegram/connect-status', async (request, response, next) => {
   }
 });
 
-// Telegram Bot Webhook — receives /start TOKEN from users
+// Telegram Bot Webhook — personal /start TOKEN, channel bind, membership
 app.post('/api/telegram/webhook', async (request, response) => {
   try {
-    const update = request.body;
-    const message = update.message || update.my_chat_member;
+    const update = request.body || {};
+
+    if (update.my_chat_member) {
+      await handleBotMembershipChange(update.my_chat_member);
+      return response.json({ ok: true });
+    }
+
+    if (update.channel_post) {
+      await handleChannelBindPost(update.channel_post);
+      return response.json({ ok: true });
+    }
+
+    const message = update.message;
     if (!message) return response.json({ ok: true });
+
+    const chatType = String(message.chat?.type || '');
+    if (chatType === 'group' || chatType === 'supergroup') {
+      await handleChannelBindPost(message);
+      return response.json({ ok: true });
+    }
 
     const chatId = String(message.chat?.id || '');
     const text = String(message.text || '').trim();
     const firstName = message.from?.first_name || 'User';
 
-    // Handle /start TOKEN
     if (text.startsWith('/start ')) {
       const token = text.slice(7).trim();
+      const channelToken = extractChannelToken(text);
+      if (channelToken) {
+        const bound = await bindChannelByToken(channelToken, {
+          id: chatId,
+          title: message.chat?.title || `${firstName} (chat pribadi)`,
+        });
+        if (bound.ok) {
+          await sendTelegramMessageQuiet(
+            chatId,
+            `✅ Kode channel diterima, tapi notifikasi perusahaan harus masuk ke <b>channel</b>, bukan chat pribadi.\n\nBuat channel, tambahkan bot sebagai admin, lalu kirim kode yang sama di channel itu.`,
+          );
+          return response.json({ ok: true });
+        }
+      }
+
       const result = await pool.query(
         `UPDATE telegram_connections
          SET chat_id = $1, connected_at = NOW()
@@ -563,20 +613,20 @@ app.post('/api/telegram/webhook', async (request, response) => {
       );
 
       if (result.rowCount > 0) {
-        await sendTelegramMessage(chatId, `✅ <b>Telegram berhasil terhubung!</b>\n\nHalo ${firstName}, akun Anda sudah terhubung dengan sistem absensi.\nSekarang Anda bisa mereset password via Telegram.`);
+        await sendTelegramMessageQuiet(chatId, `✅ <b>Telegram berhasil terhubung!</b>\n\nHalo ${escapeHtml(firstName)}, akun Anda sudah terhubung dengan sistem absensi.\nSekarang Anda bisa mereset password via Telegram.`);
       } else {
-        await sendTelegramMessage(chatId, `⚠️ Token tidak valid atau sudah digunakan.`);
+        await sendTelegramMessageQuiet(chatId, `⚠️ Token tidak valid atau sudah digunakan.`);
       }
     } else if (text === '/start') {
-      await sendTelegramMessage(chatId, `👋 Halo ${firstName}!\n\nGunakan link dari aplikasi absensi untuk menghubungkan akun Anda.\n\nKetik /help untuk bantuan.`);
+      await sendTelegramMessageQuiet(chatId, `👋 Halo ${escapeHtml(firstName)}!\n\nGunakan link dari aplikasi absensi untuk menghubungkan akun Anda.\n\nKetik /help untuk bantuan.`);
     } else if (text === '/help') {
-      await sendTelegramMessage(chatId, `📖 <b>Bantuan</b>\n\nUntuk menghubungkan akun:\n1. Buka aplikasi absensi\n2. Klik "Connect Telegram"\n3. Klik link yang muncul\n4. Klik "Start" di sini\n\nUntuk reset password:\n1. Klik "Lupa Password" di login\n2. Masukkan email Anda\n3. Kode akan dikirim ke Telegram ini`);
+      await sendTelegramMessageQuiet(chatId, `📖 <b>Bantuan</b>\n\nUntuk menghubungkan akun pribadi:\n1. Buka aplikasi absensi\n2. Klik "Connect Telegram"\n3. Klik link yang muncul\n4. Klik "Start" di sini\n\nUntuk channel perusahaan:\n1. Buat 1 channel per perusahaan\n2. Tambahkan bot ini sebagai admin\n3. Di aplikasi buka Pengaturan → Notifikasi\n4. Kirim kode ABSEN-XXXXXXXX di channel\n\nUntuk reset password:\n1. Klik "Lupa Password" di login\n2. Masukkan email Anda\n3. Kode akan dikirim ke Telegram ini`);
     }
 
     response.json({ ok: true });
   } catch (error) {
     console.error('Telegram webhook error:', error);
-    response.json({ ok: true }); // Always return 200 to Telegram
+    response.json({ ok: true });
   }
 });
 
@@ -592,6 +642,364 @@ async function getBotUsername() {
   }
   throw new Error('Gagal mendapatkan info bot Telegram.');
 }
+
+async function sendTelegramMessageQuiet(chatId, text) {
+  try {
+    await sendTelegramMessage(chatId, text);
+    return true;
+  } catch (error) {
+    console.error('Gagal mengirim pesan Telegram:', error.message);
+    return false;
+  }
+}
+
+function channelStatusPayload(row, botUsername = null) {
+  return {
+    ok: true,
+    connected: Boolean(row?.chat_id),
+    company_id: row?.company_id || null,
+    company_name: row?.company_name || '',
+    token: row?.connect_token || null,
+    chat_id: row?.chat_id || null,
+    chat_title: row?.chat_title || '',
+    connected_at: row?.connected_at || null,
+    bot_username: botUsername,
+    bot_configured: Boolean(telegramBotToken),
+  };
+}
+
+async function resolveBotUsernameSafe() {
+  if (!telegramBotToken) return null;
+  try {
+    return await getBotUsername();
+  } catch (error) {
+    console.error('Gagal membaca username bot Telegram:', error.message);
+    return null;
+  }
+}
+
+async function bindChannelByToken(token, chat) {
+  const chatId = String(chat?.id || '');
+  if (!chatId || !token) return { ok: false, reason: 'invalid' };
+
+  const result = await pool.query(
+    `SELECT company_id, company_name, chat_id FROM telegram_channels WHERE UPPER(connect_token) = $1`,
+    [token],
+  );
+  if (result.rowCount === 0) return { ok: false, reason: 'unknown_token' };
+
+  const row = result.rows[0];
+  const taken = await pool.query(
+    `SELECT company_id, company_name FROM telegram_channels WHERE chat_id = $1 AND company_id <> $2`,
+    [chatId, row.company_id],
+  );
+  if (taken.rowCount > 0) return { ok: false, reason: 'channel_taken', row };
+
+  await pool.query(
+    `UPDATE telegram_channels
+     SET chat_id = $1, chat_title = $2, connected_at = NOW()
+     WHERE company_id = $3`,
+    [chatId, chat?.title || '', row.company_id],
+  );
+
+  return { ok: true, row: { ...row, chat_id: chatId, chat_title: chat?.title || '' } };
+}
+
+async function handleChannelBindPost(post) {
+  const chatId = String(post?.chat?.id || '');
+  const token = extractChannelToken(post?.text || post?.caption || '');
+  if (!chatId || !token) return;
+
+  const bound = await bindChannelByToken(token, {
+    id: chatId,
+    title: post.chat?.title || '',
+  });
+
+  if (!bound.ok && bound.reason === 'channel_taken') {
+    await sendTelegramMessageQuiet(chatId, '⚠️ Channel ini sudah terhubung ke perusahaan lain.');
+    return;
+  }
+  if (!bound.ok) return;
+
+  const companyName = bound.row.company_name || bound.row.company_id;
+  await sendTelegramMessageQuiet(
+    chatId,
+    `✅ <b>Channel terhubung</b>\n\nPerusahaan: <b>${escapeHtml(companyName)}</b>\n\nSetiap hari kerja jam <b>08.30 WIB</b> bot mengirim siapa yang tidak masuk beserta alasannya.\nJika semua masuk, tidak ada pesan pagi.\n\nPengajuan cuti/izin juga masuk ke sini.`,
+  );
+}
+
+async function handleBotMembershipChange(update) {
+  const chat = update?.chat || {};
+  const chatId = String(chat.id || '');
+  const membership = update?.new_chat_member || {};
+  if (!chatId || !membership.user?.is_bot) return;
+
+  const status = String(membership.status || '');
+  if (status === 'left' || status === 'kicked') {
+    await pool.query(
+      `UPDATE telegram_channels
+       SET chat_id = NULL, chat_title = NULL, connected_at = NULL
+       WHERE chat_id = $1`,
+      [chatId],
+    );
+    return;
+  }
+
+  const allowedTypes = new Set(['channel', 'group', 'supergroup']);
+  if (!allowedTypes.has(chat.type) || (status !== 'administrator' && status !== 'member')) return;
+
+  const existing = await pool.query(
+    `SELECT company_id FROM telegram_channels WHERE chat_id = $1`,
+    [chatId],
+  );
+  if (existing.rowCount > 0) return;
+
+  const place = chat.type === 'channel' ? 'channel' : 'grup';
+  await sendTelegramMessageQuiet(
+    chatId,
+    `👋 Bot absensi sudah masuk ke ${place} ini.\n\nUntuk menghubungkan dengan perusahaan:\n1. Buka <b>Pengaturan → Notifikasi</b> di aplikasi\n2. Klik <b>Hubungkan Channel</b>\n3. Kirim kode <code>ABSEN-XXXXXXXX</code> di sini`,
+  );
+}
+
+async function notifyLeaveToChannel(request, event) {
+  if (!telegramBotToken || !request?.company_id) return;
+  const channel = await pool.query(
+    `SELECT chat_id FROM telegram_channels WHERE company_id = $1 AND chat_id IS NOT NULL`,
+    [request.company_id],
+  );
+  if (channel.rowCount === 0) return;
+  await sendTelegramMessageQuiet(channel.rows[0].chat_id, formatLeaveNotification(request, event));
+}
+
+async function loadCompanyReportData(companyId, dateStr) {
+  const [employees, attendances, leaves] = await Promise.all([
+    pool.query(`SELECT payload FROM app_sync_employees WHERE company_id = $1`, [companyId]),
+    pool.query(
+      `SELECT payload FROM app_sync_attendance_records WHERE company_id = $1 AND attendance_date = $2::date`,
+      [companyId, dateStr],
+    ),
+    pool.query(`SELECT payload FROM app_sync_leave_requests WHERE company_id = $1`, [companyId]),
+  ]);
+  return {
+    employees: employees.rows.map((row) => row.payload),
+    attendances: attendances.rows.map((row) => row.payload),
+    leaveRequests: leaves.rows.map((row) => row.payload),
+  };
+}
+
+async function buildCompanyMorningReport(channel, dateStr) {
+  const data = await loadCompanyReportData(channel.company_id, dateStr);
+  return buildMorningReport({
+    companyName: channel.company_name,
+    dateStr,
+    ...data,
+  });
+}
+
+async function sendMorningReportForCompany(channel, dateStr) {
+  const report = await buildCompanyMorningReport(channel, dateStr);
+  if (report.allPresent) return { ...report, sent: false, reason: 'all_present' };
+  if (!channel.chat_id) return { ...report, sent: false, reason: 'channel_not_connected' };
+  if (!telegramBotToken) return { ...report, sent: false, reason: 'bot_not_configured' };
+
+  const sent = await sendTelegramMessageQuiet(channel.chat_id, report.message);
+  return { ...report, sent, reason: sent ? null : 'send_failed' };
+}
+
+const MORNING_REPORT_META_KEY = 'telegram_morning_report';
+
+async function loadMorningReportState() {
+  const result = await pool.query('SELECT value FROM app_sync_metadata WHERE key = $1', [MORNING_REPORT_META_KEY]);
+  if (result.rowCount === 0) return {};
+  try {
+    return JSON.parse(result.rows[0].value) || {};
+  } catch {
+    return {};
+  }
+}
+
+async function markMorningReportSent(companyId, dateStr) {
+  const state = await loadMorningReportState();
+  state[companyId] = dateStr;
+  await pool.query(
+    `INSERT INTO app_sync_metadata (key, value)
+     VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+    [MORNING_REPORT_META_KEY, JSON.stringify(state)],
+  );
+}
+
+async function runScheduledMorningReports() {
+  const parts = getJakartaParts();
+  if (!isMorningReportWindow(parts)) return;
+
+  const channels = await pool.query(
+    `SELECT company_id, company_name, chat_id FROM telegram_channels WHERE chat_id IS NOT NULL`,
+  );
+  if (channels.rowCount === 0) return;
+
+  const sentState = await loadMorningReportState();
+  for (const channel of channels.rows) {
+    if (sentState[channel.company_id] === parts.dateStr) continue;
+    try {
+      const result = await sendMorningReportForCompany(channel, parts.dateStr);
+      await markMorningReportSent(channel.company_id, parts.dateStr);
+      if (result.allPresent) {
+        console.log(`Laporan pagi ${channel.company_id} ${parts.dateStr}: semua masuk, tidak dikirim.`);
+      } else if (result.sent) {
+        console.log(`Laporan pagi ${channel.company_id} ${parts.dateStr}: ${result.absences.length} tidak masuk, terkirim.`);
+      } else {
+        console.error(`Laporan pagi ${channel.company_id} ${parts.dateStr} gagal: ${result.reason}`);
+      }
+    } catch (error) {
+      console.error(`Gagal laporan pagi ${channel.company_id}:`, error.message);
+    }
+  }
+}
+
+let morningReportTimer;
+function startMorningReportScheduler() {
+  if (memoryDatabase) return;
+  morningReportTimer = setInterval(() => {
+    runScheduledMorningReports().catch((error) => {
+      console.error('Scheduler laporan pagi:', error.message);
+    });
+  }, 30_000);
+  runScheduledMorningReports().catch(() => {});
+}
+
+app.post('/api/telegram/channel/connect', async (request, response, next) => {
+  try {
+    const companyId = String(request.body?.company_id || '').trim();
+    const companyName = String(request.body?.company_name || '').trim();
+    if (!companyId) {
+      return response.status(400).json({ error: 'company_id wajib diisi.' });
+    }
+
+    const connectToken = createChannelBindToken();
+    const existing = await pool.query(
+      `SELECT company_name FROM telegram_channels WHERE company_id = $1`,
+      [companyId],
+    );
+    const storedName = companyName || existing.rows[0]?.company_name || '';
+    const result = await pool.query(
+      `INSERT INTO telegram_channels (company_id, company_name, connect_token)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (company_id) DO UPDATE SET
+         company_name = EXCLUDED.company_name,
+         connect_token = EXCLUDED.connect_token
+       RETURNING company_id, company_name, connect_token, chat_id, chat_title, connected_at`,
+      [companyId, storedName, connectToken],
+    );
+
+    const botUsername = await resolveBotUsernameSafe();
+    response.json(channelStatusPayload(result.rows[0], botUsername));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/telegram/channel/status', async (request, response, next) => {
+  try {
+    const companyId = String(request.query?.company_id || '').trim();
+    if (!companyId) {
+      return response.status(400).json({ error: 'company_id wajib diisi.' });
+    }
+
+    const result = await pool.query(
+      `SELECT company_id, company_name, connect_token, chat_id, chat_title, connected_at
+       FROM telegram_channels WHERE company_id = $1`,
+      [companyId],
+    );
+    const botUsername = await resolveBotUsernameSafe();
+    response.json(channelStatusPayload(result.rows[0] || { company_id: companyId }, botUsername));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/telegram/channel', async (request, response, next) => {
+  try {
+    const companyId = String(request.query?.company_id || request.body?.company_id || '').trim();
+    if (!companyId) {
+      return response.status(400).json({ error: 'company_id wajib diisi.' });
+    }
+
+    await pool.query(
+      `UPDATE telegram_channels
+       SET chat_id = NULL, chat_title = NULL, connected_at = NULL, connect_token = $2
+       WHERE company_id = $1`,
+      [companyId, createChannelBindToken()],
+    );
+
+    const result = await pool.query(
+      `SELECT company_id, company_name, connect_token, chat_id, chat_title, connected_at
+       FROM telegram_channels WHERE company_id = $1`,
+      [companyId],
+    );
+    const botUsername = await resolveBotUsernameSafe();
+    response.json(channelStatusPayload(result.rows[0] || { company_id: companyId }, botUsername));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/telegram/channel/test', async (request, response, next) => {
+  try {
+    const companyId = String(request.body?.company_id || '').trim();
+    if (!companyId) {
+      return response.status(400).json({ error: 'company_id wajib diisi.' });
+    }
+
+    const result = await pool.query(
+      `SELECT company_id, company_name, chat_id, chat_title
+       FROM telegram_channels WHERE company_id = $1`,
+      [companyId],
+    );
+    if (result.rowCount === 0 || !result.rows[0].chat_id) {
+      return response.status(400).json({ error: 'Channel belum terhubung.' });
+    }
+    if (!telegramBotToken) {
+      return response.status(500).json({ error: 'Layanan Telegram belum dikonfigurasi di server.' });
+    }
+
+    const channel = result.rows[0];
+    await sendTelegramMessage(
+      channel.chat_id,
+      `🔔 <b>Tes notifikasi</b>\n\nChannel <b>${escapeHtml(channel.company_name || companyId)}</b> sudah siap.\n\nLaporan ketidakhadiran otomatis setiap hari kerja jam 08.30 WIB.\nJika semua masuk, tidak ada pesan pagi.`,
+    );
+    response.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/telegram/channel/report', async (request, response, next) => {
+  try {
+    const companyId = String(request.body?.company_id || '').trim();
+    const dateStr = String(request.body?.date || getJakartaParts().dateStr).trim();
+    if (!companyId) {
+      return response.status(400).json({ error: 'company_id wajib diisi.' });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return response.status(400).json({ error: 'Format tanggal harus YYYY-MM-DD.' });
+    }
+
+    const result = await pool.query(
+      `SELECT company_id, company_name, chat_id FROM telegram_channels WHERE company_id = $1`,
+      [companyId],
+    );
+    const channel = result.rows[0] || { company_id: companyId, company_name: '', chat_id: null };
+    if (!channel.company_name && request.body?.company_name) {
+      channel.company_name = String(request.body.company_name);
+    }
+
+    const report = await sendMorningReportForCompany(channel, dateStr);
+    response.json({ ok: true, ...report });
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.get('/api/health', async (_request, response, next) => {
   try {
@@ -640,6 +1048,11 @@ for (const [name, config] of Object.entries(collections)) {
     try {
       const saved = await upsertRecord(config.table, request.body);
       await publishChange(name, saved.id);
+      if (name === 'leaveRequests') {
+        notifyLeaveToChannel(saved, saved.status === 'PENDING' ? 'SUBMITTED' : saved.status).catch((error) => {
+          console.error('Gagal notifikasi pengajuan cuti/izin:', error.message);
+        });
+      }
       response.status(201).json(saved);
     } catch (error) {
       next(error);
@@ -650,6 +1063,11 @@ for (const [name, config] of Object.entries(collections)) {
     try {
       const saved = await patchRecord(config.table, request.params.id, request.body);
       await publishChange(name, request.params.id);
+      if (name === 'leaveRequests' && (saved.status === 'APPROVED' || saved.status === 'REJECTED')) {
+        notifyLeaveToChannel(saved, saved.status).catch((error) => {
+          console.error('Gagal notifikasi status cuti/izin:', error.message);
+        });
+      }
       response.json(saved);
     } catch (error) {
       next(error);
@@ -719,6 +1137,7 @@ app.use((error, _request, response, _next) => {
 
 await initializeDatabase();
 await connectChangeListener();
+startMorningReportScheduler();
 
 const server = app.listen(port, '0.0.0.0', () => {
   console.log(`Absensi API berjalan pada port ${port}.`);
@@ -730,6 +1149,7 @@ const heartbeat = setInterval(() => {
 
 async function shutdown() {
   clearInterval(heartbeat);
+  clearInterval(morningReportTimer);
   clearTimeout(listenerRetryTimer);
   server.close();
   if (listenerClient) await listenerClient.end().catch(() => {});

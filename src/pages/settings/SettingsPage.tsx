@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Clock, DollarSign, Bell, CalendarDays, MapPin, Timer } from 'lucide-react';
+import { Building2, Clock, DollarSign, CalendarDays, MapPin, Timer } from 'lucide-react';
+import { TelegramChannelCard } from './TelegramChannelCard';
 
 export default function SettingsPage() {
   const { activeCompany } = useAuthStore();
@@ -167,46 +168,15 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Bell size={18} /> Pengaturan Notifikasi
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg border">
-                  <div>
-                    <p className="font-medium text-sm">Reminder Check-in</p>
-                    <p className="text-xs text-muted-foreground">Kirim notifikasi jika belum check-in jam 09:30</p>
-                  </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4" />
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border">
-                  <div>
-                    <p className="font-medium text-sm">Reminder Check-out</p>
-                    <p className="text-xs text-muted-foreground">Kirim notifikasi jika belum check-out jam 17:30</p>
-                  </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4" />
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border">
-                  <div>
-                    <p className="font-medium text-sm">Notifikasi Payroll</p>
-                    <p className="text-xs text-muted-foreground">Kirim slip gaji otomatis setelah finalize</p>
-                  </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4" />
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border">
-                  <div>
-                    <p className="font-medium text-sm">Alert Absensi</p>
-                    <p className="text-xs text-muted-foreground">Alert jika karyawan &gt;3x tidak hadir dalam sebulan</p>
-                  </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4" />
-                </div>
-              </div>
-              <Button>Simpan Perubahan</Button>
-            </CardContent>
-          </Card>
+          {activeCompany ? (
+            <TelegramChannelCard companyId={activeCompany.id} companyName={activeCompany.name} />
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-sm text-muted-foreground">
+                Pilih perusahaan dulu untuk mengatur channel Telegram.
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

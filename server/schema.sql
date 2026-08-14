@@ -78,3 +78,18 @@ CREATE TABLE IF NOT EXISTS telegram_connections (
 
 CREATE INDEX IF NOT EXISTS telegram_connections_token_idx
   ON telegram_connections (connect_token);
+
+CREATE TABLE IF NOT EXISTS telegram_channels (
+  id SERIAL PRIMARY KEY,
+  company_id TEXT NOT NULL UNIQUE,
+  company_name TEXT NOT NULL DEFAULT '',
+  connect_token TEXT UNIQUE NOT NULL,
+  chat_id TEXT,
+  chat_title TEXT,
+  connected_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS telegram_channels_chat_id_idx
+  ON telegram_channels (chat_id)
+  WHERE chat_id IS NOT NULL;
