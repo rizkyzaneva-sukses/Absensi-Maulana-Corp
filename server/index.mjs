@@ -322,27 +322,85 @@ async function upsertRecord(table, record) {
   return result.rows[0].payload;
 }
 
+function notFoundError() {
+  const error = new Error('Data tidak ditemukan.');
+  error.status = 404;
+  return error;
+}
+
 async function patchRecord(table, id, changes) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const existing = await client.query(
-      `SELECT payload FROM ${table} WHERE id = $1 FOR UPDATE`,
+    let existing = await client.query(
+      `SELECT id, payload FROM ${table} WHERE id = $1 FOR UPDATE`,
       [id],
     );
-    if (existing.rowCount === 0) {
-      const error = new Error('Data tidak ditemukan.');
-      error.status = 404;
-      throw error;
+
+    // Absensi unik per (perusahaan, karyawan, tanggal). HP sering punya id lokal
+    // yang beda dari id di server — cari baris yang sama, jangan 404.
+    if (existing.rowCount === 0 && table === 'app_sync_attendance_records') {
+      const companyId = changes?.company_id;
+      const employeeId = changes?.employee_id;
+      const date = changes?.date;
+      if (companyId && employeeId && date) {
+        existing = await client.query(
+          `SELECT id, payload FROM app_sync_attendance_records
+           WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date
+           FOR UPDATE`,
+          [companyId, employeeId, date],
+        );
+      }
     }
 
-    const payload = { ...existing.rows[0].payload, ...(changes || {}), id };
+    if (existing.rowCount === 0) {
+      const employeeId = resolveRecordEmployeeId(table, { ...changes, id });
+      if (!changes || !changes.company_id || !employeeId) {
+        throw notFoundError();
+      }
+
+      const payload = { ...changes, id };
+      if (table === 'app_sync_attendance_records') {
+        if (!changes.date) throw notFoundError();
+        const inserted = await client.query(
+          `INSERT INTO app_sync_attendance_records (id, company_id, employee_id, attendance_date, payload)
+           VALUES ($1, $2, $3, $4::date, $5::jsonb)
+           ON CONFLICT (company_id, employee_id, attendance_date) DO NOTHING
+           RETURNING payload`,
+          [id, changes.company_id, changes.employee_id, changes.date, JSON.stringify(payload)],
+        );
+        if (inserted.rowCount > 0) {
+          await client.query('COMMIT');
+          return inserted.rows[0].payload;
+        }
+        existing = await client.query(
+          `SELECT id, payload FROM app_sync_attendance_records
+           WHERE company_id = $1 AND employee_id = $2 AND attendance_date = $3::date
+           FOR UPDATE`,
+          [changes.company_id, changes.employee_id, changes.date],
+        );
+        if (existing.rowCount === 0) throw notFoundError();
+      } else {
+        const inserted = await client.query(
+          `INSERT INTO ${table} (id, company_id, employee_id, payload)
+           VALUES ($1, $2, $3, $4::jsonb)
+           ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()
+           RETURNING payload`,
+          [id, changes.company_id, employeeId, JSON.stringify(payload)],
+        );
+        await client.query('COMMIT');
+        return inserted.rows[0].payload;
+      }
+    }
+
+    const rowId = existing.rows[0].id;
+    const payload = { ...existing.rows[0].payload, ...(changes || {}), id: rowId };
     const result = await client.query(
       `UPDATE ${table}
        SET payload = $2::jsonb, updated_at = NOW()
        WHERE id = $1
        RETURNING payload`,
-      [id, JSON.stringify(payload)],
+      [rowId, JSON.stringify(payload)],
     );
     await client.query('COMMIT');
     return result.rows[0].payload;
@@ -1128,10 +1186,17 @@ app.use((_request, response) => {
   response.send(renderIndexHtml());
 });
 
-app.use((error, _request, response, _next) => {
-  console.error(error);
-  response.status(error.status || 500).json({
-    error: error.status ? error.message : 'Terjadi kesalahan pada server.',
+app.use((error, request, response, _next) => {
+  const status = error.status || 500;
+  if (status >= 500) {
+    console.error(error);
+  } else {
+    console.warn(`${request.method} ${request.originalUrl || request.url} → ${status} ${error.message}`);
+  }
+  response.status(status).json({
+    error: status >= 400 && status < 500 && error.message
+      ? error.message
+      : 'Terjadi kesalahan pada server.',
   });
 });
 

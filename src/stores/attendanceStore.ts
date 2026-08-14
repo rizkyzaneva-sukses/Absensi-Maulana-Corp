@@ -186,6 +186,16 @@ function overlayPendingMutations(data: AttendanceData, pending: PendingMutation[
   return pending.reduce(applyMutation, data);
 }
 
+function fullRecordBody(
+  collection: CollectionName,
+  recordId: string,
+  body: Record<string, unknown>,
+): Record<string, unknown> {
+  const current = (useAttendanceStore.getState()[collection] as unknown as Array<Record<string, unknown>>)
+    .find((item) => item.id === recordId);
+  return { ...(current || {}), ...body, id: recordId };
+}
+
 function queueMutation(
   collection: CollectionName,
   method: PendingMutation['method'],
@@ -197,7 +207,7 @@ function queueMutation(
     collection,
     method,
     recordId,
-    body,
+    body: method === 'PATCH' ? fullRecordBody(collection, recordId, body) : body,
     createdAt: new Date().toISOString(),
   };
 
@@ -272,29 +282,50 @@ async function flushPendingMutations(): Promise<void> {
         if (!mutation) break;
         attemptedIds.add(mutation.queueId);
 
+        const hydratedBody = mutation.method === 'PATCH'
+          ? fullRecordBody(mutation.collection, mutation.recordId, mutation.body)
+          : mutation.body;
         const basePath = `/api/${apiPaths[mutation.collection]}`;
         const url = mutation.method === 'PATCH' ? `${basePath}/${mutation.recordId}` : basePath;
 
         try {
-          await requestJson(url, {
+          const saved = await requestJson<Record<string, unknown>>(url, {
             method: mutation.method,
-            body: JSON.stringify(mutation.body),
+            body: JSON.stringify(hydratedBody),
           });
 
-          store.setState((state) => ({
-            pendingMutations: state.pendingMutations.filter(
+          store.setState((state) => {
+            const remaining = state.pendingMutations.filter(
               (item) => item.queueId !== mutation.queueId,
-            ),
-          }));
+            );
+            const returnedId = typeof saved?.id === 'string' ? saved.id : mutation.recordId;
+            const collection = state[mutation.collection] as unknown as Array<Record<string, unknown>>;
+            const nextCollection = collection.map((item) => {
+              if (item.id !== mutation.recordId && item.id !== returnedId) return item;
+              return { ...item, ...saved, id: returnedId };
+            });
+            return {
+              pendingMutations: remaining.map((item) => (
+                item.collection === mutation.collection && item.recordId === mutation.recordId
+                  ? { ...item, recordId: returnedId, body: { ...item.body, id: returnedId } }
+                  : item
+              )),
+              [mutation.collection]: nextCollection,
+            };
+          });
         } catch (err) {
           hadFailure = true;
           const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+          const retries = (mutation.retryCount || 0) + 1;
+          const staleMissing = /tidak ditemukan/i.test(errorMsg) && retries >= 5;
           store.setState((state) => ({
-            pendingMutations: state.pendingMutations.map((item) =>
-              item.queueId === mutation.queueId
-                ? { ...item, retryCount: (item.retryCount || 0) + 1, lastError: errorMsg }
-                : item,
-            ),
+            pendingMutations: staleMissing
+              ? state.pendingMutations.filter((item) => item.queueId !== mutation.queueId)
+              : state.pendingMutations.map((item) =>
+                item.queueId === mutation.queueId
+                  ? { ...item, retryCount: retries, lastError: errorMsg }
+                  : item,
+              ),
           }));
         }
       }

@@ -110,16 +110,56 @@ try {
   });
   assert.equal(updated.check_out_time, '2026-07-02T10:00:00.000Z');
 
+  const remapped = await jsonRequest('/api/attendances/ATT-LOCAL-PHONE', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      ...attendance,
+      id: 'ATT-LOCAL-PHONE',
+      check_out_time: '2026-07-02T11:00:00.000Z',
+      notes: 'checkout dari HP lain',
+    }),
+  });
+  assert.equal(remapped.id, attendance.id);
+  assert.equal(remapped.check_out_time, '2026-07-02T11:00:00.000Z');
+  assert.equal(remapped.notes, 'checkout dari HP lain');
+
+  const missingPatch = await fetch(`${baseUrl}/api/attendances/ATT-DOES-NOT-EXIST`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ check_out_time: '2026-07-02T12:00:00.000Z' }),
+  });
+  assert.equal(missingPatch.status, 404);
+
+  const createdByPatch = await jsonRequest('/api/leave-requests/LEAVE-FROM-PATCH', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      id: 'LEAVE-FROM-PATCH',
+      company_id: 'COMPANY-1',
+      employee_id: 'EMPLOYEE-1',
+      employee_name: 'Tes',
+      type: 'IZIN',
+      start_date: '2026-07-03',
+      end_date: '2026-07-03',
+      reason: 'Urusan keluarga',
+      status: 'PENDING',
+      approved_by: null,
+      created_at: '2026-07-02T00:00:00.000Z',
+    }),
+  });
+  assert.equal(createdByPatch.id, 'LEAVE-FROM-PATCH');
+  assert.equal(createdByPatch.status, 'PENDING');
+
   const duplicate = await jsonRequest('/api/attendances', {
     method: 'POST',
     body: JSON.stringify({ ...attendance, id: 'ATT-DUPLICATE' }),
   });
   assert.equal(duplicate.id, attendance.id);
-  assert.equal(duplicate.check_out_time, '2026-07-02T10:00:00.000Z');
+  assert.equal(duplicate.check_out_time, '2026-07-02T11:00:00.000Z');
 
   synced = await jsonRequest('/api/sync');
   assert.equal(synced.attendances.length, 1);
-  assert.equal(synced.attendances[0].check_out_time, '2026-07-02T10:00:00.000Z');
+  assert.equal(synced.attendances[0].id, attendance.id);
+  assert.equal(synced.attendances[0].check_out_time, '2026-07-02T11:00:00.000Z');
 
   controller.abort();
 
