@@ -408,7 +408,7 @@ export function autoMarkAbsent(
       (e) =>
         e.company_id === companyId &&
         e.is_active &&
-        ['MANAGER', 'COO', 'COMPANY_ADMIN'].includes(e.role)
+        ['MANAGER', 'COO', 'COMPANY_ADMIN', 'DEVELOPER'].includes(e.role)
     );
     for (const mgr of managers) {
       addNotification({
