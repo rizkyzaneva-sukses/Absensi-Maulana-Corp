@@ -48,8 +48,8 @@ export default function LeaveApprovalPage() {
       company_id: req.company_id,
       user_id: req.employee_id,
       type: 'LEAVE',
-      title: 'Cuti Disetujui',
-      message: `Pengajuan ${req.type} Anda pada ${formatDate(req.start_date)}${req.end_date !== req.start_date ? ` s/d ${formatDate(req.end_date)}` : ''} telah disetujui.`,
+      title: `${req.type === 'CUTI' ? 'Cuti' : req.type === 'IZIN' ? 'Izin' : 'Sakit'} Disetujui`,
+      message: `Pengajuan ${req.type === 'CUTI' ? 'Cuti' : req.type === 'IZIN' ? 'Izin' : 'Sakit'} Anda pada ${formatDate(req.start_date)}${req.end_date !== req.start_date ? ` s/d ${formatDate(req.end_date)}` : ''} telah disetujui.`,
       is_read: false,
       created_at: new Date().toISOString(),
     });
@@ -67,8 +67,8 @@ export default function LeaveApprovalPage() {
       company_id: req.company_id,
       user_id: req.employee_id,
       type: 'LEAVE',
-      title: 'Cuti Ditolak',
-      message: `Pengajuan ${req.type} Anda pada ${formatDate(req.start_date)}${req.end_date !== req.start_date ? ` s/d ${formatDate(req.end_date)}` : ''} telah ditolak.`,
+      title: `${req.type === 'CUTI' ? 'Cuti' : req.type === 'IZIN' ? 'Izin' : 'Sakit'} Ditolak`,
+      message: `Pengajuan ${req.type === 'CUTI' ? 'Cuti' : req.type === 'IZIN' ? 'Izin' : 'Sakit'} Anda pada ${formatDate(req.start_date)}${req.end_date !== req.start_date ? ` s/d ${formatDate(req.end_date)}` : ''} telah ditolak.`,
       is_read: false,
       created_at: new Date().toISOString(),
     });
