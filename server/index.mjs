@@ -29,18 +29,20 @@ if (!telegramBotToken) {
 }
 
 // Send message via Telegram Bot API
-async function sendTelegramMessage(chatId, text) {
+async function sendTelegramMessage(chatId, text, threadId) {
   if (!telegramBotToken) throw new Error('Telegram bot belum dikonfigurasi.');
   const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+  };
+  if (threadId) payload.message_thread_id = threadId;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-    }),
+    body: JSON.stringify(payload),
   });
   const data = await res.json();
   if (!data.ok) {
@@ -138,6 +140,10 @@ async function connectChangeListener() {
 async function initializeDatabase() {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   await pool.query(schema);
+  // Add topic_id column if missing (for existing databases)
+  await pool.query(
+    `ALTER TABLE telegram_channels ADD COLUMN IF NOT EXISTS topic_id INTEGER`,
+  ).catch(() => {});
   await pool.query(
     `INSERT INTO app_sync_metadata (key, value)
      VALUES ('instance_id', $1)
@@ -637,6 +643,22 @@ app.post('/api/telegram/webhook', async (request, response) => {
 
     const chatType = String(message.chat?.type || '');
     if (chatType === 'group' || chatType === 'supergroup') {
+      // Auto-detect topic_id from any group message
+      const threadId = message.message_thread_id || null;
+      if (threadId) {
+        const chatId = String(message.chat?.id || '');
+        const existing = await pool.query(
+          `SELECT company_id FROM telegram_channels WHERE chat_id = $1 AND topic_id IS NULL`,
+          [chatId],
+        );
+        if (existing.rowCount > 0) {
+          await pool.query(
+            `UPDATE telegram_channels SET topic_id = $1 WHERE chat_id = $2 AND topic_id IS NULL`,
+            [threadId, chatId],
+          );
+          console.log(`Topic ID ${threadId} auto-detected dan disimpan untuk chat ${chatId}`);
+        }
+      }
       await handleChannelBindPost(message);
       return response.json({ ok: true });
     }
@@ -701,9 +723,9 @@ async function getBotUsername() {
   throw new Error('Gagal mendapatkan info bot Telegram.');
 }
 
-async function sendTelegramMessageQuiet(chatId, text) {
+async function sendTelegramMessageQuiet(chatId, text, threadId) {
   try {
-    await sendTelegramMessage(chatId, text);
+    await sendTelegramMessage(chatId, text, threadId);
     return true;
   } catch (error) {
     console.error('Gagal mengirim pesan Telegram:', error.message);
@@ -720,6 +742,7 @@ function channelStatusPayload(row, botUsername = null) {
     token: row?.connect_token || null,
     chat_id: row?.chat_id || null,
     chat_title: row?.chat_title || '',
+    topic_id: row?.topic_id || null,
     connected_at: row?.connected_at || null,
     bot_username: botUsername,
     bot_configured: Boolean(telegramBotToken),
@@ -766,6 +789,7 @@ async function bindChannelByToken(token, chat) {
 async function handleChannelBindPost(post) {
   const chatId = String(post?.chat?.id || '');
   const token = extractChannelToken(post?.text || post?.caption || '');
+  const threadId = post?.message_thread_id || null;
   if (!chatId || !token) return;
 
   const bound = await bindChannelByToken(token, {
@@ -779,10 +803,20 @@ async function handleChannelBindPost(post) {
   }
   if (!bound.ok) return;
 
+  // Auto-save topic_id from the binding message
+  if (threadId) {
+    await pool.query(
+      `UPDATE telegram_channels SET topic_id = $1 WHERE company_id = $2`,
+      [threadId, bound.row.company_id],
+    );
+    console.log(`Topic ID ${threadId} auto-saved untuk perusahaan ${bound.row.company_id}`);
+  }
+
   const companyName = bound.row.company_name || bound.row.company_id;
   await sendTelegramMessageQuiet(
     chatId,
     `✅ <b>Channel terhubung</b>\n\nPerusahaan: <b>${escapeHtml(companyName)}</b>\n\nSetiap hari kerja jam <b>08.30 WIB</b> bot mengirim siapa yang tidak masuk beserta alasannya.\nJika semua masuk, tidak ada pesan pagi.\n\nPengajuan cuti/izin juga masuk ke sini.`,
+    threadId,
   );
 }
 
@@ -822,11 +856,11 @@ async function handleBotMembershipChange(update) {
 async function notifyLeaveToChannel(request, event) {
   if (!telegramBotToken || !request?.company_id) return;
   const channel = await pool.query(
-    `SELECT chat_id FROM telegram_channels WHERE company_id = $1 AND chat_id IS NOT NULL`,
+    `SELECT chat_id, topic_id FROM telegram_channels WHERE company_id = $1 AND chat_id IS NOT NULL`,
     [request.company_id],
   );
   if (channel.rowCount === 0) return;
-  await sendTelegramMessageQuiet(channel.rows[0].chat_id, formatLeaveNotification(request, event));
+  await sendTelegramMessageQuiet(channel.rows[0].chat_id, formatLeaveNotification(request, event), channel.rows[0].topic_id);
 }
 
 async function loadCompanyReportData(companyId, dateStr) {
@@ -860,7 +894,7 @@ async function sendMorningReportForCompany(channel, dateStr) {
   if (!channel.chat_id) return { ...report, sent: false, reason: 'channel_not_connected' };
   if (!telegramBotToken) return { ...report, sent: false, reason: 'bot_not_configured' };
 
-  const sent = await sendTelegramMessageQuiet(channel.chat_id, report.message);
+  const sent = await sendTelegramMessageQuiet(channel.chat_id, report.message, channel.topic_id);
   return { ...report, sent, reason: sent ? null : 'send_failed' };
 }
 
@@ -892,7 +926,7 @@ async function runScheduledMorningReports() {
   if (!isMorningReportWindow(parts)) return;
 
   const channels = await pool.query(
-    `SELECT company_id, company_name, chat_id FROM telegram_channels WHERE chat_id IS NOT NULL`,
+    `SELECT company_id, company_name, chat_id, topic_id FROM telegram_channels WHERE chat_id IS NOT NULL`,
   );
   if (channels.rowCount === 0) return;
 
@@ -965,12 +999,36 @@ app.get('/api/telegram/channel/status', async (request, response, next) => {
     }
 
     const result = await pool.query(
-      `SELECT company_id, company_name, connect_token, chat_id, chat_title, connected_at
+      `SELECT company_id, company_name, connect_token, chat_id, chat_title, topic_id, connected_at
        FROM telegram_channels WHERE company_id = $1`,
       [companyId],
     );
     const botUsername = await resolveBotUsernameSafe();
     response.json(channelStatusPayload(result.rows[0] || { company_id: companyId }, botUsername));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/telegram/channel/topic', async (request, response, next) => {
+  try {
+    const companyId = String(request.body?.company_id || '').trim();
+    const topicId = request.body?.topic_id;
+    if (!companyId) {
+      return response.status(400).json({ error: 'company_id wajib diisi.' });
+    }
+    if (topicId !== null && topicId !== undefined && (!Number.isInteger(topicId) || topicId < 0)) {
+      return response.status(400).json({ error: 'topic_id harus bilangan integer positif atau null.' });
+    }
+
+    const result = await pool.query(
+      `UPDATE telegram_channels SET topic_id = $1 WHERE company_id = $2 RETURNING company_id, topic_id`,
+      [topicId || null, companyId],
+    );
+    if (result.rowCount === 0) {
+      return response.status(404).json({ error: 'Channel tidak ditemukan.' });
+    }
+    response.json({ ok: true, company_id: result.rows[0].company_id, topic_id: result.rows[0].topic_id });
   } catch (error) {
     next(error);
   }
@@ -991,7 +1049,7 @@ app.delete('/api/telegram/channel', async (request, response, next) => {
     );
 
     const result = await pool.query(
-      `SELECT company_id, company_name, connect_token, chat_id, chat_title, connected_at
+      `SELECT company_id, company_name, connect_token, chat_id, chat_title, topic_id, connected_at
        FROM telegram_channels WHERE company_id = $1`,
       [companyId],
     );
@@ -1010,7 +1068,7 @@ app.post('/api/telegram/channel/test', async (request, response, next) => {
     }
 
     const result = await pool.query(
-      `SELECT company_id, company_name, chat_id, chat_title
+      `SELECT company_id, company_name, chat_id, chat_title, topic_id
        FROM telegram_channels WHERE company_id = $1`,
       [companyId],
     );
@@ -1025,6 +1083,7 @@ app.post('/api/telegram/channel/test', async (request, response, next) => {
     await sendTelegramMessage(
       channel.chat_id,
       `🔔 <b>Tes notifikasi</b>\n\nChannel <b>${escapeHtml(channel.company_name || companyId)}</b> sudah siap.\n\nLaporan ketidakhadiran otomatis setiap hari kerja jam 08.30 WIB.\nJika semua masuk, tidak ada pesan pagi.`,
+      channel.topic_id,
     );
     response.json({ ok: true });
   } catch (error) {
@@ -1044,7 +1103,7 @@ app.post('/api/telegram/channel/report', async (request, response, next) => {
     }
 
     const result = await pool.query(
-      `SELECT company_id, company_name, chat_id FROM telegram_channels WHERE company_id = $1`,
+      `SELECT company_id, company_name, chat_id, topic_id FROM telegram_channels WHERE company_id = $1`,
       [companyId],
     );
     const channel = result.rows[0] || { company_id: companyId, company_name: '', chat_id: null };

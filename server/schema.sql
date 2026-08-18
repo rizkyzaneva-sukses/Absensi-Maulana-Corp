@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS telegram_channels (
   connect_token TEXT UNIQUE NOT NULL,
   chat_id TEXT,
   chat_title TEXT,
+  topic_id INTEGER,
   connected_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
