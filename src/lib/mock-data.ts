@@ -50,6 +50,7 @@ export const employees: Employee[] = [
     "id": "dev_rizky_maulana_001",
     "company_id": "comp_elyasr",
     "user_email": "rizky.maulanacorp@gmail.com",
+    "password": "income7mpertahun",
     "employee_id": "DEV-001",
     "full_name": "Rizky Maulana (Developer)",
     "phone": "",
