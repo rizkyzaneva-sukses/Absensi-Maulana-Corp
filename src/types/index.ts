@@ -1,4 +1,4 @@
-export type Role = 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COO' | 'MANAGER' | 'KARYAWAN';
+export type Role = 'DEVELOPER' | 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COO' | 'MANAGER' | 'KARYAWAN';
 
 export type SubscriptionPlan = 'BASIC' | 'PRO' | 'ENTERPRISE';
 

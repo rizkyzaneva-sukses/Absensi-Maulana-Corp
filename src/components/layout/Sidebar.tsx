@@ -1,147 +1,147 @@
-import { NavLink } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/authStore';
-import { useUIStore } from '@/stores/uiStore';
-import {
-  LayoutDashboard, Clock, History, FileText, Users, DollarSign,
-  BarChart3, Settings, Building2, LogOut,
-  CheckCircle, ClipboardList, FileEdit, ScrollText, QrCode, ListTodo,
-  LogIn, LogOut as LogOutIcon, BookOpen, X, UserCog
-} from 'lucide-react';
-
-interface NavItem {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-  roles: string[];
-}
-
-const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['SUPER_ADMIN', 'COMPANY_ADMIN', 'COO', 'MANAGER', 'KARYAWAN'] },
-  { label: 'Check-in', path: '/check-in', icon: <LogIn size={20} />, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
-  { label: 'Check-out', path: '/check-out', icon: <LogOutIcon size={20} />, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
-  { label: 'Riwayat Saya', path: '/my-history', icon: <History size={20} />, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
-  { label: 'Pengajuan Saya', path: '/my-requests', icon: <FileText size={20} />, roles: ['KARYAWAN', 'MANAGER', 'COO'] },
-  { label: 'Manager', path: '/manager', icon: <Clock size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
-  { label: 'Approval Cuti', path: '/approvals/leave', icon: <CheckCircle size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
-  { label: 'Approval Lembur', path: '/approvals/overtime', icon: <ClipboardList size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
-  { label: 'Approval Koreksi', path: '/approvals/correction', icon: <FileEdit size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
-  { label: 'Edit Absensi', path: '/manager/edit-attendance', icon: <UserCog size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN'] },
-  { label: 'Audit Log', path: '/audit-log', icon: <ScrollText size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Cetak QR', path: '/print-qr', icon: <QrCode size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Revisi', path: '/revisions', icon: <ListTodo size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Karyawan', path: '/employees', icon: <Users size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Payroll', path: '/payroll', icon: <DollarSign size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Analytics', path: '/analytics', icon: <BarChart3 size={20} />, roles: ['MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Pengaturan', path: '/settings', icon: <Settings size={20} />, roles: ['COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
-  { label: 'Panduan', path: '/guide', icon: <BookOpen size={20} />, roles: ['SUPER_ADMIN', 'COMPANY_ADMIN', 'COO', 'MANAGER', 'KARYAWAN'] },
-];
-
-const ownerItems: NavItem[] = [
-  { label: 'Owner Dashboard', path: '/owner', icon: <Building2 size={20} />, roles: ['SUPER_ADMIN'] },
-  { label: 'Riwayat Absensi', path: '/owner/attendance', icon: <History size={20} />, roles: ['SUPER_ADMIN'] },
-];
-
-export function Sidebar() {
-  const { currentUser, activeCompany, logout } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
-
-  if (!currentUser) return null;
-
-  const role = currentUser.role;
-  const filteredNav = navItems.filter(item => item.roles.includes(role));
-  const filteredOwner = ownerItems.filter(item => item.roles.includes(role));
-
-  return (
-    <>
-      {/* Backdrop overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
-          onClick={toggleSidebar}
-        />
-      )}
-
-      {/* Sidebar panel */}
-      <aside
-        className={cn(
-          'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground flex flex-col transition-transform duration-300',
-          'w-64',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
-              {activeCompany?.name?.charAt(0) || 'M'}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-semibold text-white truncate">{activeCompany?.name || 'Maulana Corp'}</span>
-              <span className="text-xs text-slate-400">v2.0</span>
-            </div>
-          </div>
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-md hover:bg-white/10 transition-colors shrink-0"
-            title="Tutup Menu"
-          >
-            <X size={18} className="text-slate-300" />
-          </button>
-        </div>
-
-        {/* Owner Nav */}
-        {filteredOwner.length > 0 && (
-          <div className="px-3 pt-3 pb-1 shrink-0">
-            <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Owner</p>
-            {filteredOwner.map(item => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={toggleSidebar}
-                className={({ isActive }) => cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
-                  isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                )}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-            <div className="border-b border-white/10 my-2" />
-          </div>
-        )}
-
-        {/* Main Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-2">
-          <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Menu</p>
-          {filteredNav.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={toggleSidebar}
-              className={({ isActive }) => cn(
-                'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
-                isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
-              )}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div className="p-3 border-t border-white/10 shrink-0">
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors w-full"
-          >
-            <LogOut size={20} />
-            <span>Keluar</span>
-          </button>
-        </div>
-      </aside>
-    </>
-  );
+import { NavLink } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
+import {
+  LayoutDashboard, Clock, History, FileText, Users, DollarSign,
+  BarChart3, Settings, Building2, LogOut,
+  CheckCircle, ClipboardList, FileEdit, ScrollText, QrCode, ListTodo,
+  LogIn, LogOut as LogOutIcon, BookOpen, X, UserCog
+} from 'lucide-react';
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+  roles: string[];
+}
+
+const navItems: NavItem[] = [
+  { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['DEVELOPER', 'SUPER_ADMIN', 'COMPANY_ADMIN', 'COO', 'MANAGER', 'KARYAWAN'] },
+  { label: 'Check-in', path: '/check-in', icon: <LogIn size={20} />, roles: ['DEVELOPER', 'KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Check-out', path: '/check-out', icon: <LogOutIcon size={20} />, roles: ['DEVELOPER', 'KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Riwayat Saya', path: '/my-history', icon: <History size={20} />, roles: ['DEVELOPER', 'KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Pengajuan Saya', path: '/my-requests', icon: <FileText size={20} />, roles: ['DEVELOPER', 'KARYAWAN', 'MANAGER', 'COO'] },
+  { label: 'Manager', path: '/manager', icon: <Clock size={20} />, roles: ['DEVELOPER', 'MANAGER', 'COO', 'COMPANY_ADMIN'] },
+  { label: 'Approval Cuti', path: '/approvals/leave', icon: <CheckCircle size={20} />, roles: ['DEVELOPER', 'MANAGER', 'COO', 'COMPANY_ADMIN'] },
+  { label: 'Approval Lembur', path: '/approvals/overtime', icon: <ClipboardList size={20} />, roles: ['DEVELOPER', 'MANAGER', 'COO', 'COMPANY_ADMIN'] },
+  { label: 'Approval Koreksi', path: '/approvals/correction', icon: <FileEdit size={20} />, roles: ['DEVELOPER', 'MANAGER', 'COO', 'COMPANY_ADMIN'] },
+  { label: 'Edit Absensi', path: '/manager/edit-attendance', icon: <UserCog size={20} />, roles: ['DEVELOPER', 'MANAGER', 'COO', 'COMPANY_ADMIN'] },
+  { label: 'Audit Log', path: '/audit-log', icon: <ScrollText size={20} />, roles: ['DEVELOPER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Cetak QR', path: '/print-qr', icon: <QrCode size={20} />, roles: ['DEVELOPER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Revisi', path: '/revisions', icon: <ListTodo size={20} />, roles: ['DEVELOPER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Karyawan', path: '/employees', icon: <Users size={20} />, roles: ['DEVELOPER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Payroll', path: '/payroll', icon: <DollarSign size={20} />, roles: ['DEVELOPER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Analytics', path: '/analytics', icon: <BarChart3 size={20} />, roles: ['DEVELOPER', 'MANAGER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Pengaturan', path: '/settings', icon: <Settings size={20} />, roles: ['DEVELOPER', 'COO', 'COMPANY_ADMIN', 'SUPER_ADMIN'] },
+  { label: 'Panduan', path: '/guide', icon: <BookOpen size={20} />, roles: ['DEVELOPER', 'SUPER_ADMIN', 'COMPANY_ADMIN', 'COO', 'MANAGER', 'KARYAWAN'] },
+];
+
+const ownerItems: NavItem[] = [
+  { label: 'Owner Dashboard', path: '/owner', icon: <Building2 size={20} />, roles: ['DEVELOPER', 'SUPER_ADMIN'] },
+  { label: 'Riwayat Absensi', path: '/owner/attendance', icon: <History size={20} />, roles: ['DEVELOPER', 'SUPER_ADMIN'] },
+];
+
+export function Sidebar() {
+  const { currentUser, activeCompany, logout } = useAuthStore();
+  const { sidebarOpen, toggleSidebar } = useUIStore();
+
+  if (!currentUser) return null;
+
+  const role = currentUser.role;
+  const filteredNav = navItems.filter(item => item.roles.includes(role));
+  const filteredOwner = ownerItems.filter(item => item.roles.includes(role));
+
+  return (
+    <>
+      {/* Backdrop overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Sidebar panel */}
+      <aside
+        className={cn(
+          'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground flex flex-col transition-transform duration-300',
+          'w-64',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {activeCompany?.name?.charAt(0) || 'M'}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold text-white truncate">{activeCompany?.name || 'Maulana Corp'}</span>
+              <span className="text-xs text-slate-400">v2.0</span>
+            </div>
+          </div>
+          <button
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-md hover:bg-white/10 transition-colors shrink-0"
+            title="Tutup Menu"
+          >
+            <X size={18} className="text-slate-300" />
+          </button>
+        </div>
+
+        {/* Owner Nav */}
+        {filteredOwner.length > 0 && (
+          <div className="px-3 pt-3 pb-1 shrink-0">
+            <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Owner</p>
+            {filteredOwner.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={toggleSidebar}
+                className={({ isActive }) => cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
+                  isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                )}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+            <div className="border-b border-white/10 my-2" />
+          </div>
+        )}
+
+        {/* Main Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          <p className="text-xs text-slate-500 uppercase tracking-wider px-3 mb-1">Menu</p>
+          {filteredNav.map(item => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              onClick={toggleSidebar}
+              className={({ isActive }) => cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
+                isActive ? 'bg-primary/20 text-primary' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+              )}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="p-3 border-t border-white/10 shrink-0">
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors w-full"
+          >
+            <LogOut size={20} />
+            <span>Keluar</span>
+          </button>
+        </div>
+      </aside>
+    </>
+  );
 }
