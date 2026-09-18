@@ -239,6 +239,50 @@ export function buildMorningReport({
   };
 }
 
+/**
+ * Opsi ACC cepat: tombol untuk setiap karyawan yang belum absen.
+ * callback_data dibatasi 64 byte, jadi pakai format pendek: a|<company>|<id>|<kode>
+ * kode: s=sakit, i=izin, c=cuti, x=alpa
+ */
+export const QUICK_ACTION_TYPES = { s: 'SAKIT', i: 'IZIN', c: 'CUTI', x: 'ALPA' };
+export const QUICK_ACTION_LABELS = { s: 'Sakit', i: 'Izin', c: 'Cuti', x: 'Alpa' };
+
+export function buildQuickActionKeyboard(companyId, absences) {
+  const rows = [];
+  const shortCompany = String(companyId || '').replace(/^comp_/, '');
+  for (const item of absences || []) {
+    const row = [];
+    for (const code of ['s', 'i', 'c', 'x']) {
+      row.push({
+        text: QUICK_ACTION_LABELS[code],
+        callback_data: ['a', shortCompany, item.employee_id, code].join('|'),
+      });
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+/** Pesan singkat saat aksi ACC berhasil disimpan. */
+export function buildQuickActionResultMessage(dateLabel, companyName, absences, resolved) {
+  const lines = [
+    '✅ <b>Di-ACC via Telegram</b> — ' + escapeHtml(companyName || 'Perusahaan'),
+    '🗓 ' + escapeHtml(dateLabel),
+    '',
+  ];
+  for (const item of resolved) {
+    lines.push('• <b>' + escapeHtml(item.name) + '</b> → ' + escapeHtml(item.label) + (item.by ? ' (oleh ' + escapeHtml(item.by) + ')' : ''));
+  }
+  const remaining = (absences || []).filter((a) => !resolved.some((r) => r.employee_id === a.employee_id));
+  if (remaining.length > 0) {
+    lines.push('', '<b>Masih belum absen:</b>');
+    remaining.forEach((item, index) => lines.push((index + 1) + '. <b>' + escapeHtml(item.name) + '</b> — ' + escapeHtml(item.label)));
+  } else {
+    lines.push('', '<i>Semua sudah tertangani 🎉</i>');
+  }
+  return lines.join('\n');
+}
+
 export function formatLeaveNotification(request, event = 'SUBMITTED') {
   const typeLabel = leaveTypeLabel(request?.type);
   const name = request?.employee_name || request?.employee_id || 'Karyawan';

@@ -7,12 +7,16 @@ import express from 'express';
 import pg from 'pg';
 import {
   buildMorningReport,
+  buildQuickActionResultMessage,
+  buildQuickActionKeyboard,
   createChannelBindToken,
   escapeHtml,
   extractChannelToken,
   formatLeaveNotification,
   getJakartaParts,
   isMorningReportWindow,
+  QUICK_ACTION_LABELS,
+  QUICK_ACTION_TYPES,
 } from './telegram-notify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -55,6 +59,57 @@ async function sendTelegramMessage(chatId, text, threadId) {
     throw new Error(data.description || 'Gagal mengirim pesan Telegram.');
   }
   return data;
+}
+
+// Kirim pesan dengan inline keyboard (tombol ACC langsung dari Telegram).
+async function sendTelegramMessageWithKeyboard(chatId, text, threadId, keyboard) {
+  if (!telegramBotToken) throw new Error('Telegram bot belum dikonfigurasi.');
+  const payload = {
+    chat_id: chatId,
+    text,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+    reply_markup: { inline_keyboard: keyboard },
+  };
+  if (threadId) payload.message_thread_id = threadId;
+  const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.description || 'Gagal mengirim pesan Telegram.');
+  return data;
+}
+
+// Sunting pesan yang sudah terkirim (dipakai untuk mengubah tombol jadi status).
+async function editTelegramMessage(chatId, messageId, text, keyboard) {
+  if (!telegramBotToken) return false;
+  const payload = {
+    chat_id: chatId,
+    message_id: messageId,
+    text,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+    reply_markup: { inline_keyboard: keyboard || [] },
+  };
+  const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/editMessageText`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  return Boolean(data.ok);
+}
+
+// Wajib dipanggil setiap kali tombol ditekan, supaya ikon loading di klien hilang.
+async function answerTelegramCallback(callbackQueryId, text) {
+  if (!telegramBotToken || !callbackQueryId) return;
+  await fetch(`https://api.telegram.org/bot${telegramBotToken}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callback_query_id: callbackQueryId, text: text || '' }),
+  }).catch(() => {});
 }
 
 if (!databaseUrl) {
@@ -637,15 +692,75 @@ app.get('/api/telegram/connect-status', async (request, response, next) => {
 });
 
 // Telegram Bot Webhook — personal /start TOKEN, channel bind, membership
+/**
+ * Menangani tombol "Sakit / Izin / Cuti / Alpa" pada laporan pagi.
+ * Format callback_data: a|<companySingkat>|<employeeId>|<kode>
+ */
+async function handleQuickActionCallback(callbackQuery) {
+  const queryId = callbackQuery?.id;
+  const data = String(callbackQuery?.data || '');
+  const from = callbackQuery?.from || {};
+  const actorName = [from.first_name, from.last_name].filter(Boolean).join(' ') || from.username || 'Pengguna Telegram';
+
+  const parts = data.split('|');
+  if (parts.length !== 4 || parts[0] !== 'a') {
+    await answerTelegramCallback(queryId, 'Perintah tidak dikenal.');
+    return;
+  }
+  const [, companyShort, employeeId, code] = parts;
+
+  try {
+    // Petakan nama singkat kembali ke company_id asli (mis. elyasr -> comp_elyasr).
+    const chRes = await pool.query(
+      `SELECT company_id FROM telegram_channels WHERE company_id LIKE $1 LIMIT 1`,
+      [`%${companyShort}%`],
+    );
+    const companyId = chRes.rows[0]?.company_id || `comp_${companyShort}`;
+
+    const { getJakartaParts: jakarta } = await import('./telegram-notify.mjs');
+    const dateStr = jakarta().dateStr;
+
+    const result = await applyQuickAction({
+      companyId, employeeId, code, actorName, dateStr,
+    });
+
+    if (!result.ok) {
+      await answerTelegramCallback(queryId, result.error || 'Gagal menyimpan.');
+      return;
+    }
+
+    await answerTelegramCallback(queryId, `${result.name} -> ${result.label}`);
+
+    // Perbarui pesan aslinya supaya tombol yang sudah dipakai hilang.
+    const chatId = String(callbackQuery.message?.chat?.id || '');
+    const messageId = callbackQuery.message?.message_id;
+    const dateLabel = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const text = buildQuickActionResultMessage(
+      dateLabel, 'ELYASR', [], [{ name: result.name, label: result.label, by: actorName }],
+    );
+    if (chatId && messageId) {
+      await editTelegramMessage(chatId, messageId, text, []);
+    }
+  } catch (error) {
+    console.error('Gagal memproses tombol ACC:', error.message);
+    await answerTelegramCallback(queryId, 'Terjadi kesalahan, coba lagi.');
+  }
+}
+
 app.post('/api/telegram/webhook', async (request, response) => {
   try {
     const update = request.body || {};
+
+    // Tombol ACC cepat ditekan dari pesan laporan pagi.
+    if (update.callback_query) {
+      await handleQuickActionCallback(update.callback_query);
+      return response.json({ ok: true });
+    }
 
     if (update.my_chat_member) {
       await handleBotMembershipChange(update.my_chat_member);
       return response.json({ ok: true });
     }
-
     if (update.channel_post) {
       await handleChannelBindPost(update.channel_post);
       return response.json({ ok: true });
@@ -901,14 +1016,100 @@ async function buildCompanyMorningReport(channel, dateStr) {
   });
 }
 
+/**
+ * Simpan keputusan ACC yang ditekan dari tombol Telegram.
+ * Mengembalikan ringkasan untuk mengubah pesan aslinya.
+ */
+async function applyQuickAction({ companyId, employeeId, code, actorName, dateStr }) {
+  const type = QUICK_ACTION_TYPES[code];
+  if (!type) return { ok: false, error: 'Aksi tidak dikenal.' };
+
+  const empRes = await pool.query(
+    `SELECT id, payload FROM app_sync_employees WHERE id = $1`,
+    [employeeId],
+  );
+  if (empRes.rowCount === 0) return { ok: false, error: 'Karyawan tidak ditemukan.' };
+  const employee = empRes.rows[0].payload || {};
+  const name = employee.full_name || employee.name || employeeId;
+
+  if (type === 'ALPA') {
+    // Tidak membuat pengajuan izin apa pun - sekadar menandai supaya tidak
+    // muncul lagi di laporan berikutnya.
+    const note = `Ditandai alpa via Telegram oleh ${actorName}`;
+    const existing = await pool.query(
+      `SELECT id FROM app_sync_attendance_records
+       WHERE employee_id = $1 AND attendance_date = $2::date`,
+      [employeeId, dateStr],
+    );
+    if (existing.rowCount === 0) {
+      const markId = `att_quick_${Date.now()}_${employeeId.slice(0, 6)}`;
+      const mark = {
+        id: markId,
+        company_id: companyId,
+        employee_id: employeeId,
+        employee_name: name,
+        attendance_date: dateStr,
+        date: dateStr,
+        status: 'TIDAK_HADIR',
+        notes: note,
+        created_at: new Date().toISOString(),
+      };
+      await pool.query(
+        `INSERT INTO app_sync_attendance_records (id, company_id, employee_id, payload, updated_at)
+         VALUES ($1, $2, $3, $4::jsonb, NOW())
+         ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()`,
+        [markId, companyId, employeeId, JSON.stringify(mark)],
+      );
+    }
+    return { ok: true, type, name, label: 'Alpa', note };
+  }
+
+  const leave = {
+    id: `leave_quick_${Date.now()}_${employeeId.slice(0, 6)}`,
+    company_id: companyId,
+    employee_id: employeeId,
+    employee_name: name,
+    type,
+    start_date: dateStr,
+    end_date: dateStr,
+    reason: `Di-ACC via Telegram oleh ${actorName}`,
+    status: 'APPROVED',
+    approved_by: actorName,
+    created_at: new Date().toISOString(),
+  };
+
+  await pool.query(
+    `INSERT INTO app_sync_leave_requests (id, company_id, employee_id, payload, updated_at)
+     VALUES ($1, $2, $3, $4::jsonb, NOW())
+     ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()`,
+    [leave.id, companyId, employeeId, JSON.stringify(leave)],
+  );
+
+  return { ok: true, type, name, label: QUICK_ACTION_LABELS[code] || type, leaveId: leave.id };
+}
+
 async function sendMorningReportForCompany(channel, dateStr) {
   const report = await buildCompanyMorningReport(channel, dateStr);
   if (report.allPresent) return { ...report, sent: false, reason: 'all_present' };
   if (!channel.chat_id) return { ...report, sent: false, reason: 'channel_not_connected' };
   if (!telegramBotToken) return { ...report, sent: false, reason: 'bot_not_configured' };
 
-  const sent = await sendTelegramMessageQuiet(channel.chat_id, report.message, channel.topic_id);
-  return { ...report, sent, reason: sent ? null : 'send_failed' };
+  // Pesan pagi ini juga membawa tombol ACC cepat, supaya keputusan bisa
+  // diambil langsung dari Telegram tanpa membuka dashboard.
+  const keyboard = buildQuickActionKeyboard(report.company_id || channel.company_id, report.absences);
+  try {
+    await sendTelegramMessageWithKeyboard(
+      channel.chat_id,
+      report.message,
+      channel.topic_id,
+      keyboard,
+    );
+    return { ...report, sent: true, reason: null };
+  } catch (error) {
+    console.error('Gagal kirim laporan pagi dengan tombol:', error.message);
+    const sent = await sendTelegramMessageQuiet(channel.chat_id, report.message, channel.topic_id);
+    return { ...report, sent, reason: sent ? null : 'send_failed' };
+  }
 }
 
 const MORNING_REPORT_META_KEY = 'telegram_morning_report';
