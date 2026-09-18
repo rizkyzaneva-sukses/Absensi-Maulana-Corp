@@ -50,6 +50,7 @@ export default function EmployeesPage() {
     team_id: '',
     join_date: '',
     is_active: true,
+    ikut_absensi: true,
     // Jatah Cuti
     cuti_tahunan: '0',
     cuti_sakit: '0',
@@ -74,6 +75,7 @@ export default function EmployeesPage() {
       team_id: '',
       join_date: '',
       is_active: true,
+      ikut_absensi: true,
       cuti_tahunan: '0',
       cuti_sakit: '0',
       base_salary: '',
@@ -104,6 +106,8 @@ export default function EmployeesPage() {
       team_id: emp.team_id,
       join_date: emp.join_date,
       is_active: emp.is_active,
+      // Data lama belum punya field ini → default true.
+      ikut_absensi: emp.ikut_absensi !== false,
       cuti_tahunan: String(emp.cuti_tahunan),
       cuti_sakit: String(emp.cuti_sakit),
       base_salary: String(emp.base_salary),
@@ -131,6 +135,7 @@ export default function EmployeesPage() {
         team_id: formData.team_id,
         join_date: formData.join_date,
         is_active: formData.is_active,
+        ikut_absensi: formData.ikut_absensi,
         cuti_tahunan: parseInt(formData.cuti_tahunan) || 0,
         cuti_sakit: parseInt(formData.cuti_sakit) || 0,
         base_salary: parseInt(formData.base_salary) || 0,
@@ -154,6 +159,7 @@ export default function EmployeesPage() {
         join_date: formData.join_date || new Date().toISOString().split('T')[0],
         photo_url: '',
         is_active: formData.is_active,
+        ikut_absensi: formData.ikut_absensi,
         cuti_tahunan: parseInt(formData.cuti_tahunan) || 0,
         cuti_sakit: parseInt(formData.cuti_sakit) || 0,
         base_salary: parseInt(formData.base_salary) || 0,
@@ -257,6 +263,11 @@ export default function EmployeesPage() {
                   >
                     {emp.is_active ? 'Aktif' : 'Nonaktif'}
                   </span>
+                  {emp.ikut_absensi === false && (
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                      Di luar roster TG
+                    </span>
+                  )}
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                   <div>
@@ -389,6 +400,21 @@ export default function EmployeesPage() {
                   <option value="aktif">Aktif</option>
                   <option value="nonaktif">Nonaktif</option>
                 </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Roster Laporan Telegram</label>
+                <select
+                  value={formData.ikut_absensi ? 'ikut' : 'tidak'}
+                  onChange={(e) => updateField('ikut_absensi', e.target.value === 'ikut')}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="ikut">Ikut laporan absensi</option>
+                  <option value="tidak">Tidak ikut (non-karyawan)</option>
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  Pilih <b>Tidak ikut</b> untuk akun developer/admin/owner agar tidak
+                  memicu notifikasi &quot;Belum absen&quot; di Telegram.
+                </p>
               </div>
             </div>
 

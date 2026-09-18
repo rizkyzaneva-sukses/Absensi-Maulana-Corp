@@ -24,6 +24,12 @@ const allowedOrigin = process.env.ALLOWED_ORIGIN || null;
 
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 
+// Role yang bukan karyawan operasional: tidak perlu masuk roster laporan
+// ketidakhadiran Telegram. SUPER_ADMIN sudah lama dikecualikan di
+// telegram-notify.mjs; daftar ini dipakai untuk menetapkan nilai default
+// `ikut_absensi` pada data karyawan.
+const NON_EMPLOYEE_ROLES = new Set(['SUPER_ADMIN', 'COMPANY_ADMIN', 'DEVELOPER', 'COO']);
+
 if (!telegramBotToken) {
   console.warn('TELEGRAM_BOT_TOKEN belum dikonfigurasi. Fitur reset password via Telegram tidak akan berfungsi.');
 }
@@ -247,6 +253,13 @@ async function upsertRecord(table, record) {
     const error = new Error('Data wajib memiliki id, company_id, dan employee_id.');
     error.status = 400;
     throw error;
+  }
+
+  // Akun non-karyawan (developer / admin perusahaan / owner) tidak ikut roster
+  // laporan ketidakhadiran Telegram. Default hanya diisi bila frontend belum
+  // mengirim nilai eksplisit, jadi toggle manual di halaman Karyawan tetap menang.
+  if (table === 'app_sync_employees' && record.ikut_absensi === undefined) {
+    record = { ...record, ikut_absensi: !NON_EMPLOYEE_ROLES.has(record.role) };
   }
 
   if (table === 'app_sync_attendance_records') {
@@ -1239,6 +1252,49 @@ function renderIndexHtml() {
     : inject + indexHtmlTemplate;
 }
 
+// Backfill `ikut_absensi` untuk data karyawan lama supaya akun non-karyawan
+// tidak lagi memicu notifikasi "Belum absen" di Telegram.
+async function backfillIkutAbsensi() {
+  try {
+    const result = await pool.query(
+      `SELECT id, role FROM app_sync_employees`,
+    );
+    const excluded = result.rows
+      .filter((row) => NON_EMPLOYEE_ROLES.has(row.role))
+      .map((row) => row.id);
+    const included = result.rows
+      .filter((row) => !NON_EMPLOYEE_ROLES.has(row.role))
+      .map((row) => row.id);
+
+    if (excluded.length > 0) {
+      const updated = await pool.query(
+        `UPDATE app_sync_employees
+         SET payload = payload || '{"ikut_absensi": false}'::jsonb, updated_at = NOW()
+         WHERE id = ANY($1::text[])
+           AND (payload ->> 'ikut_absensi') IS DISTINCT FROM 'false'
+         RETURNING id`,
+        [excluded],
+      );
+      if (updated.rowCount > 0) {
+        console.log(`Roster Telegram: ${updated.rowCount} akun non-karyawan dikecualikan dari laporan pagi.`);
+      }
+    }
+
+    if (included.length > 0) {
+      await pool.query(
+        `UPDATE app_sync_employees
+         SET payload = payload || '{"ikut_absensi": true}'::jsonb, updated_at = NOW()
+         WHERE id = ANY($1::text[])
+           AND (payload -> 'ikut_absensi') IS NULL
+         RETURNING id`,
+        [included],
+      );
+    }
+  } catch (error) {
+    console.warn('Gagal backfill ikut_absensi:', error.message);
+  }
+}
+
 app.use((_request, response) => {
   response.setHeader('Cache-Control', 'no-cache');
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -1261,6 +1317,7 @@ app.use((error, request, response, _next) => {
 
 await initializeDatabase();
 await connectChangeListener();
+await backfillIkutAbsensi();
 startMorningReportScheduler();
 
 const server = app.listen(port, '0.0.0.0', () => {

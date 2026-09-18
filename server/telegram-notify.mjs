@@ -122,8 +122,13 @@ export function buildMorningReport({
   attendances = [],
   leaveRequests = [],
 }) {
+  // `ikut_absensi: false` mengecualikan akun non-karyawan (developer, admin
+  // perusahaan, owner, dsb.) dari roster laporan agar tidak memicu notifikasi
+  // "Belum absen". Dianggap true bila field tidak ada (data lama).
   const roster = employees.filter((employee) => (
-    employee?.is_active !== false && employee?.role !== 'SUPER_ADMIN'
+    employee?.is_active !== false
+    && employee?.role !== 'SUPER_ADMIN'
+    && employee?.ikut_absensi !== false
   ));
 
   const attendanceByEmployee = new Map();
