@@ -1257,7 +1257,7 @@ function renderIndexHtml() {
 async function backfillIkutAbsensi() {
   try {
     const result = await pool.query(
-      `SELECT id, role FROM app_sync_employees`,
+      `SELECT id, payload ->> 'role' AS role FROM app_sync_employees`,
     );
     const excluded = result.rows
       .filter((row) => NON_EMPLOYEE_ROLES.has(row.role))
