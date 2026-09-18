@@ -23,7 +23,28 @@ Setelah `TELEGRAM_BOT_TOKEN` diisi dan service di-redeploy, daftarkan webhook se
 curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<DOMAIN>/api/telegram/webhook"
 ```
 
-Jangan batasi `allowed_updates`. Bot perlu menerima `message`, `channel_post`, dan `my_chat_member` agar ikat channel dan notifikasi jalan.
+**Penting: webhook hanya boleh didaftarkan pada domain yang benar-benar terdaftar di Traefik
+untuk service aplikasi ini.** Kalau domain tujuan tidak terdaftar, Telegram tetap dapat balasan
+HTTP 200 (dari proxy/Cloudflare di depan), sehingga `setWebhook` terlihat sukses padahal event
+tidak pernah sampai ke aplikasi. Gejalanya: menekan tombol cepat dibalas "Data aksi tidak valid".
+
+Verifikasi domain target sebelum mendaftarkan webhook:
+
+```bash
+# Harus menjawab {"ok":true} — balasan asli server aplikasi.
+# Kalau menjawab teks "OK" atau HTML, berarti request belum sampai ke aplikasi.
+curl -s -X POST https://<DOMAIN>/api/telegram/webhook \
+  -H "Content-Type: application/json" -d '{}'
+```
+
+Cek domain yang terdaftar pada service:
+
+```bash
+grep -n "PathPrefix" /etc/easypanel/traefik/config/main.yaml | grep <nama-service>
+```
+
+Jangan batasi `allowed_updates`. Bot perlu menerima `message`, `channel_post`, `my_chat_member`,
+dan `callback_query` agar ikat channel, notifikasi, dan tombol ACC cepat jalan.
 
 ## Channel Telegram per perusahaan
 
